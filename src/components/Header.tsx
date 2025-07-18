@@ -13,11 +13,7 @@ const Header = () => {
   const { totalItems } = useCart();
 
   const navigation = [
-    { name: "Shop All", href: "#" },
-    { name: "Teas & Infusions", href: "#" },
-    { name: "Supplements", href: "#" },
-    { name: "Essential Oils", href: "#" },
-    { name: "Skincare", href: "#" },
+    { name: "Shop", href: "#" },
     { name: "About", href: "#" },
   ];
 
@@ -71,7 +67,19 @@ const Header = () => {
                     <User className="h-5 w-5" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem asChild>
+                    <a href="/profile" className="flex items-center w-full">
+                      <User className="h-4 w-4 mr-2" />
+                      View Profile
+                    </a>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <a href="/orders" className="flex items-center w-full">
+                      <ShoppingBag className="h-4 w-4 mr-2" />
+                      My Orders
+                    </a>
+                  </DropdownMenuItem>
                   <DropdownMenuItem onClick={signOut}>
                     <LogOut className="h-4 w-4 mr-2" />
                     Sign Out
