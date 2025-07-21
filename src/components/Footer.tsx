@@ -56,14 +56,12 @@ const Footer = () => {
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {/* Company Info */}
             <div className="space-y-6">
-              <div className="flex items-center space-x-2">
-                <div className="bg-accent p-2 rounded-full">
-                  <Leaf className="h-6 w-6 text-accent-foreground" />
-                </div>
-                <div>
-                  <h2 className="text-xl font-bold">New Era Herbals</h2>
-                  <p className="text-sm text-primary-foreground/80">Natural Wellness</p>
-                </div>
+              <div className="flex items-center">
+                <img 
+                  src="/lovable-uploads/22303e3e-d2dd-4bad-a05f-9245ad435b33.png" 
+                  alt="New Era Herbals Logo" 
+                  className="h-16 w-auto"
+                />
               </div>
               
               <p className="text-primary-foreground/80 leading-relaxed">

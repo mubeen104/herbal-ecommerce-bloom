@@ -41,14 +41,12 @@ const Header = () => {
         {/* Top bar */}
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <div className="flex items-center space-x-2">
-            <div className="bg-gradient-primary p-2 rounded-full">
-              <Leaf className="h-6 w-6 text-primary-foreground" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-foreground">New Era Herbals</h1>
-              <p className="text-xs text-muted-foreground">Natural Wellness</p>
-            </div>
+          <div className="flex items-center">
+            <img 
+              src="/lovable-uploads/22303e3e-d2dd-4bad-a05f-9245ad435b33.png" 
+              alt="New Era Herbals Logo" 
+              className="h-12 w-auto"
+            />
           </div>
 
           {/* Desktop Navigation */}

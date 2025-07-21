@@ -52,12 +52,13 @@ export function AdminSidebar() {
     <Sidebar className="w-64 border-r border-border/50 bg-sidebar-background">
       <SidebarHeader className="p-6 border-b border-border/50">
         <div className="flex items-center space-x-3">
-          <div className="bg-gradient-primary p-2 rounded-xl shadow-sm">
-            <Leaf className="h-6 w-6 text-primary-foreground" />
-          </div>
+          <img 
+            src="/lovable-uploads/22303e3e-d2dd-4bad-a05f-9245ad435b33.png" 
+            alt="New Era Herbals Logo" 
+            className="h-10 w-auto"
+          />
           <div>
             <h2 className="text-lg font-bold text-foreground">Admin Panel</h2>
-            <p className="text-xs text-muted-foreground">New Era Herbals</p>
           </div>
         </div>
       </SidebarHeader>
