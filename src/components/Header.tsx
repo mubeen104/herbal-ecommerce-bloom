@@ -106,13 +106,15 @@ const Header = () => {
               </AuthModal>
             )}
             
-            <Button variant="ghost" size="icon" className="text-foreground hover:text-primary relative">
-              <ShoppingBag className="h-5 w-5" />
-              {cartCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-accent text-accent-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                  {cartCount}
-                </span>
-              )}
+            <Button variant="ghost" size="icon" className="text-foreground hover:text-primary relative" asChild>
+              <a href="/cart">
+                <ShoppingBag className="h-5 w-5" />
+                {cartCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-accent text-accent-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                    {cartCount}
+                  </span>
+                )}
+              </a>
             </Button>
             <Button
               variant="ghost"
