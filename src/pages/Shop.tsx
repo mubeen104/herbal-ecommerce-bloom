@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Card, CardContent } from '@/components/ui/card';
@@ -34,6 +34,7 @@ export default function Shop() {
   const { data: categories, isLoading: categoriesLoading } = useCategories();
   const { addToCart } = useCart();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   // Filter and sort products
   const filteredProducts = products?.filter(product => {
@@ -226,9 +227,17 @@ export default function Shop() {
                         onClick={() => handleAddToCart(product)}
                         disabled={addToCart.isPending || product.inventory_quantity === 0}
                         className="flex-1"
+                        variant="outline"
                       >
                         <ShoppingCart className="h-4 w-4 mr-2" />
                         {product.inventory_quantity === 0 ? 'Out of Stock' : 'Add to Cart'}
+                      </Button>
+                      
+                      <Button
+                        onClick={() => navigate(`/product/${product.id}`)}
+                        className="flex-1"
+                      >
+                        View Details
                       </Button>
                       
                       <Dialog>
