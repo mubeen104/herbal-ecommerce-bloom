@@ -6,18 +6,34 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useCart } from "@/hooks/useCart";
 import { AuthModal } from "@/components/auth/AuthModal";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
-import SearchModal from "@/components/SearchModal";
+import { useNavigate } from "react-router-dom";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const { user, signOut, isAdmin } = useAuth();
   const { cartCount } = useCart();
+  const navigate = useNavigate();
 
   const navigation = [
     { name: "Shop", href: "/shop" },
     { name: "About", href: "#" },
   ];
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/shop?search=${encodeURIComponent(searchQuery.trim())}`);
+    } else {
+      navigate('/shop');
+    }
+  };
+
+  const handleSearchKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSearch(e);
+    }
+  };
 
   return (
     <header className="bg-background border-b border-border sticky top-0 z-50 shadow-soft">
@@ -50,16 +66,17 @@ const Header = () => {
 
           {/* Search Bar - Desktop */}
           <div className="hidden lg:flex items-center space-x-4 flex-1 max-w-md mx-8">
-            <div className="relative w-full">
+            <form onSubmit={handleSearch} className="relative w-full">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
               <Input
                 type="text"
                 placeholder="Search herbs, supplements..."
-                className="pl-10 bg-muted border-border focus:border-primary cursor-pointer"
-                onClick={() => setIsSearchOpen(true)}
-                readOnly
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={handleSearchKeyDown}
+                className="pl-10 bg-muted border-border focus:border-primary"
               />
-            </div>
+            </form>
           </div>
 
           {/* Actions */}
@@ -133,16 +150,17 @@ const Header = () => {
 
         {/* Mobile Search */}
         <div className="lg:hidden pb-4">
-          <div className="relative">
+          <form onSubmit={handleSearch} className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <Input
               type="text"
               placeholder="Search herbs, supplements..."
-              className="pl-10 bg-muted border-border focus:border-primary cursor-pointer"
-              onClick={() => setIsSearchOpen(true)}
-              readOnly
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={handleSearchKeyDown}
+              className="pl-10 bg-muted border-border focus:border-primary"
             />
-          </div>
+          </form>
         </div>
       </div>
 
@@ -162,9 +180,6 @@ const Header = () => {
           </div>
         </div>
       )}
-      
-      {/* Search Modal */}
-      <SearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
     </header>
   );
 };
