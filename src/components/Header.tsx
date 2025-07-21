@@ -6,9 +6,11 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useCart } from "@/hooks/useCart";
 import { AuthModal } from "@/components/auth/AuthModal";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+import SearchModal from "@/components/SearchModal";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const { user, signOut, isAdmin } = useAuth();
   const { cartCount } = useCart();
 
@@ -53,7 +55,9 @@ const Header = () => {
               <Input
                 type="text"
                 placeholder="Search herbs, supplements..."
-                className="pl-10 bg-muted border-border focus:border-primary"
+                className="pl-10 bg-muted border-border focus:border-primary cursor-pointer"
+                onClick={() => setIsSearchOpen(true)}
+                readOnly
               />
             </div>
           </div>
@@ -134,7 +138,9 @@ const Header = () => {
             <Input
               type="text"
               placeholder="Search herbs, supplements..."
-              className="pl-10 bg-muted border-border focus:border-primary"
+              className="pl-10 bg-muted border-border focus:border-primary cursor-pointer"
+              onClick={() => setIsSearchOpen(true)}
+              readOnly
             />
           </div>
         </div>
@@ -156,6 +162,9 @@ const Header = () => {
           </div>
         </div>
       )}
+      
+      {/* Search Modal */}
+      <SearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
     </header>
   );
 };

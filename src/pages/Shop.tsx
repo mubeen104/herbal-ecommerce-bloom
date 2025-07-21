@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Card, CardContent } from '@/components/ui/card';
@@ -15,10 +16,19 @@ import { useCart } from '@/hooks/useCart';
 import { useToast } from '@/hooks/use-toast';
 
 export default function Shop() {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
+  const [selectedCategory, setSelectedCategory] = useState<string>(searchParams.get('category') || 'all');
   const [sortBy, setSortBy] = useState<string>('newest');
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
+
+  // Update search term and category when URL changes
+  useEffect(() => {
+    const urlSearch = searchParams.get('search') || '';
+    const urlCategory = searchParams.get('category') || 'all';
+    setSearchTerm(urlSearch);
+    setSelectedCategory(urlCategory);
+  }, [searchParams]);
 
   const { data: products, isLoading: productsLoading } = useProducts();
   const { data: categories, isLoading: categoriesLoading } = useCategories();
