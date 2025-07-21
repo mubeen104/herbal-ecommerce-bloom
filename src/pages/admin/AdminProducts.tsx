@@ -171,11 +171,12 @@ export default function AdminProducts() {
 
   return (
     <AdminLayout>
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
+      <div className="space-y-8">
+        {/* Header Section */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
           <div>
-            <h1 className="text-3xl font-bold">Products</h1>
-            <p className="text-muted-foreground mt-2">
+            <h1 className="text-3xl font-bold text-foreground">Products</h1>
+            <p className="text-muted-foreground mt-1">
               Manage your product inventory
             </p>
           </div>
