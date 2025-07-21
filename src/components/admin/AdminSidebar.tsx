@@ -1,16 +1,4 @@
 import { NavLink, useLocation } from 'react-router-dom';
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarHeader,
-  useSidebar,
-} from '@/components/ui/sidebar';
 import { 
   LayoutDashboard, 
   Package, 
@@ -42,15 +30,16 @@ export function AdminSidebar() {
     path === '/admin' ? currentPath === path : currentPath.startsWith(path);
 
   const getNavCls = ({ isActive }: { isActive: boolean }) =>
-    `group transition-all duration-200 ${
+    `flex items-center w-full px-4 py-3 rounded-lg transition-all duration-200 ${
       isActive 
         ? 'bg-primary text-primary-foreground shadow-sm' 
         : 'hover:bg-muted/50 text-muted-foreground hover:text-foreground'
     }`;
 
   return (
-    <Sidebar className="w-64 border-r border-border/50 bg-sidebar-background">
-      <SidebarHeader className="p-6 border-b border-border/50">
+    <div className="w-64 h-full border-r border-border/50 bg-background flex flex-col">
+      {/* Header */}
+      <div className="p-6 border-b border-border/50">
         <div className="flex items-center space-x-3">
           <img 
             src="/lovable-uploads/22303e3e-d2dd-4bad-a05f-9245ad435b33.png" 
@@ -61,46 +50,40 @@ export function AdminSidebar() {
             <h2 className="text-lg font-bold text-foreground">Admin Panel</h2>
           </div>
         </div>
-      </SidebarHeader>
+      </div>
       
-      <SidebarContent className="p-4">
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+      {/* Navigation */}
+      <div className="flex-1 p-4">
+        <div className="space-y-2">
+          <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-4">
             Management
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu className="space-y-1">
-              {adminMenuItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild className="h-12">
-                    <NavLink 
-                      to={item.url} 
-                      end={item.url === '/admin'}
-                      className={({ isActive }) => getNavCls({ isActive })}
+          </h3>
+          <nav className="space-y-1">
+            {adminMenuItems.map((item) => (
+              <NavLink 
+                key={item.title}
+                to={item.url} 
+                end={item.url === '/admin'}
+                className={({ isActive }) => getNavCls({ isActive })}
+              >
+                <item.icon className="h-5 w-5 mr-3 flex-shrink-0" />
+                <span className="font-medium flex-1">{item.title}</span>
+                <div className="flex items-center space-x-2">
+                  {item.badge && (
+                    <Badge 
+                      variant="secondary" 
+                      className="text-xs px-2 py-0.5 bg-accent/20 text-accent-foreground"
                     >
-                      <div className="flex items-center w-full">
-                        <item.icon className="h-5 w-5 mr-3 flex-shrink-0" />
-                        <span className="font-medium flex-1">{item.title}</span>
-                        <div className="flex items-center space-x-2">
-                          {item.badge && (
-                            <Badge 
-                              variant="secondary" 
-                              className="text-xs px-2 py-0.5 bg-accent/20 text-accent-foreground"
-                            >
-                              {item.badge}
-                            </Badge>
-                          )}
-                          <ChevronRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
-                        </div>
-                      </div>
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-      </SidebarContent>
-    </Sidebar>
+                      {item.badge}
+                    </Badge>
+                  )}
+                  <ChevronRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+                </div>
+              </NavLink>
+            ))}
+          </nav>
+        </div>
+      </div>
+    </div>
   );
 }
