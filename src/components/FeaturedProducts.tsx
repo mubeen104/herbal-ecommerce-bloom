@@ -197,7 +197,6 @@ const FeaturedProducts = () => {
                       View Details
                     </Button>
                     
-                    {/* Ensure Eye icon is inside CardContent */}
                     <Dialog>
                       <DialogTrigger asChild>
                         <Button
