@@ -17,14 +17,15 @@ interface Order {
   status: string;
   payment_status: string;
   created_at: string;
+  user_id: string;
   shipping_address: any;
   billing_address: any;
-  profiles: {
+  profiles?: {
     first_name: string;
     last_name: string;
     email: string;
   } | null;
-  order_items: {
+  order_items?: {
     id: string;
     quantity: number;
     price: number;
@@ -47,6 +48,7 @@ export default function AdminOrders() {
   const { data: orders, isLoading } = useQuery({
     queryKey: ['admin-orders', statusFilter],
     queryFn: async () => {
+      // First get orders
       let query = supabase
         .from('orders')
         .select(`
@@ -56,16 +58,9 @@ export default function AdminOrders() {
           status,
           payment_status,
           created_at,
+          user_id,
           shipping_address,
-          billing_address,
-          profiles(first_name, last_name, email),
-          order_items(
-            id,
-            quantity,
-            price,
-            total,
-            products(name, sku)
-          )
+          billing_address
         `)
         .order('created_at', { ascending: false });
 
@@ -73,9 +68,29 @@ export default function AdminOrders() {
         query = query.eq('status', statusFilter);
       }
 
-      const { data, error } = await query;
-      if (error) throw error;
-      return data;
+      const { data: ordersData, error: ordersError } = await query;
+      if (ordersError) throw ordersError;
+
+      // Then get profiles for each order
+      if (ordersData && ordersData.length > 0) {
+        const userIds = [...new Set(ordersData.map(order => order.user_id))];
+        const { data: profilesData, error: profilesError } = await supabase
+          .from('profiles')
+          .select('user_id, first_name, last_name, email')
+          .in('user_id', userIds);
+
+        if (profilesError) throw profilesError;
+
+        // Combine orders with profiles
+        const ordersWithProfiles = ordersData.map(order => ({
+          ...order,
+          profiles: profilesData?.find(profile => profile.user_id === order.user_id) || null
+        }));
+
+        return ordersWithProfiles;
+      }
+
+      return ordersData || [];
     }
   });
 
@@ -240,7 +255,7 @@ export default function AdminOrders() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {orders?.map((order: Order) => (
+                  {orders?.map((order: any) => (
                     <TableRow key={order.id} className="hover:bg-muted/30 transition-colors">
                       <TableCell className="py-4">
                         <div className="space-y-1">
@@ -253,9 +268,9 @@ export default function AdminOrders() {
                       <TableCell className="py-4">
                         <div className="space-y-1">
                           <p className="font-medium">
-                            {order.profiles?.first_name} {order.profiles?.last_name}
+                            {order.profiles?.first_name || 'N/A'} {order.profiles?.last_name || ''}
                           </p>
-                          <p className="text-sm text-muted-foreground">{order.profiles?.email}</p>
+                          <p className="text-sm text-muted-foreground">{order.profiles?.email || 'No email'}</p>
                         </div>
                       </TableCell>
                       <TableCell className="py-4">
