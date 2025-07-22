@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Minus, Plus, Trash2, ShoppingBag, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +12,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
 const Cart = () => {
+  const navigate = useNavigate();
   const { cartItems, cartTotal, cartCount, updateQuantity, removeFromCart, clearCart, isLoading } = useCart();
   const { toast } = useToast();
   const [updatingItems, setUpdatingItems] = useState<Set<string>>(new Set());
@@ -82,11 +84,7 @@ const Cart = () => {
   };
 
   const handleCheckout = () => {
-    // TODO: Implement checkout functionality
-    toast({
-      title: "Checkout",
-      description: "Checkout functionality will be implemented soon.",
-    });
+    navigate("/checkout");
   };
 
   const getMainImage = (item: any) => {
