@@ -154,7 +154,7 @@ const Footer = () => {
                 <Instagram className="h-5 w-5" />
               </a>
               <a href="#" className="text-primary-foreground/80 hover:text-accent transition-colors duration-200">
-                <Twitter className="h-5 w-5" />
+                <Tiktok className="h-5 w-5" />
               </a>
             </div>
 
