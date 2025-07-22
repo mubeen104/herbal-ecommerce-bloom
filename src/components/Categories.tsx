@@ -3,9 +3,11 @@ import { Button } from "@/components/ui/button";
 import { useCategories } from "@/hooks/useCategories";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Leaf, Coffee, Sparkles, Droplets, Zap } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const Categories = () => {
   const { data: categories = [], isLoading } = useCategories();
+  const navigate = useNavigate();
 
   const getIconForCategory = (slug: string) => {
     const iconMap: { [key: string]: JSX.Element } = {
@@ -124,6 +126,7 @@ const Categories = () => {
                   <Button 
                     variant="outline" 
                     className="w-full group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary transition-all duration-300"
+                    onClick={() => navigate(`/shop?category=${category.slug}`)}
                   >
                     Shop Now
                   </Button>
