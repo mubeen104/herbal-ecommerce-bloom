@@ -1,4 +1,4 @@
-import { Leaf, Mail, Phone, MapPin, Facebook, Instagram, Twitter } from "lucide-react";
+import { Leaf, Mail, Phone, MapPin, Facebook, Instagram, Twitter, Video } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -154,7 +154,7 @@ const Footer = () => {
                 <Instagram className="h-5 w-5" />
               </a>
               <a href="#" className="text-primary-foreground/80 hover:text-accent transition-colors duration-200">
-                <Tiktok className="h-5 w-5" />
+                <Video className="h-5 w-5" />
               </a>
             </div>
 
