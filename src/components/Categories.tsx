@@ -126,7 +126,10 @@ const Categories = () => {
                   <Button 
                     variant="outline" 
                     className="w-full group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary transition-all duration-300"
-                    onClick={() => navigate(`/shop?category=${category.slug}`)}
+                    onClick={() => {
+                      navigate(`/shop?category=${category.slug}`);
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }}
                   >
                     Shop Now
                   </Button>
