@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { ShoppingCart, Package, Eye, Truck, CheckCircle, XCircle, Clock, Edit } from 'lucide-react';
+import { ShoppingCart, Package, Eye, Truck, CheckCircle, XCircle, Clock, Edit, Calendar, MapPin } from 'lucide-react';
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -40,14 +40,41 @@ interface Order {
 export default function AdminOrders() {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [timeFilter, setTimeFilter] = useState<string>('all');
+  const [showOrderDetails, setShowOrderDetails] = useState(false);
+  const [editingStatus, setEditingStatus] = useState<string>('');
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
   // Fetch orders
   const { data: orders, isLoading } = useQuery({
-    queryKey: ['admin-orders', statusFilter],
+    queryKey: ['admin-orders', statusFilter, timeFilter],
     queryFn: async () => {
+      // Calculate date range based on time filter
+      let startDate: string | null = null;
+      const now = new Date();
+      
+      switch (timeFilter) {
+        case 'hourly':
+          startDate = new Date(now.getTime() - 60 * 60 * 1000).toISOString();
+          break;
+        case 'daily':
+          startDate = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString();
+          break;
+        case 'weekly':
+          startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
+          break;
+        case 'monthly':
+          startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString();
+          break;
+        case 'yearly':
+          startDate = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000).toISOString();
+          break;
+        default:
+          startDate = null;
+      }
+
       // First get orders
       let query = supabase
         .from('orders')
@@ -66,6 +93,10 @@ export default function AdminOrders() {
 
       if (statusFilter !== 'all') {
         query = query.eq('status', statusFilter);
+      }
+
+      if (startDate) {
+        query = query.gte('created_at', startDate);
       }
 
       const { data: ordersData, error: ordersError } = await query;
@@ -92,6 +123,32 @@ export default function AdminOrders() {
 
       return ordersData || [];
     }
+  });
+
+  // Fetch order details when viewing
+  const { data: orderDetails } = useQuery({
+    queryKey: ['order-details', selectedOrder?.id],
+    queryFn: async () => {
+      if (!selectedOrder) return null;
+      
+      const { data, error } = await supabase
+        .from('order_items')
+        .select(`
+          id,
+          quantity,
+          price,
+          total,
+          products (
+            name,
+            sku
+          )
+        `)
+        .eq('order_id', selectedOrder.id);
+      
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!selectedOrder
   });
 
   // Update order status mutation
@@ -155,6 +212,22 @@ export default function AdminOrders() {
     }
   };
 
+  const handleViewOrder = (order: Order) => {
+    setSelectedOrder(order);
+    setEditingStatus(order.status);
+    setShowOrderDetails(true);
+  };
+
+  const handleUpdateStatus = () => {
+    if (selectedOrder && editingStatus !== selectedOrder.status) {
+      updateStatusMutation.mutate({
+        orderId: selectedOrder.id,
+        status: editingStatus
+      });
+      setSelectedOrder({ ...selectedOrder, status: editingStatus });
+    }
+  };
+
   return (
     <div className="space-y-8 animate-fade-in">
       {/* Header Section */}
@@ -164,6 +237,35 @@ export default function AdminOrders() {
           <p className="text-muted-foreground mt-2 text-lg">
             Manage customer orders and shipping status
           </p>
+        </div>
+        <div className="flex items-center space-x-4">
+          <Select value={timeFilter} onValueChange={setTimeFilter}>
+            <SelectTrigger className="w-48">
+              <Calendar className="h-4 w-4 mr-2" />
+              <SelectValue placeholder="Time Period" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Time</SelectItem>
+              <SelectItem value="hourly">Last Hour</SelectItem>
+              <SelectItem value="daily">Last 24 Hours</SelectItem>
+              <SelectItem value="weekly">Last Week</SelectItem>
+              <SelectItem value="monthly">Last Month</SelectItem>
+              <SelectItem value="yearly">Last Year</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-40">
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Status</SelectItem>
+              <SelectItem value="pending">Pending</SelectItem>
+              <SelectItem value="processing">Processing</SelectItem>
+              <SelectItem value="shipped">Shipped</SelectItem>
+              <SelectItem value="completed">Completed</SelectItem>
+              <SelectItem value="cancelled">Cancelled</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
@@ -296,21 +398,15 @@ export default function AdminOrders() {
                           </p>
                         </div>
                       </TableCell>
-                      <TableCell className="py-4">
+                       <TableCell className="py-4">
                         <div className="flex justify-center space-x-2">
                           <Button
                             variant="outline"
                             size="sm"
+                            onClick={() => handleViewOrder(order)}
                             className="hover:bg-primary hover:text-primary-foreground transition-colors"
                           >
                             <Eye className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="hover:bg-blue-600 hover:text-white transition-colors"
-                          >
-                            <Edit className="h-4 w-4" />
                           </Button>
                         </div>
                       </TableCell>
@@ -330,6 +426,171 @@ export default function AdminOrders() {
           )}
         </CardContent>
       </Card>
+
+      {/* Order Details Modal */}
+      <Dialog open={showOrderDetails} onOpenChange={setShowOrderDetails}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Package className="h-5 w-5" />
+              Order Details - {selectedOrder?.order_number}
+            </DialogTitle>
+          </DialogHeader>
+          
+          {selectedOrder && (
+            <div className="space-y-6">
+              {/* Order Summary */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Order Summary</CardTitle>
+                </CardHeader>
+                <CardContent className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground">Order Number</label>
+                    <p className="font-medium">{selectedOrder.order_number}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground">Total Amount</label>
+                    <p className="font-medium text-lg">PKR {Number(selectedOrder.total_amount).toFixed(2)}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground">Order Date</label>
+                    <p className="font-medium">{new Date(selectedOrder.created_at).toLocaleString()}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground">Payment Status</label>
+                    <Badge variant="outline" className="capitalize">
+                      {selectedOrder.payment_status}
+                    </Badge>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Customer Info */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Customer Information</CardTitle>
+                </CardHeader>
+                <CardContent className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground">Name</label>
+                    <p className="font-medium">
+                      {selectedOrder.profiles?.first_name} {selectedOrder.profiles?.last_name}
+                    </p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground">Email</label>
+                    <p className="font-medium">{selectedOrder.profiles?.email}</p>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Order Status */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Edit className="h-5 w-5" />
+                    Order Status Management
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center gap-4">
+                    <div className="flex-1">
+                      <label className="text-sm font-medium text-muted-foreground">Current Status</label>
+                      <Select value={editingStatus} onValueChange={setEditingStatus}>
+                        <SelectTrigger className="w-full">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="pending">Pending</SelectItem>
+                          <SelectItem value="processing">Processing</SelectItem>
+                          <SelectItem value="shipped">Shipped</SelectItem>
+                          <SelectItem value="completed">Completed</SelectItem>
+                          <SelectItem value="cancelled">Cancelled</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <Button 
+                      onClick={handleUpdateStatus}
+                      disabled={editingStatus === selectedOrder.status}
+                      className="mt-6"
+                    >
+                      Update Status
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Shipping Address */}
+              {selectedOrder.shipping_address && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <MapPin className="h-5 w-5" />
+                      Shipping Address
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2">
+                      <p className="font-medium">
+                        {selectedOrder.shipping_address.firstName} {selectedOrder.shipping_address.lastName}
+                      </p>
+                      <p>{selectedOrder.shipping_address.addressLine1}</p>
+                      {selectedOrder.shipping_address.addressLine2 && (
+                        <p>{selectedOrder.shipping_address.addressLine2}</p>
+                      )}
+                      <p>
+                        {selectedOrder.shipping_address.city}, {selectedOrder.shipping_address.state} {selectedOrder.shipping_address.postalCode}
+                      </p>
+                      <p>{selectedOrder.shipping_address.country}</p>
+                      {selectedOrder.shipping_address.phone && (
+                        <p>Phone: {selectedOrder.shipping_address.phone}</p>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Order Items */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Order Items</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {orderDetails && orderDetails.length > 0 ? (
+                    <div className="overflow-x-auto">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Product</TableHead>
+                            <TableHead>SKU</TableHead>
+                            <TableHead>Quantity</TableHead>
+                            <TableHead>Price</TableHead>
+                            <TableHead>Total</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {orderDetails.map((item: any) => (
+                            <TableRow key={item.id}>
+                              <TableCell className="font-medium">{item.products?.name}</TableCell>
+                              <TableCell>{item.products?.sku}</TableCell>
+                              <TableCell>{item.quantity}</TableCell>
+                              <TableCell>PKR {Number(item.price).toFixed(2)}</TableCell>
+                              <TableCell>PKR {Number(item.total).toFixed(2)}</TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  ) : (
+                    <p className="text-muted-foreground">No order items found</p>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
