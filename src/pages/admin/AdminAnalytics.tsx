@@ -18,8 +18,10 @@ export default function AdminAnalytics() {
   });
 
   // Fetch analytics data
-  const { data: analytics, isLoading } = useQuery({
+  const { data: analytics, isLoading, error, refetch } = useQuery({
     queryKey: ['admin-analytics', dateRange],
+    retry: 3,
+    retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
     queryFn: async () => {
       const startDate = dateRange?.from?.toISOString() || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
       const endDate = dateRange?.to?.toISOString() || new Date().toISOString();
@@ -124,6 +126,29 @@ export default function AdminAnalytics() {
             </Card>
           ))}
         </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-8 animate-fade-in">
+        <div>
+          <h1 className="text-4xl font-bold text-foreground">Analytics</h1>
+          <p className="text-muted-foreground mt-2 text-lg">
+            Insights and performance metrics for your business
+          </p>
+        </div>
+        <Card className="border-border/50">
+          <CardContent className="p-12 text-center">
+            <Activity className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+            <h3 className="text-lg font-semibold text-foreground mb-2">Failed to load analytics</h3>
+            <p className="text-muted-foreground mb-4">There was an error loading the analytics data. Please try again.</p>
+            <Button onClick={() => refetch()} variant="outline">
+              Try Again
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     );
   }
