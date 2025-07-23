@@ -4,8 +4,9 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { Mail, Phone, Instagram, Video, Facebook } from 'lucide-react';
+import { Mail, Phone, Instagram, Facebook } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import TikTokIcon from '@/components/icons/TikTokIcon';
 
 const ContactSection = () => {
   const [formData, setFormData] = useState({
@@ -64,7 +65,7 @@ const ContactSection = () => {
       label: "Instagram"
     },
     {
-      icon: Video,
+      icon: TikTokIcon,
       href: "https://www.tiktok.com/@new.era7904?_t=ZS-8yCtFWlprdo&_r=1",
       label: "TikTok"
     },

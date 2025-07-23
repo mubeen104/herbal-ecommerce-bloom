@@ -1,6 +1,7 @@
-import { Leaf, Mail, Phone, MapPin, Facebook, Instagram, Twitter, Video } from "lucide-react";
+import { Leaf, Mail, Phone, MapPin, Facebook, Instagram, Twitter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import TikTokIcon from "@/components/icons/TikTokIcon";
 
 const Footer = () => {
 
@@ -101,7 +102,7 @@ const Footer = () => {
                 <Instagram className="h-5 w-5" />
               </a>
               <a href="https://www.tiktok.com/@new.era7904?_t=ZS-8yCtFWlprdo&_r=1" target="_blank" rel="noopener noreferrer" className="text-primary-foreground/80 hover:text-accent transition-colors duration-200">
-                <Video className="h-5 w-5" />
+                <TikTokIcon className="h-5 w-5" />
               </a>
               <a href="https://www.facebook.com/new.era.151908" target="_blank" rel="noopener noreferrer" className="text-primary-foreground/80 hover:text-accent transition-colors duration-200">
                 <Facebook className="h-5 w-5" />
