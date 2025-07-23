@@ -6,7 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useCart } from "@/hooks/useCart";
 import { AuthModal } from "@/components/auth/AuthModal";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -16,29 +16,17 @@ const Header = () => {
   const navigate = useNavigate();
 
   const navigation = [
-    { name: "Home", href: "#hero", isAnchor: true },
-    { name: "Shop", href: "#shop", isAnchor: true },
-    { name: "Contact Us", href: "#contact", isAnchor: true },
+    { name: "Home", href: "/" },
+    { name: "Shop", href: "/shop" },
+    { name: "Contact Us", href: "/contact" },
   ];
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      // Scroll to shop section and trigger search
-      const shopSection = document.getElementById('shop');
-      if (shopSection) {
-        shopSection.scrollIntoView({ behavior: 'smooth' });
-        // Dispatch custom event to trigger search in ShopSection
-        window.dispatchEvent(new CustomEvent('search-products', { 
-          detail: { query: searchQuery.trim() } 
-        }));
-      }
+      navigate(`/shop?search=${encodeURIComponent(searchQuery.trim())}`);
     } else {
-      // Just scroll to shop section
-      const shopSection = document.getElementById('shop');
-      if (shopSection) {
-        shopSection.scrollIntoView({ behavior: 'smooth' });
-      }
+      navigate('/shop');
     }
   };
 
@@ -54,33 +42,24 @@ const Header = () => {
         {/* Top bar */}
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <div className="flex items-center">
+          <Link to="/" className="flex items-center">
             <img 
               src="/lovable-uploads/22303e3e-d2dd-4bad-a05f-9245ad435b33.png" 
               alt="New Era Herbals Logo" 
               className="h-12 w-auto"
             />
-          </div>
+          </Link>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex space-x-8">
             {navigation.map((item) => (
-              <a
+              <Link
                 key={item.name}
-                href={item.href}
-                onClick={(e) => {
-                  if (item.isAnchor) {
-                    e.preventDefault();
-                    const element = document.querySelector(item.href);
-                    if (element) {
-                      element.scrollIntoView({ behavior: 'smooth' });
-                    }
-                  }
-                }}
-                className="text-foreground hover:text-primary transition-colors duration-200 font-medium cursor-pointer"
+                to={item.href}
+                className="text-foreground hover:text-primary transition-colors duration-200 font-medium"
               >
                 {item.name}
-              </a>
+              </Link>
             ))}
           </nav>
 
@@ -108,18 +87,18 @@ const Header = () => {
                     <User className="h-5 w-5" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48">
+                 <DropdownMenuContent align="end" className="w-48">
                   <DropdownMenuItem asChild>
-                    <a href="/profile" className="flex items-center w-full">
+                    <Link to="/profile" className="flex items-center w-full">
                       <User className="h-4 w-4 mr-2" />
                       View Profile
-                    </a>
+                    </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <a href="/orders" className="flex items-center w-full">
+                    <Link to="/orders" className="flex items-center w-full">
                       <ShoppingBag className="h-4 w-4 mr-2" />
                       My Orders
-                    </a>
+                    </Link>
                   </DropdownMenuItem>
                   {isAdmin && (
                     <>
@@ -139,21 +118,21 @@ const Header = () => {
               </DropdownMenu>
             ) : (
               <Button variant="ghost" size="icon" className="text-foreground hover:text-primary" asChild>
-                <a href="/auth">
+                <Link to="/auth">
                   <User className="h-5 w-5" />
-                </a>
+                </Link>
               </Button>
             )}
             
             <Button variant="ghost" size="icon" className="text-foreground hover:text-primary relative" asChild>
-              <a href="/cart">
+              <Link to="/cart">
                 <ShoppingBag className="h-5 w-5" />
                 {cartCount > 0 && (
                   <span className="absolute -top-1 -right-1 bg-accent text-accent-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center">
                     {cartCount}
                   </span>
                 )}
-              </a>
+              </Link>
             </Button>
             <Button
               variant="ghost"
@@ -187,23 +166,14 @@ const Header = () => {
         <div className="md:hidden bg-background border-t border-border">
           <div className="px-4 py-2 space-y-1">
             {navigation.map((item) => (
-              <a
+              <Link
                 key={item.name}
-                href={item.href}
-                onClick={(e) => {
-                  if (item.isAnchor) {
-                    e.preventDefault();
-                    const element = document.querySelector(item.href);
-                    if (element) {
-                      element.scrollIntoView({ behavior: 'smooth' });
-                      setIsMenuOpen(false);
-                    }
-                  }
-                }}
-                className="block px-3 py-2 text-foreground hover:text-primary hover:bg-muted rounded-md transition-colors duration-200 cursor-pointer"
+                to={item.href}
+                onClick={() => setIsMenuOpen(false)}
+                className="block px-3 py-2 text-foreground hover:text-primary hover:bg-muted rounded-md transition-colors duration-200"
               >
                 {item.name}
-              </a>
+              </Link>
             ))}
           </div>
         </div>
