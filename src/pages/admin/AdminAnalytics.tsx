@@ -1,41 +1,58 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { BarChart3, TrendingUp, TrendingDown, DollarSign, ShoppingCart, Users, Package, Activity } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { BarChart3, TrendingUp, TrendingDown, DollarSign, ShoppingCart, Users, Package, Activity, CalendarIcon } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useState } from 'react';
+import { DateRange } from 'react-day-picker';
+import { format } from 'date-fns';
+import { cn } from '@/lib/utils';
 
 export default function AdminAnalytics() {
+  // Date range state
+  const [dateRange, setDateRange] = useState<DateRange | undefined>({
+    from: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // Last 30 days
+    to: new Date()
+  });
+
   // Fetch analytics data
   const { data: analytics, isLoading } = useQuery({
-    queryKey: ['admin-analytics'],
+    queryKey: ['admin-analytics', dateRange],
     queryFn: async () => {
+      const startDate = dateRange?.from?.toISOString() || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+      const endDate = dateRange?.to?.toISOString() || new Date().toISOString();
       const [
         { data: revenueByMonth },
         { data: ordersByStatus },
         { data: topProducts },
         { data: recentActivity }
       ] = await Promise.all([
-        // Revenue by month (last 6 months)
+        // Revenue by date range
         supabase
           .from('orders')
           .select('total_amount, created_at')
           .eq('payment_status', 'completed')
-          .gte('created_at', new Date(Date.now() - 6 * 30 * 24 * 60 * 60 * 1000).toISOString()),
+          .gte('created_at', startDate)
+          .lte('created_at', endDate),
         
         // Orders by status
         supabase
           .from('orders')
           .select('status')
-          .gte('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()),
+          .gte('created_at', startDate)
+          .lte('created_at', endDate),
         
-        // Top selling products (last 30 days)
+        // Top selling products
         supabase
           .from('order_items')
           .select(`
             quantity,
-            products(name),
-            orders!inner(created_at)
+            products!inner(name)
           `)
-          .gte('orders.created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()),
+          .gte('created_at', startDate)
+          .lte('created_at', endDate),
         
         // Recent activity
         supabase
@@ -48,14 +65,16 @@ export default function AdminAnalytics() {
             created_at,
             profiles!orders_user_id_fkey(first_name, last_name)
           `)
+          .gte('created_at', startDate)
+          .lte('created_at', endDate)
           .order('created_at', { ascending: false })
           .limit(10)
       ]);
 
-      // Process revenue by month
-      const monthlyRevenue = revenueByMonth?.reduce((acc: any, order: any) => {
-        const month = new Date(order.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-        acc[month] = (acc[month] || 0) + Number(order.total_amount);
+      // Process revenue by date
+      const dailyRevenue = revenueByMonth?.reduce((acc: any, order: any) => {
+        const date = new Date(order.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        acc[date] = (acc[date] || 0) + Number(order.total_amount);
         return acc;
       }, {}) || {};
 
@@ -78,7 +97,7 @@ export default function AdminAnalytics() {
         .map(([name, quantity]) => ({ name, quantity }));
 
       return {
-        monthlyRevenue,
+        dailyRevenue,
         statusCounts,
         topSellingProducts,
         recentActivity: recentActivity || []
@@ -119,6 +138,45 @@ export default function AdminAnalytics() {
             Insights and performance metrics for your business
           </p>
         </div>
+        
+        {/* Date Range Picker */}
+        <div className="flex items-center space-x-4">
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className={cn(
+                  "w-[300px] justify-start text-left font-normal",
+                  !dateRange && "text-muted-foreground"
+                )}
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {dateRange?.from ? (
+                  dateRange.to ? (
+                    <>
+                      {format(dateRange.from, "LLL dd, y")} -{" "}
+                      {format(dateRange.to, "LLL dd, y")}
+                    </>
+                  ) : (
+                    format(dateRange.from, "LLL dd, y")
+                  )
+                ) : (
+                  <span>Pick a date range</span>
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                initialFocus
+                mode="range"
+                defaultMonth={dateRange?.from}
+                selected={dateRange}
+                onSelect={setDateRange}
+                numberOfMonths={2}
+              />
+            </PopoverContent>
+          </Popover>
+        </div>
       </div>
 
       {/* Overview Cards */}
@@ -129,7 +187,7 @@ export default function AdminAnalytics() {
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Total Revenue</p>
                 <p className="text-2xl font-bold">
-                  ${(Object.values(analytics?.monthlyRevenue || {}) as number[]).reduce((acc: number, val: number) => acc + val, 0).toFixed(2)}
+                  ${(Object.values(analytics?.dailyRevenue || {}) as number[]).reduce((acc: number, val: number) => acc + val, 0).toFixed(2)}
                 </p>
               </div>
               <div className="p-3 bg-green-100 rounded-lg">
@@ -186,23 +244,23 @@ export default function AdminAnalytics() {
 
       {/* Detailed Analytics */}
       <div className="grid gap-6 lg:grid-cols-3">
-        {/* Monthly Revenue */}
+        {/* Daily Revenue */}
         <Card className="border-border/50">
           <CardHeader>
             <CardTitle className="flex items-center text-xl">
               <DollarSign className="h-6 w-6 mr-3 text-primary" />
-              Monthly Revenue
+              Revenue by Date
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {Object.entries(analytics?.monthlyRevenue || {}).map(([month, revenue]: [string, any]) => (
-                <div key={month} className="flex justify-between items-center p-3 bg-muted/30 rounded-lg">
-                  <span className="text-sm font-medium">{month}</span>
+              {Object.entries(analytics?.dailyRevenue || {}).map(([date, revenue]: [string, any]) => (
+                <div key={date} className="flex justify-between items-center p-3 bg-muted/30 rounded-lg">
+                  <span className="text-sm font-medium">{date}</span>
                   <span className="font-bold text-lg">${Number(revenue).toFixed(2)}</span>
                 </div>
               ))}
-              {Object.keys(analytics?.monthlyRevenue || {}).length === 0 && (
+              {Object.keys(analytics?.dailyRevenue || {}).length === 0 && (
                 <div className="text-center py-8">
                   <DollarSign className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                   <p className="text-muted-foreground">No revenue data available</p>
@@ -217,7 +275,7 @@ export default function AdminAnalytics() {
           <CardHeader>
             <CardTitle className="flex items-center text-xl">
               <ShoppingCart className="h-6 w-6 mr-3 text-primary" />
-              Order Status (30 Days)
+              Order Status
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -243,7 +301,7 @@ export default function AdminAnalytics() {
           <CardHeader>
             <CardTitle className="flex items-center text-xl">
               <Package className="h-6 w-6 mr-3 text-primary" />
-              Top Products (30 Days)
+              Top Products
             </CardTitle>
           </CardHeader>
           <CardContent>
