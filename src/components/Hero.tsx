@@ -4,7 +4,7 @@ import heroImage from "@/assets/hero-herbals.jpg";
 
 const Hero = () => {
   return (
-    <section className="relative bg-gradient-hero min-h-[80vh] flex items-center overflow-hidden">
+    <section id="hero" className="relative bg-gradient-hero min-h-[80vh] flex items-center overflow-hidden">
       {/* Background Image */}
       <div 
         className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-20"
@@ -52,7 +52,13 @@ const Hero = () => {
                 className="bg-primary-foreground text-primary hover:bg-primary-foreground/90 group"
                 asChild
               >
-                <a href="/shop">
+                <a 
+                  href="#shop" 
+                  onClick={(e) => {
+                    e.preventDefault();
+                    document.getElementById('shop')?.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                >
                   Shop Now
                   <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
                 </a>
@@ -62,6 +68,9 @@ const Hero = () => {
                 size="lg" 
                 variant="outline" 
                 className="border-primary-foreground/20 text-primary-foreground bg-primary-foreground/10 hover:bg-primary-foreground hover:text-primary backdrop-blur-sm"
+                onClick={() => {
+                  document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' });
+                }}
               >
                 Learn More
               </Button>

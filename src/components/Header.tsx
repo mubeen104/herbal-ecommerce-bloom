@@ -16,17 +16,29 @@ const Header = () => {
   const navigate = useNavigate();
 
   const navigation = [
-    { name: "Home", href: "/" },
-    { name: "Shop", href: "/shop" },
-    { name: "Contact Us", href: "/contact" },
+    { name: "Home", href: "#hero", isAnchor: true },
+    { name: "Shop", href: "#shop", isAnchor: true },
+    { name: "Contact Us", href: "#contact", isAnchor: true },
   ];
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      navigate(`/shop?search=${encodeURIComponent(searchQuery.trim())}`);
+      // Scroll to shop section and trigger search
+      const shopSection = document.getElementById('shop');
+      if (shopSection) {
+        shopSection.scrollIntoView({ behavior: 'smooth' });
+        // Dispatch custom event to trigger search in ShopSection
+        window.dispatchEvent(new CustomEvent('search-products', { 
+          detail: { query: searchQuery.trim() } 
+        }));
+      }
     } else {
-      navigate('/shop');
+      // Just scroll to shop section
+      const shopSection = document.getElementById('shop');
+      if (shopSection) {
+        shopSection.scrollIntoView({ behavior: 'smooth' });
+      }
     }
   };
 
@@ -56,7 +68,16 @@ const Header = () => {
               <a
                 key={item.name}
                 href={item.href}
-                className="text-foreground hover:text-primary transition-colors duration-200 font-medium"
+                onClick={(e) => {
+                  if (item.isAnchor) {
+                    e.preventDefault();
+                    const element = document.querySelector(item.href);
+                    if (element) {
+                      element.scrollIntoView({ behavior: 'smooth' });
+                    }
+                  }
+                }}
+                className="text-foreground hover:text-primary transition-colors duration-200 font-medium cursor-pointer"
               >
                 {item.name}
               </a>
@@ -169,7 +190,17 @@ const Header = () => {
               <a
                 key={item.name}
                 href={item.href}
-                className="block px-3 py-2 text-foreground hover:text-primary hover:bg-muted rounded-md transition-colors duration-200"
+                onClick={(e) => {
+                  if (item.isAnchor) {
+                    e.preventDefault();
+                    const element = document.querySelector(item.href);
+                    if (element) {
+                      element.scrollIntoView({ behavior: 'smooth' });
+                      setIsMenuOpen(false);
+                    }
+                  }
+                }}
+                className="block px-3 py-2 text-foreground hover:text-primary hover:bg-muted rounded-md transition-colors duration-200 cursor-pointer"
               >
                 {item.name}
               </a>
