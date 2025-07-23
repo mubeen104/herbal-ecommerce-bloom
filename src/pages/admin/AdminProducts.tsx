@@ -5,6 +5,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Plus, Edit, Trash2, Package, DollarSign, Eye, EyeOff, Search, Upload, Image, CheckSquare, Square, AlertTriangle, ExternalLink } from 'lucide-react';
@@ -12,6 +14,7 @@ import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useCategories } from '@/hooks/useCategories';
 
 interface Product {
   id: string;
@@ -34,6 +37,7 @@ export default function AdminProducts() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
   const [showBulkActions, setShowBulkActions] = useState(false);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [formData, setFormData] = useState({
     name: '',
     price: '',
@@ -49,6 +53,9 @@ export default function AdminProducts() {
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  
+  // Fetch categories
+  const { data: categories } = useCategories();
 
   // Fetch products
   const { data: products, isLoading } = useQuery({
@@ -67,6 +74,8 @@ export default function AdminProducts() {
   // Create/Update product mutation
   const productMutation = useMutation({
     mutationFn: async (productData: any) => {
+      let product;
+      
       if (editingProduct) {
         const { data, error } = await supabase
           .from('products')
@@ -75,7 +84,7 @@ export default function AdminProducts() {
           .select()
           .single();
         if (error) throw error;
-        return data;
+        product = data;
       } else {
         const { data, error } = await supabase
           .from('products')
@@ -86,8 +95,33 @@ export default function AdminProducts() {
           .select()
           .single();
         if (error) throw error;
-        return data;
+        product = data;
       }
+
+      // Handle category relationships
+      if (editingProduct) {
+        // For updates, first delete existing relationships
+        const { error: deleteError } = await supabase
+          .from('product_categories')
+          .delete()
+          .eq('product_id', editingProduct.id);
+        if (deleteError) throw deleteError;
+      }
+
+      // Insert new category relationships
+      if (selectedCategories.length > 0) {
+        const categoryRelations = selectedCategories.map(categoryId => ({
+          product_id: product.id,
+          category_id: categoryId
+        }));
+
+        const { error: insertError } = await supabase
+          .from('product_categories')
+          .insert(categoryRelations);
+        if (insertError) throw insertError;
+      }
+
+      return product;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-products'] });
@@ -201,9 +235,10 @@ export default function AdminProducts() {
       is_active: true,
       is_featured: false
     });
+    setSelectedCategories([]);
   };
 
-  const handleEdit = (product: Product) => {
+  const handleEdit = async (product: Product) => {
     setEditingProduct(product);
     setFormData({
       name: product.name,
@@ -217,6 +252,22 @@ export default function AdminProducts() {
       is_active: product.is_active,
       is_featured: product.is_featured
     });
+    
+    // Load existing categories for this product
+    try {
+      const { data: productCategories, error } = await supabase
+        .from('product_categories')
+        .select('category_id')
+        .eq('product_id', product.id);
+      
+      if (error) throw error;
+      
+      setSelectedCategories(productCategories?.map(pc => pc.category_id) || []);
+    } catch (error) {
+      console.error('Error loading product categories:', error);
+      setSelectedCategories([]);
+    }
+    
     setIsDialogOpen(true);
   };
 
@@ -374,6 +425,42 @@ export default function AdminProducts() {
                     rows={3}
                     placeholder="How to use this product..."
                   />
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Categories</Label>
+                  <div className="space-y-2 max-h-32 overflow-y-auto border rounded-md p-3">
+                    {categories?.map((category) => (
+                      <div key={category.id} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`category-${category.id}`}
+                          checked={selectedCategories.includes(category.id)}
+                          onCheckedChange={(checked) => {
+                            if (checked) {
+                              setSelectedCategories(prev => [...prev, category.id]);
+                            } else {
+                              setSelectedCategories(prev => prev.filter(id => id !== category.id));
+                            }
+                          }}
+                        />
+                        <Label htmlFor={`category-${category.id}`} className="text-sm font-normal">
+                          {category.name}
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
+                  {selectedCategories.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      {selectedCategories.map(categoryId => {
+                        const category = categories?.find(c => c.id === categoryId);
+                        return category ? (
+                          <Badge key={categoryId} variant="secondary" className="text-xs">
+                            {category.name}
+                          </Badge>
+                        ) : null;
+                      })}
+                    </div>
+                  )}
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
