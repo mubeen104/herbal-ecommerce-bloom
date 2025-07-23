@@ -1,60 +1,41 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Calendar } from '@/components/ui/calendar';
-import { BarChart3, TrendingUp, TrendingDown, DollarSign, ShoppingCart, Users, Package, Activity, CalendarIcon } from 'lucide-react';
+import { BarChart3, TrendingUp, TrendingDown, DollarSign, ShoppingCart, Users, Package, Activity } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useState } from 'react';
-import { DateRange } from 'react-day-picker';
-import { format } from 'date-fns';
-import { cn } from '@/lib/utils';
 
 export default function AdminAnalytics() {
-  // Date range state
-  const [dateRange, setDateRange] = useState<DateRange | undefined>({
-    from: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // Last 30 days
-    to: new Date()
-  });
-
   // Fetch analytics data
-  const { data: analytics, isLoading, error, refetch } = useQuery({
-    queryKey: ['admin-analytics', dateRange],
-    retry: 3,
-    retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
+  const { data: analytics, isLoading } = useQuery({
+    queryKey: ['admin-analytics'],
     queryFn: async () => {
-      const startDate = dateRange?.from?.toISOString() || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
-      const endDate = dateRange?.to?.toISOString() || new Date().toISOString();
       const [
         { data: revenueByMonth },
         { data: ordersByStatus },
         { data: topProducts },
         { data: recentActivity }
       ] = await Promise.all([
-        // Revenue by date range
+        // Revenue by month (last 6 months)
         supabase
           .from('orders')
           .select('total_amount, created_at')
           .eq('payment_status', 'completed')
-          .gte('created_at', startDate)
-          .lte('created_at', endDate),
+          .gte('created_at', new Date(Date.now() - 6 * 30 * 24 * 60 * 60 * 1000).toISOString()),
         
         // Orders by status
         supabase
           .from('orders')
           .select('status')
-          .gte('created_at', startDate)
-          .lte('created_at', endDate),
+          .gte('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()),
         
-        // Top selling products
+        // Top selling products (last 30 days)
         supabase
           .from('order_items')
           .select(`
             quantity,
-            products!inner(name)
+            products(name),
+            orders!inner(created_at)
           `)
-          .gte('created_at', startDate)
-          .lte('created_at', endDate),
+          .gte('orders.created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()),
         
         // Recent activity
         supabase
@@ -67,16 +48,14 @@ export default function AdminAnalytics() {
             created_at,
             profiles!orders_user_id_fkey(first_name, last_name)
           `)
-          .gte('created_at', startDate)
-          .lte('created_at', endDate)
           .order('created_at', { ascending: false })
           .limit(10)
       ]);
 
-      // Process revenue by date
-      const dailyRevenue = revenueByMonth?.reduce((acc: any, order: any) => {
-        const date = new Date(order.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-        acc[date] = (acc[date] || 0) + Number(order.total_amount);
+      // Process revenue by month
+      const monthlyRevenue = revenueByMonth?.reduce((acc: any, order: any) => {
+        const month = new Date(order.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+        acc[month] = (acc[month] || 0) + Number(order.total_amount);
         return acc;
       }, {}) || {};
 
@@ -99,7 +78,7 @@ export default function AdminAnalytics() {
         .map(([name, quantity]) => ({ name, quantity }));
 
       return {
-        dailyRevenue,
+        monthlyRevenue,
         statusCounts,
         topSellingProducts,
         recentActivity: recentActivity || []
@@ -130,29 +109,6 @@ export default function AdminAnalytics() {
     );
   }
 
-  if (error) {
-    return (
-      <div className="space-y-8 animate-fade-in">
-        <div>
-          <h1 className="text-4xl font-bold text-foreground">Analytics</h1>
-          <p className="text-muted-foreground mt-2 text-lg">
-            Insights and performance metrics for your business
-          </p>
-        </div>
-        <Card className="border-border/50">
-          <CardContent className="p-12 text-center">
-            <Activity className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold text-foreground mb-2">Failed to load analytics</h3>
-            <p className="text-muted-foreground mb-4">There was an error loading the analytics data. Please try again.</p>
-            <Button onClick={() => refetch()} variant="outline">
-              Try Again
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-8 animate-fade-in">
       {/* Header Section */}
@@ -162,45 +118,6 @@ export default function AdminAnalytics() {
           <p className="text-muted-foreground mt-2 text-lg">
             Insights and performance metrics for your business
           </p>
-        </div>
-        
-        {/* Date Range Picker */}
-        <div className="flex items-center space-x-4">
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className={cn(
-                  "w-[300px] justify-start text-left font-normal",
-                  !dateRange && "text-muted-foreground"
-                )}
-              >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {dateRange?.from ? (
-                  dateRange.to ? (
-                    <>
-                      {format(dateRange.from, "LLL dd, y")} -{" "}
-                      {format(dateRange.to, "LLL dd, y")}
-                    </>
-                  ) : (
-                    format(dateRange.from, "LLL dd, y")
-                  )
-                ) : (
-                  <span>Pick a date range</span>
-                )}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <Calendar
-                initialFocus
-                mode="range"
-                defaultMonth={dateRange?.from}
-                selected={dateRange}
-                onSelect={setDateRange}
-                numberOfMonths={2}
-              />
-            </PopoverContent>
-          </Popover>
         </div>
       </div>
 
@@ -212,7 +129,7 @@ export default function AdminAnalytics() {
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Total Revenue</p>
                 <p className="text-2xl font-bold">
-                  ${(Object.values(analytics?.dailyRevenue || {}) as number[]).reduce((acc: number, val: number) => acc + val, 0).toFixed(2)}
+                  ${(Object.values(analytics?.monthlyRevenue || {}) as number[]).reduce((acc: number, val: number) => acc + val, 0).toFixed(2)}
                 </p>
               </div>
               <div className="p-3 bg-green-100 rounded-lg">
@@ -269,23 +186,23 @@ export default function AdminAnalytics() {
 
       {/* Detailed Analytics */}
       <div className="grid gap-6 lg:grid-cols-3">
-        {/* Daily Revenue */}
+        {/* Monthly Revenue */}
         <Card className="border-border/50">
           <CardHeader>
             <CardTitle className="flex items-center text-xl">
               <DollarSign className="h-6 w-6 mr-3 text-primary" />
-              Revenue by Date
+              Monthly Revenue
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {Object.entries(analytics?.dailyRevenue || {}).map(([date, revenue]: [string, any]) => (
-                <div key={date} className="flex justify-between items-center p-3 bg-muted/30 rounded-lg">
-                  <span className="text-sm font-medium">{date}</span>
+              {Object.entries(analytics?.monthlyRevenue || {}).map(([month, revenue]: [string, any]) => (
+                <div key={month} className="flex justify-between items-center p-3 bg-muted/30 rounded-lg">
+                  <span className="text-sm font-medium">{month}</span>
                   <span className="font-bold text-lg">${Number(revenue).toFixed(2)}</span>
                 </div>
               ))}
-              {Object.keys(analytics?.dailyRevenue || {}).length === 0 && (
+              {Object.keys(analytics?.monthlyRevenue || {}).length === 0 && (
                 <div className="text-center py-8">
                   <DollarSign className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                   <p className="text-muted-foreground">No revenue data available</p>
@@ -300,7 +217,7 @@ export default function AdminAnalytics() {
           <CardHeader>
             <CardTitle className="flex items-center text-xl">
               <ShoppingCart className="h-6 w-6 mr-3 text-primary" />
-              Order Status
+              Order Status (30 Days)
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -326,7 +243,7 @@ export default function AdminAnalytics() {
           <CardHeader>
             <CardTitle className="flex items-center text-xl">
               <Package className="h-6 w-6 mr-3 text-primary" />
-              Top Products
+              Top Products (30 Days)
             </CardTitle>
           </CardHeader>
           <CardContent>
