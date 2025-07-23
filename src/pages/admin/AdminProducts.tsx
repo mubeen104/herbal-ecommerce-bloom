@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Edit, Trash2, Package, DollarSign, Eye, EyeOff, Search, Upload, Image, CheckSquare, Square, AlertTriangle, ExternalLink } from 'lucide-react';
+import { Plus, Edit, Trash2, Package, DollarSign, Eye, EyeOff, Search, Upload, Image, CheckSquare, Square, AlertTriangle, ExternalLink, X, ImageIcon } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -31,6 +31,13 @@ interface Product {
   created_at: string;
 }
 
+interface ProductImage {
+  id?: string;
+  image_url: string;
+  alt_text: string;
+  sort_order: number;
+}
+
 export default function AdminProducts() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -38,6 +45,7 @@ export default function AdminProducts() {
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
   const [showBulkActions, setShowBulkActions] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [productImages, setProductImages] = useState<ProductImage[]>([]);
   const [formData, setFormData] = useState({
     name: '',
     price: '',
@@ -63,7 +71,10 @@ export default function AdminProducts() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('products')
-        .select('*')
+        .select(`
+          *,
+          product_images(*)
+        `)
         .order('created_at', { ascending: false });
       
       if (error) throw error;
@@ -119,6 +130,31 @@ export default function AdminProducts() {
           .from('product_categories')
           .insert(categoryRelations);
         if (insertError) throw insertError;
+      }
+
+      // Handle product images
+      if (editingProduct) {
+        // For updates, first delete existing images
+        const { error: deleteImagesError } = await supabase
+          .from('product_images')
+          .delete()
+          .eq('product_id', editingProduct.id);
+        if (deleteImagesError) throw deleteImagesError;
+      }
+
+      // Insert new images
+      if (productImages.length > 0) {
+        const imageData = productImages.map((img, index) => ({
+          product_id: product.id,
+          image_url: img.image_url,
+          alt_text: img.alt_text || '',
+          sort_order: img.sort_order || index
+        }));
+
+        const { error: insertImagesError } = await supabase
+          .from('product_images')
+          .insert(imageData);
+        if (insertImagesError) throw insertImagesError;
       }
 
       return product;
@@ -236,6 +272,26 @@ export default function AdminProducts() {
       is_featured: false
     });
     setSelectedCategories([]);
+    setProductImages([]);
+  };
+
+  // Image management functions
+  const addImage = () => {
+    setProductImages([...productImages, {
+      image_url: '',
+      alt_text: '',
+      sort_order: productImages.length
+    }]);
+  };
+
+  const removeImage = (index: number) => {
+    setProductImages(productImages.filter((_, i) => i !== index));
+  };
+
+  const updateImage = (index: number, field: string, value: string) => {
+    const updatedImages = [...productImages];
+    updatedImages[index] = { ...updatedImages[index], [field]: value };
+    setProductImages(updatedImages);
   };
 
   const handleEdit = async (product: Product) => {
@@ -266,6 +322,27 @@ export default function AdminProducts() {
     } catch (error) {
       console.error('Error loading product categories:', error);
       setSelectedCategories([]);
+    }
+
+    // Load existing images for this product
+    try {
+      const { data: productImages, error } = await supabase
+        .from('product_images')
+        .select('*')
+        .eq('product_id', product.id)
+        .order('sort_order');
+      
+      if (error) throw error;
+      
+      setProductImages(productImages?.map(img => ({
+        id: img.id,
+        image_url: img.image_url,
+        alt_text: img.alt_text || '',
+        sort_order: img.sort_order || 0
+      })) || []);
+    } catch (error) {
+      console.error('Error loading product images:', error);
+      setProductImages([]);
     }
     
     setIsDialogOpen(true);
@@ -459,6 +536,79 @@ export default function AdminProducts() {
                           </Badge>
                         ) : null;
                       })}
+                    </div>
+                  )}
+                </div>
+
+                {/* Product Images Section */}
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <Label>Product Images</Label>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={addImage}
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Image
+                    </Button>
+                  </div>
+                  
+                  {productImages.map((image, index) => (
+                    <div key={index} className="border border-border rounded-lg p-4 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">Image {index + 1}</span>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => removeImage(index)}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Input
+                          placeholder="Image URL"
+                          value={image.image_url}
+                          onChange={(e) => updateImage(index, 'image_url', e.target.value)}
+                        />
+                        <Input
+                          placeholder="Alt text (optional)"
+                          value={image.alt_text}
+                          onChange={(e) => updateImage(index, 'alt_text', e.target.value)}
+                        />
+                      </div>
+                      
+                      {image.image_url && (
+                        <div className="mt-2">
+                          <img
+                            src={image.image_url}
+                            alt={image.alt_text || `Product image ${index + 1}`}
+                            className="w-24 h-24 object-cover rounded border"
+                            onError={(e) => {
+                              e.currentTarget.style.display = 'none';
+                            }}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                  
+                  {productImages.length === 0 && (
+                    <div className="text-center py-8 border-2 border-dashed border-border rounded-lg">
+                      <ImageIcon className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                      <p className="text-muted-foreground">No images added yet</p>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={addImage}
+                        className="mt-2"
+                      >
+                        Add First Image
+                      </Button>
                     </div>
                   )}
                 </div>
@@ -695,27 +845,48 @@ export default function AdminProducts() {
                         </button>
                       </TableCell>
                       <TableCell className="py-4">
-                        <div className="space-y-1">
-                          <div className="flex items-center space-x-2">
-                            <p className="font-semibold text-foreground">{product.name}</p>
-                            {product.inventory_quantity <= 5 && product.inventory_quantity > 0 && (
-                              <Badge variant="destructive" className="text-xs">
-                                <AlertTriangle className="h-3 w-3 mr-1" />
-                                Low Stock
-                              </Badge>
+                        <div className="flex items-start space-x-3">
+                          {/* Product Image */}
+                          {(product as any).product_images && (product as any).product_images.length > 0 && (
+                            <img
+                              src={(product as any).product_images[0].image_url}
+                              alt={(product as any).product_images[0].alt_text || product.name}
+                              className="w-12 h-12 object-cover rounded border"
+                              onError={(e) => {
+                                e.currentTarget.style.display = 'none';
+                              }}
+                            />
+                          )}
+                          
+                          {/* Product Details */}
+                          <div className="space-y-1 flex-1">
+                            <div className="flex items-center space-x-2">
+                              <p className="font-semibold text-foreground">{product.name}</p>
+                              {product.inventory_quantity <= 5 && product.inventory_quantity > 0 && (
+                                <Badge variant="destructive" className="text-xs">
+                                  <AlertTriangle className="h-3 w-3 mr-1" />
+                                  Low Stock
+                                </Badge>
+                              )}
+                              {product.inventory_quantity === 0 && (
+                                <Badge variant="outline" className="text-xs border-red-200 text-red-600">
+                                  Out of Stock
+                                </Badge>
+                              )}
+                            </div>
+                            {product.sku && (
+                              <p className="text-sm text-muted-foreground">SKU: {product.sku}</p>
                             )}
-                            {product.inventory_quantity === 0 && (
-                              <Badge variant="outline" className="text-xs border-red-200 text-red-600">
-                                Out of Stock
-                              </Badge>
+                            {product.description && (
+                              <p className="text-sm text-muted-foreground max-w-md truncate">{product.description}</p>
+                            )}
+                            {/* Show image count if multiple images */}
+                            {(product as any).product_images && (product as any).product_images.length > 1 && (
+                              <p className="text-xs text-muted-foreground">
+                                +{(product as any).product_images.length - 1} more images
+                              </p>
                             )}
                           </div>
-                          {product.sku && (
-                            <p className="text-sm text-muted-foreground">SKU: {product.sku}</p>
-                          )}
-                          {product.description && (
-                            <p className="text-sm text-muted-foreground max-w-md truncate">{product.description}</p>
-                          )}
                         </div>
                       </TableCell>
                       <TableCell className="py-4">
