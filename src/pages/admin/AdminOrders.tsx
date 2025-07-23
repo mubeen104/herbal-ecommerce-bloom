@@ -163,6 +163,8 @@ export default function AdminOrders() {
         updateData.delivered_at = new Date().toISOString();
       }
 
+      console.log('Updating order with data:', updateData);
+
       const { data, error } = await supabase
         .from('orders')
         .update(updateData)
@@ -170,7 +172,10 @@ export default function AdminOrders() {
         .select()
         .single();
       
-      if (error) throw error;
+      if (error) {
+        console.error('Update error:', error);
+        throw error;
+      }
       return data;
     },
     onSuccess: () => {
