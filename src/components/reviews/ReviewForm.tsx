@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
+import { useCanReview } from '@/hooks/useCanReview';
 import { Star } from 'lucide-react';
 
 const reviewSchema = z.object({
@@ -30,6 +31,7 @@ export const ReviewForm = ({ productId, onSuccess }: ReviewFormProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { data: canReview, isLoading: checkingEligibility } = useCanReview(productId);
   const [hoveredRating, setHoveredRating] = useState(0);
 
   const form = useForm<ReviewFormData>({
@@ -84,6 +86,28 @@ export const ReviewForm = ({ productId, onSuccess }: ReviewFormProps) => {
       <Card>
         <CardContent className="p-6 text-center">
           <p className="text-muted-foreground">Please sign in to write a review.</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (checkingEligibility) {
+    return (
+      <Card>
+        <CardContent className="p-6 text-center">
+          <p className="text-muted-foreground">Checking review eligibility...</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!canReview) {
+    return (
+      <Card>
+        <CardContent className="p-6 text-center">
+          <p className="text-muted-foreground">
+            You can only review products from your completed orders.
+          </p>
         </CardContent>
       </Card>
     );
