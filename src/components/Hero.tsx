@@ -52,13 +52,7 @@ const Hero = () => {
                 className="bg-primary-foreground text-primary hover:bg-primary-foreground/90 group"
                 asChild
               >
-                <a 
-                  href="#shop" 
-                  onClick={(e) => {
-                    e.preventDefault();
-                    document.getElementById('shop')?.scrollIntoView({ behavior: 'smooth' });
-                  }}
-                >
+                <a href="/shop">
                   Shop Now
                   <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
                 </a>
