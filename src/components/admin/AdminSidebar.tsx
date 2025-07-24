@@ -8,7 +8,8 @@ import {
   BarChart3,
   Settings,
   Leaf,
-  ChevronRight
+  ChevronRight,
+  Star
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
@@ -19,6 +20,7 @@ const adminMenuItems = [
   { title: 'Orders', url: '/admin/orders', icon: ShoppingCart, badge: '5' },
   { title: 'Users', url: '/admin/users', icon: Users, badge: null },
   { title: 'Analytics', url: '/admin/analytics', icon: BarChart3, badge: null },
+  { title: 'Reviews', url: '/admin/reviews', icon: Star, badge: null },
   { title: 'Settings', url: '/admin/settings', icon: Settings, badge: null },
 ];
 

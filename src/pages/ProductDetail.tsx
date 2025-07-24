@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useCart } from '@/hooks/useCart';
 import { useToast } from '@/hooks/use-toast';
 import { Product } from '@/hooks/useProducts';
+import { ReviewForm } from '@/components/reviews/ReviewForm';
 import { Minus, Plus, Star, Truck, Shield, RotateCcw } from 'lucide-react';
 
 const useProduct = (productId: string) => {
@@ -393,53 +394,59 @@ const ProductDetail = () => {
         </Tabs>
 
         {/* Reviews Section */}
-        <Card className="mt-8">
-          <CardHeader>
-            <CardTitle>Customer Reviews ({reviews?.length || 0})</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {reviews && reviews.length > 0 ? (
-              <div className="space-y-6">
-                {reviews.map((review) => (
-                  <div key={review.id} className="border-b border-border pb-6 last:border-0">
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center space-x-2">
-                        <span className="font-medium text-foreground">
-                          Anonymous User
-                        </span>
-                        <div className="flex items-center">
-                          {[...Array(5)].map((_, i) => (
-                            <Star
-                              key={i}
-                              className={`w-4 h-4 ${
-                                i < review.rating
-                                  ? 'text-yellow-400 fill-yellow-400'
-                                  : 'text-muted-foreground'
-                              }`}
-                            />
-                          ))}
+        <div className="mt-8 space-y-6">
+          {/* Write Review Form */}
+          <ReviewForm productId={product.id} />
+          
+          {/* Existing Reviews */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Customer Reviews ({reviews?.length || 0})</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {reviews && reviews.length > 0 ? (
+                <div className="space-y-6">
+                  {reviews.map((review) => (
+                    <div key={review.id} className="border-b border-border pb-6 last:border-0">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center space-x-2">
+                          <span className="font-medium text-foreground">
+                            Anonymous User
+                          </span>
+                          <div className="flex items-center">
+                            {[...Array(5)].map((_, i) => (
+                              <Star
+                                key={i}
+                                className={`w-4 h-4 ${
+                                  i < review.rating
+                                    ? 'text-yellow-400 fill-yellow-400'
+                                    : 'text-muted-foreground'
+                                }`}
+                              />
+                            ))}
+                          </div>
                         </div>
+                        <span className="text-sm text-muted-foreground">
+                          {new Date(review.created_at).toLocaleDateString()}
+                        </span>
                       </div>
-                      <span className="text-sm text-muted-foreground">
-                        {new Date(review.created_at).toLocaleDateString()}
-                      </span>
+                      {review.title && (
+                        <h5 className="font-medium text-foreground mb-2">{review.title}</h5>
+                      )}
+                      {review.content && (
+                        <p className="text-muted-foreground">{review.content}</p>
+                      )}
                     </div>
-                    {review.title && (
-                      <h5 className="font-medium text-foreground mb-2">{review.title}</h5>
-                    )}
-                    {review.content && (
-                      <p className="text-muted-foreground">{review.content}</p>
-                    )}
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-8">
-                <p className="text-muted-foreground">No reviews yet. Be the first to review this product!</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <p className="text-muted-foreground">No reviews yet. Be the first to review this product!</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
       </main>
 
       <Footer />
