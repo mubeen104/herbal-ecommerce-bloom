@@ -9,6 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import TikTokIcon from '@/components/icons/TikTokIcon';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import { useStoreSettings } from '@/hooks/useStoreSettings';
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -19,6 +20,7 @@ const Contact = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  const { storeEmail, storePhone } = useStoreSettings();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -178,10 +180,10 @@ const Contact = () => {
                   <div>
                     <h3 className="font-semibold text-lg">Email</h3>
                     <a 
-                      href="mailto:neweraorganic101@gmail.com"
+                      href={`mailto:${storeEmail}`}
                       className="text-muted-foreground hover:text-primary transition-colors"
                     >
-                      neweraorganic101@gmail.com
+                      {storeEmail}
                     </a>
                   </div>
                 </div>
@@ -194,10 +196,10 @@ const Contact = () => {
                   <div>
                     <h3 className="font-semibold text-lg">Phone</h3>
                     <a 
-                      href="tel:+923043073838"
+                      href={`tel:${storePhone.replace(/\s+/g, '')}`}
                       className="text-muted-foreground hover:text-primary transition-colors"
                     >
-                      +92 304 307 3838
+                      {storePhone}
                     </a>
                   </div>
                 </div>

@@ -44,12 +44,15 @@ const Header = () => {
         {/* Top bar */}
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center">
+          <Link to="/" className="flex items-center space-x-3">
             <img 
               src="/lovable-uploads/22303e3e-d2dd-4bad-a05f-9245ad435b33.png" 
               alt={`${storeName} Logo`} 
               className="h-12 w-auto"
             />
+            <span className="text-xl font-bold text-foreground hidden sm:block">
+              {storeName}
+            </span>
           </Link>
 
           {/* Desktop Navigation */}
