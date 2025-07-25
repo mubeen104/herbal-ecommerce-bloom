@@ -6,7 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Users, Shield, User, Search, Crown, UserPlus, Eye, MoreHorizontal, MapPin, Package, Settings } from 'lucide-react';
+import { Users, Shield, User, Search, Crown, UserPlus, Eye, MoreHorizontal, MapPin, Package, Settings, ArrowUpDown, UserMinus } from 'lucide-react';
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -52,6 +52,7 @@ export default function AdminUsers() {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [showUserDetails, setShowUserDetails] = useState(false);
   const [activeTab, setActiveTab] = useState('customers');
+  const [sortBy, setSortBy] = useState('name'); // 'name', 'earliest', 'latest'
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -136,8 +137,50 @@ export default function AdminUsers() {
     }
   });
 
-  // Filter users based on search and tab
-  const adminUsers = users.filter(user => {
+  // Remove admin role
+  const removeAdminMutation = useMutation({
+    mutationFn: async (userId: string) => {
+      const { error } = await supabase
+        .from('user_roles')
+        .delete()
+        .eq('user_id', userId)
+        .eq('role', 'admin');
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast({ title: "Admin role removed successfully!" });
+      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+    },
+    onError: (error: any) => {
+      toast({ 
+        title: "Error", 
+        description: error.message, 
+        variant: "destructive" 
+      });
+    }
+  });
+
+  // Sort function
+  const sortUsers = (userList: User[]) => {
+    const sorted = [...userList];
+    switch (sortBy) {
+      case 'name':
+        return sorted.sort((a, b) => {
+          const nameA = `${a.first_name || ''} ${a.last_name || ''}`.toLowerCase();
+          const nameB = `${b.first_name || ''} ${b.last_name || ''}`.toLowerCase();
+          return nameA.localeCompare(nameB);
+        });
+      case 'earliest':
+        return sorted.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+      case 'latest':
+        return sorted.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      default:
+        return sorted;
+    }
+  };
+
+  // Filter and sort users based on search and tab
+  const adminUsers = sortUsers(users.filter(user => {
     const hasAdminRole = user.user_roles?.some(role => role.role === 'admin');
     const matchesSearch = searchTerm === '' || 
       user.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -145,9 +188,9 @@ export default function AdminUsers() {
       user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.phone?.includes(searchTerm);
     return hasAdminRole && matchesSearch;
-  });
+  }));
 
-  const customerUsers = users.filter(user => {
+  const customerUsers = sortUsers(users.filter(user => {
     const hasAdminRole = user.user_roles?.some(role => role.role === 'admin');
     const matchesSearch = searchTerm === '' ||
       user.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -155,7 +198,7 @@ export default function AdminUsers() {
       user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.phone?.includes(searchTerm);
     return !hasAdminRole && matchesSearch;
-  });
+  }));
 
   const handleViewUser = (user: User) => {
     setSelectedUser(user);
@@ -164,6 +207,10 @@ export default function AdminUsers() {
 
   const handlePromoteToAdmin = (user: User) => {
     promoteToAdminMutation.mutate(user.email);
+  };
+
+  const handleRemoveAdmin = (user: User) => {
+    removeAdminMutation.mutate(user.user_id);
   };
 
   return (
@@ -186,6 +233,31 @@ export default function AdminUsers() {
               className="pl-10 w-80"
             />
           </div>
+          <Select value={sortBy} onValueChange={setSortBy}>
+            <SelectTrigger className="w-48">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="name">
+                <div className="flex items-center gap-2">
+                  <ArrowUpDown className="h-4 w-4" />
+                  Sort A-Z
+                </div>
+              </SelectItem>
+              <SelectItem value="earliest">
+                <div className="flex items-center gap-2">
+                  <ArrowUpDown className="h-4 w-4" />
+                  Earliest Join Date
+                </div>
+              </SelectItem>
+              <SelectItem value="latest">
+                <div className="flex items-center gap-2">
+                  <ArrowUpDown className="h-4 w-4" />
+                  Latest Join Date
+                </div>
+              </SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
@@ -267,7 +339,9 @@ export default function AdminUsers() {
                   users={customerUsers} 
                   onViewUser={handleViewUser}
                   onPromoteToAdmin={handlePromoteToAdmin}
+                  onRemoveAdmin={handleRemoveAdmin}
                   showPromoteButton={true}
+                  showRemoveButton={false}
                 />
               )}
             </TabsContent>
@@ -284,7 +358,9 @@ export default function AdminUsers() {
                   users={adminUsers} 
                   onViewUser={handleViewUser}
                   onPromoteToAdmin={handlePromoteToAdmin}
+                  onRemoveAdmin={handleRemoveAdmin}
                   showPromoteButton={false}
+                  showRemoveButton={true}
                 />
               )}
             </TabsContent>
@@ -418,10 +494,12 @@ interface UserTableProps {
   users: User[];
   onViewUser: (user: User) => void;
   onPromoteToAdmin: (user: User) => void;
+  onRemoveAdmin: (user: User) => void;
   showPromoteButton: boolean;
+  showRemoveButton: boolean;
 }
 
-function UserTable({ users, onViewUser, onPromoteToAdmin, showPromoteButton }: UserTableProps) {
+function UserTable({ users, onViewUser, onPromoteToAdmin, onRemoveAdmin, showPromoteButton, showRemoveButton }: UserTableProps) {
   if (users.length === 0) {
     return (
       <div className="text-center py-12">
@@ -514,8 +592,20 @@ function UserTable({ users, onViewUser, onPromoteToAdmin, showPromoteButton }: U
                       size="sm"
                       onClick={() => onPromoteToAdmin(user)}
                       className="hover:bg-orange-500 hover:text-white transition-colors"
+                      title="Promote to Admin"
                     >
-                      <Settings className="h-4 w-4" />
+                      <Crown className="h-4 w-4" />
+                    </Button>
+                  )}
+                  {showRemoveButton && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => onRemoveAdmin(user)}
+                      className="hover:bg-red-500 hover:text-white transition-colors"
+                      title="Remove Admin Role"
+                    >
+                      <UserMinus className="h-4 w-4" />
                     </Button>
                   )}
                 </div>
