@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,6 +13,11 @@ export default function Auth() {
   const [isLoading, setIsLoading] = useState(false);
   const [resetEmail, setResetEmail] = useState('');
   const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [isPasswordReset, setIsPasswordReset] = useState(false);
+  const [newPasswordData, setNewPasswordData] = useState({
+    password: '',
+    confirmPassword: ''
+  });
   const [signInData, setSignInData] = useState({ email: '', password: '' });
   const [signUpData, setSignUpData] = useState({
     email: '',
@@ -23,16 +28,23 @@ export default function Auth() {
     phone: ''
   });
 
-  const { signIn, signUp, user, resetPassword } = useAuth();
+  const { signIn, signUp, user, resetPassword, updatePassword } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [searchParams] = useSearchParams();
 
-  // Redirect if already authenticated
+  // Check for password reset mode and redirect if already authenticated
   useEffect(() => {
-    if (user) {
+    // Check if we're in password reset mode (Supabase adds access_token and type=recovery in URL)
+    const type = searchParams.get('type');
+    if (type === 'recovery') {
+      setIsPasswordReset(true);
+    }
+
+    if (user && !isPasswordReset) {
       navigate('/', { replace: true });
     }
-  }, [user, navigate]);
+  }, [user, navigate, searchParams, isPasswordReset]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -100,6 +112,47 @@ export default function Auth() {
     }
   };
 
+  const handleUpdatePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (newPasswordData.password !== newPasswordData.confirmPassword) {
+      toast({
+        title: "Error",
+        description: "Passwords do not match",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (newPasswordData.password.length < 6) {
+      toast({
+        title: "Error",
+        description: "Password must be at least 6 characters long",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const { error } = await updatePassword(newPasswordData.password);
+      
+      if (!error) {
+        toast({
+          title: "Password Updated",
+          description: "Your password has been updated successfully. You can now sign in with your new password.",
+        });
+        setIsPasswordReset(false);
+        navigate('/', { replace: true });
+      }
+    } catch (error) {
+      console.error('Password update error:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
@@ -114,17 +167,59 @@ export default function Auth() {
         <Card>
           <CardHeader>
             <CardTitle>
-              {showForgotPassword ? "Reset Password" : "Authentication"}
+              {isPasswordReset ? "Set New Password" : showForgotPassword ? "Reset Password" : "Authentication"}
             </CardTitle>
             <CardDescription>
-              {showForgotPassword 
+              {isPasswordReset 
+                ? "Choose a new password for your account"
+                : showForgotPassword 
                 ? "Enter your email to receive password reset instructions"
                 : "Sign in to your account or create a new one"
               }
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {showForgotPassword ? (
+            {isPasswordReset ? (
+              <form onSubmit={handleUpdatePassword} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="new-password">New Password</Label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                    <Input
+                      id="new-password"
+                      type="password"
+                      placeholder="Enter your new password"
+                      value={newPasswordData.password}
+                      onChange={(e) => setNewPasswordData({ ...newPasswordData, password: e.target.value })}
+                      className="pl-10"
+                      required
+                      minLength={6}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="confirm-new-password">Confirm New Password</Label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                    <Input
+                      id="confirm-new-password"
+                      type="password"
+                      placeholder="Confirm your new password"
+                      value={newPasswordData.confirmPassword}
+                      onChange={(e) => setNewPasswordData({ ...newPasswordData, confirmPassword: e.target.value })}
+                      className="pl-10"
+                      required
+                      minLength={6}
+                    />
+                  </div>
+                </div>
+
+                <Button type="submit" className="w-full" disabled={isLoading}>
+                  {isLoading ? 'Updating Password...' : 'Update Password'}
+                </Button>
+              </form>
+            ) : showForgotPassword ? (
               <form onSubmit={handleForgotPassword} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="reset-email">Email</Label>
