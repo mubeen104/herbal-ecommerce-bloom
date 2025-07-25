@@ -37,7 +37,12 @@ export default function Auth() {
   useEffect(() => {
     // Check if we're in password reset mode (Supabase adds access_token and type=recovery in URL)
     const type = searchParams.get('type');
-    if (type === 'recovery') {
+    const accessToken = searchParams.get('access_token');
+    
+    console.log('Auth page - URL params:', { type, accessToken, allParams: Object.fromEntries(searchParams) });
+    
+    if (type === 'recovery' && accessToken) {
+      console.log('Setting password reset mode to true');
       setIsPasswordReset(true);
     }
 
