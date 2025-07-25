@@ -75,7 +75,7 @@ export default function AdminUsers() {
       
       if (rolesError) throw rolesError;
 
-      // Combine the data
+      // Combine the data - include ALL users, even those without roles
       const usersWithRoles = profiles?.map(profile => ({
         ...profile,
         user_roles: userRoles?.filter(role => role.user_id === profile.user_id) || []
