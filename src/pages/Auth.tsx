@@ -141,10 +141,15 @@ export default function Auth() {
       if (!error) {
         toast({
           title: "Password Updated",
-          description: "Your password has been updated successfully. You can now sign in with your new password.",
+          description: "Your password has been updated successfully. Please sign in with your new password.",
         });
+        
+        // Clear the recovery URL parameters
+        window.history.replaceState({}, document.title, window.location.pathname);
+        
+        // Reset form and show sign-in page
         setIsPasswordReset(false);
-        navigate('/', { replace: true });
+        setNewPasswordData({ password: '', confirmPassword: '' });
       }
     } catch (error) {
       console.error('Password update error:', error);
