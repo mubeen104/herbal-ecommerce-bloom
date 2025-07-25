@@ -32,7 +32,7 @@ const Checkout = () => {
   const navigate = useNavigate();
   const { cartItems, cartTotal, cartCount, clearCart } = useCart();
   const { createOrder, isCreatingOrder } = useCheckout();
-  const { taxRate, shippingRate, freeShippingThreshold } = useStoreSettings();
+  const { taxRate, shippingRate, freeShippingThreshold, currency } = useStoreSettings();
   const { toast } = useToast();
 
   const [shippingAddress, setShippingAddress] = useState<Address>({
@@ -496,7 +496,7 @@ const Checkout = () => {
                           </p>
                         </div>
                         <div className="text-sm font-medium">
-                          PKR {((item.product?.price || 0) * item.quantity).toFixed(2)}
+                          {currency} {((item.product?.price || 0) * item.quantity).toFixed(2)}
                         </div>
                       </div>
                     ))}
@@ -508,32 +508,32 @@ const Checkout = () => {
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm">
                       <span>Subtotal ({cartCount} items)</span>
-                      <span>PKR {cartTotal.toFixed(2)}</span>
+                      <span>{currency} {cartTotal.toFixed(2)}</span>
                     </div>
                     
                     <div className="flex justify-between text-sm">
                       <span>Shipping</span>
                       <span>
-                        {shippingCost === 0 ? "Free" : `PKR ${shippingCost.toFixed(2)}`}
+                        {shippingCost === 0 ? "Free" : `${currency} ${shippingCost.toFixed(2)}`}
                       </span>
                     </div>
                     
                     {shippingCost > 0 && (
                       <div className="text-xs text-muted-foreground">
-                        Free shipping on orders over PKR {freeShippingThreshold.toFixed(0)}
+                        Free shipping on orders over {currency} {freeShippingThreshold.toFixed(0)}
                       </div>
                     )}
                     
                     <div className="flex justify-between text-sm">
                       <span>Tax</span>
-                      <span>PKR {tax.toFixed(2)}</span>
+                      <span>{currency} {tax.toFixed(2)}</span>
                     </div>
                     
                     <Separator />
                     
                     <div className="flex justify-between text-lg font-bold">
                       <span>Total</span>
-                      <span>PKR {totalAmount.toFixed(2)}</span>
+                      <span>{currency} {totalAmount.toFixed(2)}</span>
                     </div>
                   </div>
 

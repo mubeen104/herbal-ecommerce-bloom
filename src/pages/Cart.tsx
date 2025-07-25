@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { useCart } from "@/hooks/useCart";
+import { useStoreSettings } from "@/hooks/useStoreSettings";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import Header from "@/components/Header";
@@ -14,6 +15,7 @@ import Footer from "@/components/Footer";
 const Cart = () => {
   const navigate = useNavigate();
   const { cartItems, cartTotal, cartCount, updateQuantity, removeFromCart, clearCart, isLoading } = useCart();
+  const { currency } = useStoreSettings();
   const { toast } = useToast();
   const [updatingItems, setUpdatingItems] = useState<Set<string>>(new Set());
 
@@ -177,7 +179,7 @@ const Cart = () => {
                             {item.product?.name || 'Unknown Product'}
                           </h3>
                            <p className="text-xl font-bold text-primary">
-                             PKR {item.product?.price?.toFixed(2) || '0.00'}
+                             {currency} {item.product?.price?.toFixed(2) || '0.00'}
                            </p>
                         </div>
 
@@ -217,7 +219,7 @@ const Cart = () => {
                         {/* Item Total */}
                         <div className="text-right min-w-0">
                            <p className="text-lg font-semibold text-foreground">
-                             PKR {((item.product?.price || 0) * item.quantity).toFixed(2)}
+                             {currency} {((item.product?.price || 0) * item.quantity).toFixed(2)}
                            </p>
                         </div>
 
@@ -246,7 +248,7 @@ const Cart = () => {
                   <CardContent className="space-y-4">
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Subtotal ({cartCount} items)</span>
-                      <span className="font-semibold">PKR {cartTotal.toFixed(2)}</span>
+                      <span className="font-semibold">{currency} {cartTotal.toFixed(2)}</span>
                     </div>
                     
                     <div className="flex justify-between">
@@ -263,7 +265,7 @@ const Cart = () => {
                     
                     <div className="flex justify-between text-lg font-bold">
                       <span>Total</span>
-                      <span>PKR {cartTotal.toFixed(2)}</span>
+                      <span>{currency} {cartTotal.toFixed(2)}</span>
                     </div>
                     
                     <Button 
@@ -280,7 +282,7 @@ const Cart = () => {
                     
                     <div className="pt-4">
                       <Badge variant="secondary" className="w-full justify-center py-2">
-                        Free shipping on orders over PKR 10,000
+                        Free shipping on orders over {currency} 10,000
                       </Badge>
                     </div>
                   </CardContent>

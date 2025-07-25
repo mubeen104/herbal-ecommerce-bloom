@@ -233,7 +233,7 @@ export default function AdminSettings() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="shippingRate" className="text-sm font-medium">Shipping Rate ($)</Label>
+                <Label htmlFor="shippingRate" className="text-sm font-medium">Shipping Rate ({localStoreSettings.currency || 'Currency'})</Label>
                 <Input
                   id="shippingRate"
                   type="number"
@@ -244,7 +244,7 @@ export default function AdminSettings() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="freeShippingThreshold" className="text-sm font-medium">Free Shipping Threshold ($)</Label>
+                <Label htmlFor="freeShippingThreshold" className="text-sm font-medium">Free Shipping Threshold ({localStoreSettings.currency || 'Currency'})</Label>
                 <Input
                   id="freeShippingThreshold"
                   type="number"

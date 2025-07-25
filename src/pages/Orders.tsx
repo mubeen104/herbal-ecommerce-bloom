@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useStoreSettings } from "@/hooks/useStoreSettings";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -28,6 +29,7 @@ interface Order {
 
 const Orders = () => {
   const { user } = useAuth();
+  const { currency } = useStoreSettings();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -198,11 +200,11 @@ const Orders = () => {
                               {item.products.name}
                             </p>
                             <p className="text-sm text-muted-foreground">
-                              Quantity: {item.quantity} × PKR {item.price}
+                              Quantity: {item.quantity} × {currency} {item.price}
                             </p>
                           </div>
                           <p className="font-medium text-foreground">
-                            PKR {item.total}
+                            {currency} {item.total}
                           </p>
                         </div>
                       ))}
@@ -212,7 +214,7 @@ const Orders = () => {
                     <div className="flex items-center justify-between pt-4 border-t border-border">
                       <p className="text-lg font-semibold text-foreground">Total</p>
                       <p className="text-lg font-semibold text-primary">
-                        PKR {order.total_amount}
+                        {currency} {order.total_amount}
                       </p>
                     </div>
                   </div>

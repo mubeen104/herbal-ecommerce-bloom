@@ -6,6 +6,7 @@ import { Heart, ShoppingBag, Star, Eye, ShoppingCart } from "lucide-react";
 import { useFeaturedProducts } from "@/hooks/useProducts";
 import { useCart } from "@/hooks/useCart";
 import { useAuth } from "@/contexts/AuthContext";
+import { useStoreSettings } from "@/hooks/useStoreSettings";
 import { AuthModal } from "@/components/auth/AuthModal";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useState } from "react";
@@ -16,6 +17,7 @@ const FeaturedProducts = () => {
   const { data: products = [], isLoading } = useFeaturedProducts();
   const { addToCart } = useCart();
   const { user } = useAuth();
+  const { currency } = useStoreSettings();
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -171,11 +173,11 @@ const FeaturedProducts = () => {
                               <div>
                                 <div className="flex items-center gap-2 mb-2">
                                    <span className="text-2xl font-bold">
-                                     PKR {selectedProduct.price.toFixed(2)}
+                                     {currency} {selectedProduct.price.toFixed(2)}
                                    </span>
                                    {selectedProduct.compare_price && selectedProduct.compare_price > selectedProduct.price && (
                                      <span className="text-lg text-muted-foreground line-through">
-                                       PKR {selectedProduct.compare_price.toFixed(2)}
+                                       {currency} {selectedProduct.compare_price.toFixed(2)}
                                      </span>
                                    )}
                                 </div>
@@ -266,11 +268,11 @@ const FeaturedProducts = () => {
                   {/* Price */}
                   <div className="flex items-center gap-2 mb-4">
                     <span className="font-bold text-xl text-foreground">
-                      PKR {product.price.toFixed(2)}
+                      {currency} {product.price.toFixed(2)}
                     </span>
                     {product.compare_price && product.compare_price > product.price && (
                       <span className="text-sm text-muted-foreground line-through">
-                        PKR {product.compare_price.toFixed(2)}
+                        {currency} {product.compare_price.toFixed(2)}
                       </span>
                     )}
                   </div>

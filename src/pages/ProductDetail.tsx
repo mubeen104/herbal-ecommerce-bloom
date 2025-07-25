@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useCart } from '@/hooks/useCart';
+import { useStoreSettings } from '@/hooks/useStoreSettings';
 import { useToast } from '@/hooks/use-toast';
 import { Product } from '@/hooks/useProducts';
 import { ReviewForm } from '@/components/reviews/ReviewForm';
@@ -67,6 +68,7 @@ const ProductDetail = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { addToCart } = useCart();
+  const { currency, freeShippingThreshold } = useStoreSettings();
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
 
@@ -198,10 +200,10 @@ const ProductDetail = () => {
             {/* Price */}
             <div className="space-y-2">
               <div className="flex items-center space-x-4">
-                 <span className="text-3xl font-bold text-primary">PKR {product.price.toFixed(2)}</span>
+                 <span className="text-3xl font-bold text-primary">{currency} {product.price.toFixed(2)}</span>
                  {product.compare_price && product.compare_price > product.price && (
                    <span className="text-xl text-muted-foreground line-through">
-                     PKR {product.compare_price.toFixed(2)}
+                     {currency} {product.compare_price.toFixed(2)}
                    </span>
                  )}
               </div>
@@ -282,7 +284,7 @@ const ProductDetail = () => {
             <div className="space-y-3 pt-6 border-t border-border">
               <div className="flex items-center space-x-3 text-sm text-muted-foreground">
                 <Truck className="w-5 h-5" />
-                <span>Free shipping on orders over PKR 10,000</span>
+                <span>Free shipping on orders over {currency} {freeShippingThreshold.toFixed(0)}</span>
               </div>
               <div className="flex items-center space-x-3 text-sm text-muted-foreground">
                 <Shield className="w-5 h-5" />
@@ -381,7 +383,7 @@ const ProductDetail = () => {
                   <div>
                     <h4 className="font-semibold text-foreground mb-3">Shipping & Returns</h4>
                     <div className="text-sm text-muted-foreground space-y-2">
-                      <p>• Free standard shipping on orders over PKR 10,000</p>
+                      <p>• Free standard shipping on orders over {currency} {freeShippingThreshold.toFixed(0)}</p>
                       <p>• Express shipping available at checkout</p>
                       <p>• 30-day return policy</p>
                       <p>• Returns must be in original condition</p>

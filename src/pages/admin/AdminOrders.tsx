@@ -9,6 +9,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useStoreSettings } from '@/hooks/useStoreSettings';
 
 interface Order {
   id: string;
@@ -44,6 +45,7 @@ export default function AdminOrders() {
   const [showOrderDetails, setShowOrderDetails] = useState(false);
   const [editingStatus, setEditingStatus] = useState<string>('');
 
+  const { currency } = useStoreSettings();
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -382,7 +384,7 @@ export default function AdminOrders() {
                       </TableCell>
                       <TableCell className="py-4">
                         <div className="font-semibold text-lg">
-                          PKR {Number(order.total_amount).toFixed(2)}
+                          {currency} {Number(order.total_amount).toFixed(2)}
                         </div>
                         <p className="text-sm text-muted-foreground capitalize">
                           {order.payment_status || 'pending'}
@@ -456,7 +458,7 @@ export default function AdminOrders() {
                   </div>
                   <div>
                     <label className="text-sm font-medium text-muted-foreground">Total Amount</label>
-                    <p className="font-medium text-lg">PKR {Number(selectedOrder.total_amount).toFixed(2)}</p>
+                    <p className="font-medium text-lg">{currency} {Number(selectedOrder.total_amount).toFixed(2)}</p>
                   </div>
                   <div>
                     <label className="text-sm font-medium text-muted-foreground">Order Date</label>
@@ -580,8 +582,8 @@ export default function AdminOrders() {
                               <TableCell className="font-medium">{item.products?.name}</TableCell>
                               <TableCell>{item.products?.sku}</TableCell>
                               <TableCell>{item.quantity}</TableCell>
-                              <TableCell>PKR {Number(item.price).toFixed(2)}</TableCell>
-                              <TableCell>PKR {Number(item.total).toFixed(2)}</TableCell>
+                               <TableCell>{currency} {Number(item.price).toFixed(2)}</TableCell>
+                               <TableCell>{currency} {Number(item.total).toFixed(2)}</TableCell>
                             </TableRow>
                           ))}
                         </TableBody>

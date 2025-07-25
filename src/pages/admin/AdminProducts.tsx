@@ -447,7 +447,7 @@ export default function AdminProducts() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="price">Price (PKR) *</Label>
+                    <Label htmlFor="price">Price (Currency) *</Label>
                     <Input
                       id="price"
                       type="number"
@@ -891,7 +891,7 @@ export default function AdminProducts() {
                       </TableCell>
                       <TableCell className="py-4">
                         <div className="flex items-center font-semibold">
-                          <span className="text-xs text-muted-foreground mr-1">PKR</span>
+                          <span className="text-xs text-muted-foreground mr-1">Price</span>
                           <span className="text-lg">{product.price.toFixed(2)}</span>
                         </div>
                       </TableCell>

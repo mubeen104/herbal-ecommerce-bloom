@@ -13,6 +13,7 @@ import { ShoppingCart, Eye, Search, Filter, Star } from 'lucide-react';
 import { useProducts } from '@/hooks/useProducts';
 import { useCategories } from '@/hooks/useCategories';
 import { useCart } from '@/hooks/useCart';
+import { useStoreSettings } from '@/hooks/useStoreSettings';
 import { useToast } from '@/hooks/use-toast';
 
 export default function Shop() {
@@ -33,6 +34,7 @@ export default function Shop() {
   const { data: products, isLoading: productsLoading } = useProducts();
   const { data: categories, isLoading: categoriesLoading } = useCategories();
   const { addToCart } = useCart();
+  const { currency } = useStoreSettings();
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -239,11 +241,11 @@ export default function Shop() {
                                 <div>
                                   <div className="flex items-center gap-2 mb-2">
                                      <span className="text-2xl font-bold">
-                                       PKR {selectedProduct.price.toFixed(2)}
+                                       {currency} {selectedProduct.price.toFixed(2)}
                                      </span>
                                      {selectedProduct.compare_price && selectedProduct.compare_price > selectedProduct.price && (
                                        <span className="text-lg text-muted-foreground line-through">
-                                         PKR {selectedProduct.compare_price.toFixed(2)}
+                                         {currency} {selectedProduct.compare_price.toFixed(2)}
                                        </span>
                                      )}
                                   </div>
@@ -320,11 +322,11 @@ export default function Shop() {
                     {/* Price */}
                     <div className="flex items-center gap-2 mb-4">
                       <span className="font-bold text-xl text-foreground">
-                        PKR {product.price.toFixed(2)}
+                        {currency} {product.price.toFixed(2)}
                       </span>
                       {product.compare_price && product.compare_price > product.price && (
                         <span className="text-sm text-muted-foreground line-through">
-                          PKR {product.compare_price.toFixed(2)}
+                          {currency} {product.compare_price.toFixed(2)}
                         </span>
                       )}
                     </div>

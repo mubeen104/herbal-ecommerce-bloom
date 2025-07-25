@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { useStoreSettings } from "@/hooks/useStoreSettings";
 
 interface Order {
   id: string;
@@ -42,6 +43,7 @@ interface Order {
 
 const OrderConfirmation = () => {
   const { orderId } = useParams<{ orderId: string }>();
+  const { currency } = useStoreSettings();
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -267,11 +269,11 @@ const OrderConfirmation = () => {
                           {item.products.name}
                         </h4>
                         <p className="text-sm text-muted-foreground">
-                          Qty: {item.quantity} × PKR {item.price.toFixed(2)}
+                          Qty: {item.quantity} × {currency} {item.price.toFixed(2)}
                         </p>
                       </div>
                       <div className="text-sm font-medium">
-                        PKR {item.total.toFixed(2)}
+                        {currency} {item.total.toFixed(2)}
                       </div>
                     </div>
                   ))}
@@ -285,22 +287,22 @@ const OrderConfirmation = () => {
                 <CardContent className="space-y-2">
                   <div className="flex justify-between text-sm">
                     <span>Subtotal</span>
-                    <span>PKR {order.subtotal.toFixed(2)}</span>
+                    <span>{currency} {order.subtotal.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span>Shipping</span>
                     <span>
-                      {order.shipping_amount === 0 ? "Free" : `PKR ${order.shipping_amount.toFixed(2)}`}
+                      {order.shipping_amount === 0 ? "Free" : `${currency} ${order.shipping_amount.toFixed(2)}`}
                     </span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span>Tax</span>
-                    <span>PKR {order.tax_amount.toFixed(2)}</span>
+                    <span>{currency} {order.tax_amount.toFixed(2)}</span>
                   </div>
                   <Separator />
                   <div className="flex justify-between text-lg font-bold">
                     <span>Total</span>
-                    <span>PKR {order.total_amount.toFixed(2)}</span>
+                    <span>{currency} {order.total_amount.toFixed(2)}</span>
                   </div>
                 </CardContent>
               </Card>
