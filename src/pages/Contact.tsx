@@ -227,7 +227,7 @@ const Contact = () => {
 
             {/* Additional Info Card */}
             <Card>
-              <CardContent className="pt-6">
+              <div className="p-6">
                 <h3 className="font-semibold text-lg mb-3">Business Hours</h3>
                 <div className="space-y-2 text-muted-foreground">
                   <div className="flex justify-between">
@@ -239,7 +239,7 @@ const Contact = () => {
                     <span>Closed</span>
                   </div>
                 </div>
-              </CardContent>
+              </div>
             </Card>
           </div>
         </div>
