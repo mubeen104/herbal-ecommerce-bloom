@@ -56,34 +56,44 @@ export default function AdminUsers() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Fetch users with roles
+  // Fetch users with roles - optimized approach
   const { data: users = [], isLoading } = useQuery({
     queryKey: ['admin-users'],
     queryFn: async () => {
-      // First get all profiles
+      console.log('Fetching users and roles...');
+      
+      // Get all profiles first
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('*')
         .order('created_at', { ascending: false });
       
-      if (profilesError) throw profilesError;
+      if (profilesError) {
+        console.error('Error fetching profiles:', profilesError);
+        throw profilesError;
+      }
 
-      // Then get all user roles
+      // Get all user roles
       const { data: userRoles, error: rolesError } = await supabase
         .from('user_roles')
         .select('user_id, role');
       
-      if (rolesError) throw rolesError;
+      if (rolesError) {
+        console.error('Error fetching user roles:', rolesError);
+        throw rolesError;
+      }
 
-      // Combine the data - include ALL users, even those without roles
-      const usersWithRoles = profiles?.map(profile => ({
+      // Map profiles with their roles
+      const usersWithRoles = (profiles || []).map(profile => ({
         ...profile,
-        user_roles: userRoles?.filter(role => role.user_id === profile.user_id) || []
-      })) || [];
+        user_roles: (userRoles || [])
+          .filter(role => role.user_id === profile.user_id)
+          .map(role => ({ role: role.role }))
+      }));
 
-      console.log('All profiles:', profiles?.length);
-      console.log('All user roles:', userRoles?.length);
-      console.log('Users with roles:', usersWithRoles?.length);
+      console.log('Profiles fetched:', profiles?.length || 0);
+      console.log('User roles fetched:', userRoles?.length || 0);
+      console.log('Users with roles mapped:', usersWithRoles.length);
       console.log('Sample user:', usersWithRoles[0]);
 
       return usersWithRoles;
