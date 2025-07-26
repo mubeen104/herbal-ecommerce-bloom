@@ -142,8 +142,8 @@ const Checkout = () => {
         cartItems: cartItems.map(item => ({
           productId: item.product_id,
           quantity: item.quantity,
-          price: item.product?.price || 0,
-          total: (item.product?.price || 0) * item.quantity,
+          price: item.products?.price || 0,
+          total: (item.products?.price || 0) * item.quantity,
         })),
       };
 
@@ -169,8 +169,8 @@ const Checkout = () => {
   };
 
   const getMainImage = (item: any) => {
-    if (item.product?.product_images && item.product.product_images.length > 0) {
-      return item.product.product_images.sort((a: any, b: any) => a.sort_order - b.sort_order)[0]?.image_url;
+    if (item.products?.product_images && item.products.product_images.length > 0) {
+      return item.products.product_images.sort((a: any, b: any) => a.sort_order - b.sort_order)[0]?.image_url;
     }
     return "/placeholder.svg";
   };
@@ -484,19 +484,19 @@ const Checkout = () => {
                       <div key={item.id} className="flex items-center space-x-3">
                         <img
                           src={getMainImage(item)}
-                          alt={item.product?.name || "Product"}
+                          alt={item.products?.name || "Product"}
                           className="h-16 w-16 object-cover rounded-lg border border-border"
                         />
                         <div className="flex-1 min-w-0">
                           <h4 className="font-medium text-sm truncate">
-                            {item.product?.name || "Unknown Product"}
+                            {item.products?.name || "Unknown Product"}
                           </h4>
                           <p className="text-sm text-muted-foreground">
                             Qty: {item.quantity}
                           </p>
                         </div>
                         <div className="text-sm font-medium">
-                          {currency} {((item.product?.price || 0) * item.quantity).toFixed(2)}
+                          {currency} {((item.products?.price || 0) * item.quantity).toFixed(2)}
                         </div>
                       </div>
                     ))}

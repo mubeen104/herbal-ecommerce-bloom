@@ -8,7 +8,7 @@ export interface CartItem {
   created_at: string;
   updated_at: string;
   user_id: string;
-  product?: {
+  products?: {
     id: string;
     name: string;
     price: number;
@@ -147,7 +147,7 @@ export const useCart = () => {
 
   const cartCount = cartItems?.reduce((total, item) => total + item.quantity, 0) || 0;
   const cartTotal = cartItems?.reduce((total, item) => {
-    const price = item.product?.price || 0;
+    const price = item.products?.price || 0;
     return total + (price * item.quantity);
   }, 0) || 0;
 
