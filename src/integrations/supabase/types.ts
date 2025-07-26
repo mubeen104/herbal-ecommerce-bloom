@@ -623,6 +623,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      ensure_user_has_role: {
+        Args: { _user_id: string }
+        Returns: undefined
+      }
       generate_order_number: {
         Args: Record<PropertyKey, never>
         Returns: string
@@ -639,6 +643,10 @@ export type Database = {
         Returns: boolean
       }
       promote_to_admin: {
+        Args: { _email: string }
+        Returns: undefined
+      }
+      remove_admin_role: {
         Args: { _email: string }
         Returns: undefined
       }
