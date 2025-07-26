@@ -226,21 +226,6 @@ const Contact = () => {
             </Card>
 
             {/* Additional Info Card */}
-            <Card>
-              <div className="p-6">
-                <h3 className="font-semibold text-lg mb-3">Business Hours</h3>
-                <div className="space-y-2 text-muted-foreground">
-                  <div className="flex justify-between">
-                    <span>Monday - Friday</span>
-                    <span>10:00 AM - 6:00 PM</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Saturday & Sunday</span>
-                    <span>Closed</span>
-                  </div>
-                </div>
-              </div>
-            </Card>
           </div>
         </div>
       </main>
