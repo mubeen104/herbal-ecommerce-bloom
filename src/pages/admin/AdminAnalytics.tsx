@@ -60,13 +60,12 @@ export default function AdminAnalytics() {
         { data: ordersByStatus },
         { data: topProducts },
         { data: recentActivity },
-        { data: totalOrders }
+        { count: totalOrdersCount }
       ] = await Promise.all([
-        // Revenue data with time filter
+        // Revenue data with time filter - get all orders regardless of payment status
         supabase
           .from('orders')
-          .select('total_amount, created_at')
-          .eq('payment_status', 'completed')
+          .select('total_amount, created_at, status')
           .gte('created_at', fromDate)
           .lte('created_at', toDate),
         
@@ -88,7 +87,7 @@ export default function AdminAnalytics() {
           .gte('orders.created_at', fromDate)
           .lte('orders.created_at', toDate),
         
-        // Recent activity with time filter
+        // Recent activity with time filter - simplified query
         supabase
           .from('orders')
           .select(`
@@ -97,18 +96,17 @@ export default function AdminAnalytics() {
             total_amount,
             status,
             created_at,
-            user_id,
-            profiles!inner(first_name, last_name)
+            user_id
           `)
           .gte('created_at', fromDate)
           .lte('created_at', toDate)
           .order('created_at', { ascending: false })
           .limit(10),
 
-        // Total orders count
+        // Total orders count with time filter
         supabase
           .from('orders')
-          .select('id', { count: 'exact' })
+          .select('*', { count: 'exact', head: true })
           .gte('created_at', fromDate)
           .lte('created_at', toDate),
 
@@ -116,27 +114,29 @@ export default function AdminAnalytics() {
         Promise.resolve({ data: [] })
       ]);
 
-      // Process revenue by time period
-      const periodRevenue = revenueData?.reduce((acc: any, order: any) => {
-        const date = new Date(order.created_at);
-        let key: string;
-        
-        // Determine grouping based on date range
-        const daysDiff = Math.ceil((dateRange.to.getTime() - dateRange.from.getTime()) / (1000 * 60 * 60 * 24));
-        
-        if (daysDiff <= 7) {
-          key = format(date, 'MMM dd');
-        } else if (daysDiff <= 90) {
-          const weekStart = new Date(date);
-          weekStart.setDate(date.getDate() - date.getDay());
-          key = format(weekStart, 'MMM dd');
-        } else {
-          key = format(date, 'MMM yyyy');
-        }
-        
-        acc[key] = (acc[key] || 0) + Number(order.total_amount);
-        return acc;
-      }, {}) || {};
+      // Process revenue by time period - include all orders with completed status
+      const periodRevenue = revenueData
+        ?.filter((order: any) => order.status === 'completed')
+        ?.reduce((acc: any, order: any) => {
+          const date = new Date(order.created_at);
+          let key: string;
+          
+          // Determine grouping based on date range
+          const daysDiff = Math.ceil((dateRange.to.getTime() - dateRange.from.getTime()) / (1000 * 60 * 60 * 24));
+          
+          if (daysDiff <= 7) {
+            key = format(date, 'MMM dd');
+          } else if (daysDiff <= 90) {
+            const weekStart = new Date(date);
+            weekStart.setDate(date.getDate() - date.getDay());
+            key = format(weekStart, 'MMM dd');
+          } else {
+            key = format(date, 'MMM yyyy');
+          }
+          
+          acc[key] = (acc[key] || 0) + Number(order.total_amount);
+          return acc;
+        }, {}) || {};
 
       // Process orders by status
       const statusCounts = ordersByStatus?.reduce((acc: any, order: any) => {
@@ -181,7 +181,7 @@ export default function AdminAnalytics() {
         topSellingProducts,
         recentActivity: recentActivity || [],
         totalRevenue,
-        totalOrders: totalOrders?.length || 0,
+        totalOrders: totalOrdersCount || 0,
         totalCustomers: uniqueCustomers
       };
     }
@@ -474,7 +474,7 @@ export default function AdminAnalytics() {
                 <div className="space-y-1">
                   <p className="font-semibold text-foreground">{order.order_number}</p>
                   <p className="text-sm text-muted-foreground">
-                    {order.profiles?.first_name || 'Customer'} {order.profiles?.last_name || ''}
+                    Order #{order.id.slice(0, 8)}...
                   </p>
                   <p className="text-xs text-muted-foreground">
                     {new Date(order.created_at).toLocaleString()}
