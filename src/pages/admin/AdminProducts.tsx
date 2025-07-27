@@ -10,7 +10,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Plus, Edit, Trash2, Package, DollarSign, Eye, EyeOff, Search, Upload, Image, CheckSquare, Square, AlertTriangle, ExternalLink, X, ImageIcon } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -36,6 +36,8 @@ interface ProductImage {
   image_url: string;
   alt_text: string;
   sort_order: number;
+  file?: File; // For file uploads
+  isUploading?: boolean; // Track upload status
 }
 
 export default function AdminProducts() {
@@ -46,6 +48,7 @@ export default function AdminProducts() {
   const [showBulkActions, setShowBulkActions] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [productImages, setProductImages] = useState<ProductImage[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
     name: '',
     price: '',
@@ -280,7 +283,8 @@ export default function AdminProducts() {
     setProductImages([...productImages, {
       image_url: '',
       alt_text: '',
-      sort_order: productImages.length
+      sort_order: productImages.length,
+      isUploading: false
     }]);
   };
 
@@ -292,6 +296,91 @@ export default function AdminProducts() {
     const updatedImages = [...productImages];
     updatedImages[index] = { ...updatedImages[index], [field]: value };
     setProductImages(updatedImages);
+  };
+
+  // File upload function
+  const uploadFile = async (file: File, index: number) => {
+    try {
+      // Mark as uploading
+      const updatedImages = [...productImages];
+      updatedImages[index] = { ...updatedImages[index], isUploading: true };
+      setProductImages(updatedImages);
+
+      // Generate unique filename
+      const fileExt = file.name.split('.').pop();
+      const fileName = `product-${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+      const filePath = fileName;
+
+      // Upload file to Supabase storage
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('product-images')
+        .upload(filePath, file);
+
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      // Get public URL
+      const { data: urlData } = supabase.storage
+        .from('product-images')
+        .getPublicUrl(filePath);
+
+      // Update image with URL
+      const finalUpdatedImages = [...productImages];
+      finalUpdatedImages[index] = {
+        ...finalUpdatedImages[index],
+        image_url: urlData.publicUrl,
+        isUploading: false,
+        file: undefined
+      };
+      setProductImages(finalUpdatedImages);
+
+      toast({
+        title: "Success",
+        description: "Image uploaded successfully.",
+      });
+
+    } catch (error: any) {
+      console.error('Upload error:', error);
+      
+      // Remove uploading state
+      const updatedImages = [...productImages];
+      updatedImages[index] = { ...updatedImages[index], isUploading: false };
+      setProductImages(updatedImages);
+
+      toast({
+        title: "Upload Error",
+        description: error.message || "Failed to upload image.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        toast({
+          title: "Invalid File",
+          description: "Please select an image file.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: "File Too Large",
+          description: "Please select an image smaller than 5MB.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      uploadFile(file, index);
+    }
   };
 
   const handleEdit = async (product: Product) => {
@@ -564,30 +653,79 @@ export default function AdminProducts() {
                           variant="outline"
                           size="sm"
                           onClick={() => removeImage(index)}
+                          disabled={image.isUploading}
                         >
                           <X className="h-4 w-4" />
                         </Button>
                       </div>
                       
-                      <div className="space-y-2">
-                        <Input
-                          placeholder="Image URL"
-                          value={image.image_url}
-                          onChange={(e) => updateImage(index, 'image_url', e.target.value)}
-                        />
-                        <Input
-                          placeholder="Alt text (optional)"
-                          value={image.alt_text}
-                          onChange={(e) => updateImage(index, 'alt_text', e.target.value)}
-                        />
+                      <div className="space-y-4">
+                        {/* File Upload Section */}
+                        <div className="space-y-2">
+                          <Label className="text-sm font-medium">Upload from Device</Label>
+                          <div className="flex items-center space-x-2">
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={(e) => handleFileChange(e, index)}
+                              disabled={image.isUploading}
+                              className="hidden"
+                              id={`file-upload-${index}`}
+                            />
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => document.getElementById(`file-upload-${index}`)?.click()}
+                              disabled={image.isUploading}
+                              className="w-full"
+                            >
+                              {image.isUploading ? (
+                                <>
+                                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current mr-2"></div>
+                                  Uploading...
+                                </>
+                              ) : (
+                                <>
+                                  <Upload className="h-4 w-4 mr-2" />
+                                  Choose Image File
+                                </>
+                              )}
+                            </Button>
+                          </div>
+                        </div>
+
+                        {/* URL Input Section */}
+                        <div className="space-y-2">
+                          <Label className="text-sm font-medium">Or Enter Image URL</Label>
+                          <Input
+                            placeholder="https://example.com/image.jpg"
+                            value={image.image_url}
+                            onChange={(e) => updateImage(index, 'image_url', e.target.value)}
+                            disabled={image.isUploading}
+                          />
+                        </div>
+
+                        {/* Alt Text */}
+                        <div className="space-y-2">
+                          <Label className="text-sm">Alt Text (optional)</Label>
+                          <Input
+                            placeholder="Describe the image for accessibility"
+                            value={image.alt_text}
+                            onChange={(e) => updateImage(index, 'alt_text', e.target.value)}
+                            disabled={image.isUploading}
+                          />
+                        </div>
                       </div>
                       
-                      {image.image_url && (
-                        <div className="mt-2">
+                      {/* Image Preview */}
+                      {image.image_url && !image.isUploading && (
+                        <div className="mt-3">
+                          <Label className="text-sm font-medium mb-2 block">Preview</Label>
                           <img
                             src={image.image_url}
                             alt={image.alt_text || `Product image ${index + 1}`}
-                            className="w-24 h-24 object-cover rounded border"
+                            className="w-32 h-32 object-cover rounded border shadow-sm"
                             onError={(e) => {
                               e.currentTarget.style.display = 'none';
                             }}
