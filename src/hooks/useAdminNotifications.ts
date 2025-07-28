@@ -39,7 +39,7 @@ export const useAdminNotifications = () => {
             id: `order-${payload.new.id}`,
             type: 'new_order',
             title: 'New Order Received',
-            message: `Order #${payload.new.order_number} for $${payload.new.total_amount}`,
+            message: `Order #${payload.new.order_number} for Rs ${payload.new.total_amount}`,
             created_at: payload.new.created_at,
             read: false,
             order_id: payload.new.id
@@ -78,7 +78,7 @@ export const useAdminNotifications = () => {
         id: `order-${order.id}`,
         type: 'new_order' as const,
         title: 'Order Received',
-        message: `Order #${order.order_number} - $${order.total_amount}`,
+        message: `Order #${order.order_number} - Rs ${order.total_amount}`,
         created_at: order.created_at,
         read: order.status !== 'pending',
         order_id: order.id

@@ -482,7 +482,7 @@ export default function AdminUsers() {
                           {userOrders.map((order: Order) => (
                             <TableRow key={order.id}>
                               <TableCell className="font-medium">{order.order_number}</TableCell>
-                              <TableCell>${order.total_amount}</TableCell>
+                              <TableCell>Rs {order.total_amount}</TableCell>
                               <TableCell>
                                 <Badge variant="outline">{order.status}</Badge>
                               </TableCell>

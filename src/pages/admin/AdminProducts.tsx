@@ -1030,7 +1030,7 @@ export default function AdminProducts() {
                       <TableCell className="py-4">
                         <div className="flex items-center font-semibold">
                           <span className="text-xs text-muted-foreground mr-1">Price</span>
-                          <span className="text-lg">{product.price.toFixed(2)}</span>
+                          <span className="text-lg">Rs {product.price.toFixed(2)}</span>
                         </div>
                       </TableCell>
                       <TableCell className="py-4">

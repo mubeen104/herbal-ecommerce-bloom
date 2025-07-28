@@ -281,7 +281,7 @@ export default function AdminDashboard() {
                     </div>
                     <div className="text-right space-y-2">
                       <p className="font-bold text-lg text-foreground">
-                        ${Number(order.total_amount).toFixed(2)}
+                        Rs {Number(order.total_amount).toFixed(2)}
                       </p>
                       <Badge className={getStatusColor(order.status)}>
                         {order.status}

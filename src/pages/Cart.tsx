@@ -179,7 +179,7 @@ const Cart = () => {
                             {item.products?.name || 'Unknown Product'}
                           </h3>
                            <p className="text-xl font-bold text-primary">
-                             {currency} {item.products?.price?.toFixed(2) || '0.00'}
+                             Rs {item.products?.price?.toFixed(2) || '0.00'}
                            </p>
                         </div>
 
@@ -219,7 +219,7 @@ const Cart = () => {
                         {/* Item Total */}
                         <div className="text-right min-w-0">
                            <p className="text-lg font-semibold text-foreground">
-                             {currency} {((item.products?.price || 0) * item.quantity).toFixed(2)}
+                             Rs {((item.products?.price || 0) * item.quantity).toFixed(2)}
                            </p>
                         </div>
 
@@ -248,7 +248,7 @@ const Cart = () => {
                   <CardContent className="space-y-4">
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Subtotal ({cartCount} items)</span>
-                      <span className="font-semibold">{currency} {cartTotal.toFixed(2)}</span>
+                      <span className="font-semibold">Rs {cartTotal.toFixed(2)}</span>
                     </div>
                     
                     <div className="flex justify-between">
@@ -265,7 +265,7 @@ const Cart = () => {
                     
                     <div className="flex justify-between text-lg font-bold">
                       <span>Total</span>
-                      <span>{currency} {cartTotal.toFixed(2)}</span>
+                      <span>Rs {cartTotal.toFixed(2)}</span>
                     </div>
                     
                     <Button 

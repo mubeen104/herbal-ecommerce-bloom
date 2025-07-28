@@ -269,11 +269,11 @@ const OrderConfirmation = () => {
                           {item.products.name}
                         </h4>
                         <p className="text-sm text-muted-foreground">
-                          Qty: {item.quantity} × {currency} {item.price.toFixed(2)}
+                          Qty: {item.quantity} × Rs {item.price.toFixed(2)}
                         </p>
                       </div>
                       <div className="text-sm font-medium">
-                        {currency} {item.total.toFixed(2)}
+                        Rs {item.total.toFixed(2)}
                       </div>
                     </div>
                   ))}
@@ -287,22 +287,22 @@ const OrderConfirmation = () => {
                 <CardContent className="space-y-2">
                   <div className="flex justify-between text-sm">
                     <span>Subtotal</span>
-                    <span>{currency} {order.subtotal.toFixed(2)}</span>
+                    <span>Rs {order.subtotal.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span>Shipping</span>
                     <span>
-                      {order.shipping_amount === 0 ? "Free" : `${currency} ${order.shipping_amount.toFixed(2)}`}
+                      {order.shipping_amount === 0 ? "Free" : `Rs ${order.shipping_amount.toFixed(2)}`}
                     </span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span>Tax</span>
-                    <span>{currency} {order.tax_amount.toFixed(2)}</span>
+                    <span>Rs {order.tax_amount.toFixed(2)}</span>
                   </div>
                   <Separator />
                   <div className="flex justify-between text-lg font-bold">
                     <span>Total</span>
-                    <span>{currency} {order.total_amount.toFixed(2)}</span>
+                    <span>Rs {order.total_amount.toFixed(2)}</span>
                   </div>
                 </CardContent>
               </Card>

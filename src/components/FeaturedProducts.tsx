@@ -173,11 +173,11 @@ const FeaturedProducts = () => {
                               <div>
                                 <div className="flex items-center gap-2 mb-2">
                                    <span className="text-2xl font-bold">
-                                     {currency} {selectedProduct.price.toFixed(2)}
+                                     Rs {selectedProduct.price.toFixed(2)}
                                    </span>
                                    {selectedProduct.compare_price && selectedProduct.compare_price > selectedProduct.price && (
                                      <span className="text-lg text-muted-foreground line-through">
-                                       {currency} {selectedProduct.compare_price.toFixed(2)}
+                                       Rs {selectedProduct.compare_price.toFixed(2)}
                                      </span>
                                    )}
                                 </div>
@@ -268,11 +268,11 @@ const FeaturedProducts = () => {
                   {/* Price */}
                   <div className="flex items-center gap-2 mb-4">
                     <span className="font-bold text-xl text-foreground">
-                      {currency} {product.price.toFixed(2)}
+                      Rs {product.price.toFixed(2)}
                     </span>
                     {product.compare_price && product.compare_price > product.price && (
                       <span className="text-sm text-muted-foreground line-through">
-                        {currency} {product.compare_price.toFixed(2)}
+                        Rs {product.compare_price.toFixed(2)}
                       </span>
                     )}
                   </div>
