@@ -36,11 +36,9 @@ interface CreateOrderData {
 export const useCheckout = () => {
   const createOrder = useMutation({
     mutationFn: async (orderData: CreateOrderData): Promise<any> => {
-      // Get current user
+      // Get current user (optional for guest orders)
       const { data: user, error: userError } = await supabase.auth.getUser();
-      if (userError || !user.user) {
-        throw new Error('You must be logged in to place an order');
-      }
+      const userId = user?.user?.id || null;
 
       // Generate order number
       const orderNumber = `NEH-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
@@ -49,7 +47,7 @@ export const useCheckout = () => {
       const { data: order, error: orderError } = await supabase
         .from('orders')
         .insert({
-          user_id: user.user.id,
+          user_id: userId,
           order_number: orderNumber,
           subtotal: orderData.subtotal,
           shipping_amount: orderData.shippingAmount,

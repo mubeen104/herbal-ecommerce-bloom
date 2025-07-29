@@ -260,7 +260,7 @@ export type Database = {
           tax_amount: number | null
           total_amount: number
           updated_at: string
-          user_id: string
+          user_id: string | null
         }
         Insert: {
           billing_address?: Json | null
@@ -281,7 +281,7 @@ export type Database = {
           tax_amount?: number | null
           total_amount: number
           updated_at?: string
-          user_id: string
+          user_id?: string | null
         }
         Update: {
           billing_address?: Json | null
@@ -302,7 +302,7 @@ export type Database = {
           tax_amount?: number | null
           total_amount?: number
           updated_at?: string
-          user_id?: string
+          user_id?: string | null
         }
         Relationships: []
       }
