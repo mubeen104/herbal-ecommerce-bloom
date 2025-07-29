@@ -36,9 +36,9 @@ interface CreateOrderData {
 export const useCheckout = () => {
   const createOrder = useMutation({
     mutationFn: async (orderData: CreateOrderData): Promise<any> => {
-      // Get current user (optional for guest orders)
-      const { data: user, error: userError } = await supabase.auth.getUser();
-      const userId = user?.user?.id || null;
+      // For guest orders, don't call getUser() - just use session
+      const { data: { session } } = await supabase.auth.getSession();
+      const userId = session?.user?.id || null;
 
       // Generate order number
       const orderNumber = `NEH-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
