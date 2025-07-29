@@ -81,25 +81,25 @@ const Contact = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30">
+    <div className="min-h-screen bg-background">
       <Header />
       
-      {/* Hero Section with Gradient */}
-      <section className="relative overflow-hidden bg-gradient-to-r from-primary/5 via-accent/5 to-primary/10">
+      {/* Hero Section */}
+      <section className="relative overflow-hidden bg-muted/20 border-b">
         <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg%20width%3D%2260%22%20height%3D%2260%22%20viewBox%3D%220%200%2060%2060%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Cg%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3Cg%20fill%3D%22%23059669%22%20fill-opacity%3D%220.03%22%3E%3Ccircle%20cx%3D%2230%22%20cy%3D%2230%22%20r%3D%224%22/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-30"></div>
-        <div className="relative container mx-auto px-4 py-20">
+        <div className="relative container mx-auto px-4 py-20 animate-fade-in">
           <div className="text-center max-w-4xl mx-auto">
-            <div className="inline-block p-1 bg-gradient-to-r from-primary to-accent rounded-full mb-6">
-              <div className="bg-background rounded-full px-6 py-2">
-                <span className="text-sm font-medium bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+            <div className="inline-block p-1 bg-primary/10 rounded-full mb-8 hover:bg-primary/20 transition-all duration-300 hover:scale-105">
+              <div className="bg-background rounded-full px-8 py-3 shadow-lg">
+                <span className="text-sm font-bold text-primary">
                   Get In Touch
                 </span>
               </div>
             </div>
-            <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-foreground via-primary to-accent bg-clip-text text-transparent leading-tight">
+            <h1 className="text-6xl md:text-7xl font-bold mb-8 text-foreground leading-tight animate-scale-in">
               Contact Us
             </h1>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed animate-fade-in" style={{ animationDelay: '0.2s' }}>
               We'd love to hear from you. Send us a message and we'll respond as soon as possible.
             </p>
           </div>
@@ -108,12 +108,12 @@ const Contact = () => {
 
       <main className="container mx-auto px-4 py-20">
         {/* Contact Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 max-w-7xl mx-auto animate-fade-in" style={{ animationDelay: '0.3s' }}>
           {/* Left Side - Contact Form */}
           <div className="lg:col-span-7">
-            <Card className="border-0 shadow-2xl bg-gradient-to-br from-card via-card to-muted/10 backdrop-blur-sm">
+            <Card className="border-2 shadow-2xl bg-card backdrop-blur-sm hover:shadow-3xl hover:border-primary/20 transition-all duration-500 hover:-translate-y-1">
               <CardHeader className="pb-8">
-                <CardTitle className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                <CardTitle className="text-3xl font-bold text-primary">
                   Send us a Message
                 </CardTitle>
                 <p className="text-muted-foreground mt-2">
@@ -123,7 +123,7 @@ const Contact = () => {
               <CardContent>
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
+                    <div className="space-y-2 transform hover:scale-105 transition-all duration-300">
                       <Label htmlFor="name" className="text-sm font-semibold">Name *</Label>
                       <Input
                         id="name"
@@ -133,11 +133,11 @@ const Contact = () => {
                         onChange={handleInputChange}
                         required
                         placeholder="Your full name"
-                        className="h-12 border-2 focus:border-primary/50 transition-all duration-300 rounded-xl"
+                        className="h-12 border-2 focus:border-primary focus:shadow-lg hover:border-primary/50 transition-all duration-300 rounded-xl"
                       />
                     </div>
 
-                    <div className="space-y-2">
+                    <div className="space-y-2 transform hover:scale-105 transition-all duration-300">
                       <Label htmlFor="phone" className="text-sm font-semibold">Phone Number</Label>
                       <Input
                         id="phone"
@@ -146,12 +146,12 @@ const Contact = () => {
                         value={formData.phone}
                         onChange={handleInputChange}
                         placeholder="+1 (555) 123-4567"
-                        className="h-12 border-2 focus:border-primary/50 transition-all duration-300 rounded-xl"
+                        className="h-12 border-2 focus:border-primary focus:shadow-lg hover:border-primary/50 transition-all duration-300 rounded-xl"
                       />
                     </div>
                   </div>
 
-                  <div className="space-y-2">
+                  <div className="space-y-2 transform hover:scale-105 transition-all duration-300">
                     <Label htmlFor="email" className="text-sm font-semibold">Email *</Label>
                     <Input
                       id="email"
@@ -161,11 +161,11 @@ const Contact = () => {
                       onChange={handleInputChange}
                       required
                       placeholder="your.email@example.com"
-                      className="h-12 border-2 focus:border-primary/50 transition-all duration-300 rounded-xl"
+                      className="h-12 border-2 focus:border-primary focus:shadow-lg hover:border-primary/50 transition-all duration-300 rounded-xl"
                     />
                   </div>
 
-                  <div className="space-y-2">
+                  <div className="space-y-2 transform hover:scale-105 transition-all duration-300">
                     <Label htmlFor="message" className="text-sm font-semibold">Message *</Label>
                     <Textarea
                       id="message"
@@ -175,14 +175,14 @@ const Contact = () => {
                       required
                       placeholder="Tell us how we can help you..."
                       rows={6}
-                      className="border-2 focus:border-primary/50 transition-all duration-300 rounded-xl resize-none"
+                      className="border-2 focus:border-primary focus:shadow-lg hover:border-primary/50 transition-all duration-300 rounded-xl resize-none"
                     />
                   </div>
 
                   <Button 
                     type="submit" 
                     disabled={isSubmitting}
-                    className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl"
+                    className="w-full h-14 text-lg font-semibold bg-primary hover:bg-primary/90 shadow-lg hover:shadow-2xl hover:scale-105 transition-all duration-300 rounded-xl"
                     size="lg"
                   >
                     {isSubmitting ? (
@@ -200,8 +200,8 @@ const Contact = () => {
           </div>
 
           {/* Right Side - Contact Information */}
-          <div className="lg:col-span-5 space-y-6">
-            <Card className="border-0 shadow-xl bg-gradient-to-br from-primary/5 to-accent/5 backdrop-blur-sm">
+          <div className="lg:col-span-5 space-y-6 animate-fade-in" style={{ animationDelay: '0.4s' }}>
+            <Card className="border-2 shadow-xl bg-card backdrop-blur-sm hover:shadow-2xl hover:border-primary/20 transition-all duration-300 hover:-translate-y-1">
               <CardHeader>
                 <CardTitle className="text-2xl font-bold">Get in Touch</CardTitle>
                 <p className="text-muted-foreground">
@@ -211,8 +211,8 @@ const Contact = () => {
               <CardContent className="space-y-6">
                 {/* Email */}
                 <div className="group">
-                  <div className="flex items-start space-x-4 p-4 rounded-xl hover:bg-primary/5 transition-all duration-300">
-                    <div className="bg-gradient-to-r from-primary to-accent p-3 rounded-xl shadow-lg group-hover:shadow-xl transition-all duration-300">
+                  <div className="flex items-start space-x-4 p-4 rounded-xl hover:bg-primary/5 hover:scale-105 transition-all duration-300">
+                    <div className="bg-primary p-3 rounded-xl shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all duration-300">
                       <Mail className="h-6 w-6 text-white" />
                     </div>
                     <div className="flex-1">
@@ -229,8 +229,8 @@ const Contact = () => {
 
                 {/* Phone */}
                 <div className="group">
-                  <div className="flex items-start space-x-4 p-4 rounded-xl hover:bg-primary/5 transition-all duration-300">
-                    <div className="bg-gradient-to-r from-accent to-primary p-3 rounded-xl shadow-lg group-hover:shadow-xl transition-all duration-300">
+                  <div className="flex items-start space-x-4 p-4 rounded-xl hover:bg-primary/5 hover:scale-105 transition-all duration-300">
+                    <div className="bg-accent p-3 rounded-xl shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all duration-300">
                       <Phone className="h-6 w-6 text-white" />
                     </div>
                     <div className="flex-1">
@@ -248,7 +248,7 @@ const Contact = () => {
             </Card>
 
             {/* Social Media Card */}
-            <Card className="border-0 shadow-xl bg-gradient-to-br from-accent/5 to-primary/5 backdrop-blur-sm">
+            <Card className="border-2 shadow-xl bg-card backdrop-blur-sm hover:shadow-2xl hover:border-primary/20 transition-all duration-300 hover:-translate-y-1">
               <CardHeader>
                 <CardTitle className="text-2xl font-bold">Follow Us</CardTitle>
                 <p className="text-muted-foreground">
@@ -266,9 +266,8 @@ const Contact = () => {
                       className="group relative overflow-hidden"
                       aria-label={social.label}
                     >
-                      <div className="bg-gradient-to-br from-primary/10 to-accent/10 hover:from-primary/20 hover:to-accent/20 p-6 rounded-2xl transition-all duration-300 group-hover:shadow-lg group-hover:-translate-y-1">
-                        <social.icon className="h-8 w-8 text-primary group-hover:scale-110 transition-transform duration-300 mx-auto" />
-                        <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-accent/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl"></div>
+                      <div className="bg-primary/10 hover:bg-primary/20 p-6 rounded-2xl transition-all duration-300 group-hover:shadow-lg group-hover:-translate-y-2 group-hover:scale-110">
+                        <social.icon className="h-8 w-8 text-primary group-hover:scale-125 transition-transform duration-300 mx-auto" />
                       </div>
                     </a>
                   ))}
@@ -277,9 +276,9 @@ const Contact = () => {
             </Card>
 
             {/* Quick Response Promise */}
-            <Card className="border-0 shadow-xl bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20">
+            <Card className="border-2 shadow-xl bg-green-50 dark:bg-green-950/20 hover:shadow-2xl hover:border-green-400/30 transition-all duration-300 hover:-translate-y-1">
               <CardContent className="p-6 text-center">
-                <div className="inline-flex items-center justify-center w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-full mb-4">
+                <div className="inline-flex items-center justify-center w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-full mb-4 hover:scale-110 transition-transform duration-300">
                   <svg className="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>

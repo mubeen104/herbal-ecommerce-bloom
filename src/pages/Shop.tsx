@@ -83,25 +83,25 @@ export default function Shop() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-background via-background to-muted/20">
+    <div className="min-h-screen flex flex-col bg-background">
       <Header />
       
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-r from-primary/10 via-accent/10 to-primary/5">
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg%20width%3D%2260%22%20height%3D%2260%22%20viewBox%3D%220%200%2060%2060%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Cg%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3Cg%20fill%3D%22%23059669%22%20fill-opacity%3D%220.02%22%3E%3Ccircle%20cx%3D%2230%22%20cy%3D%2230%22%20r%3D%224%22/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-40"></div>
-        <div className="relative container mx-auto px-4 py-16">
+      <section className="relative overflow-hidden bg-muted/20 border-b">
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg%20width%3D%2260%22%20height%3D%2260%22%20viewBox%3D%220%200%2060%2060%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Cg%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3Cg%20fill%3D%22%23059669%22%20fill-opacity%3D%220.03%22%3E%3Ccircle%20cx%3D%2230%22%20cy%3D%2230%22%20r%3D%224%22/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-30"></div>
+        <div className="relative container mx-auto px-4 py-20 animate-fade-in">
           <div className="text-center max-w-4xl mx-auto">
-            <div className="inline-block p-1 bg-gradient-to-r from-primary to-accent rounded-full mb-6">
-              <div className="bg-background rounded-full px-6 py-2">
-                <span className="text-sm font-medium bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+            <div className="inline-block p-1 bg-primary/10 rounded-full mb-8 hover:bg-primary/20 transition-all duration-300 hover:scale-105">
+              <div className="bg-background rounded-full px-8 py-3 shadow-lg">
+                <span className="text-sm font-bold text-primary">
                   Premium Collection
                 </span>
               </div>
             </div>
-            <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-foreground via-primary to-accent bg-clip-text text-transparent leading-tight">
+            <h1 className="text-6xl md:text-7xl font-bold mb-8 text-foreground leading-tight animate-scale-in">
               Shop
             </h1>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed animate-fade-in" style={{ animationDelay: '0.2s' }}>
               Discover our collection of premium natural products crafted for your wellness journey.
             </p>
           </div>
@@ -111,22 +111,22 @@ export default function Shop() {
       <main className="flex-1">
         <div className="container mx-auto px-4 py-12">
           {/* Enhanced Filters and Search */}
-          <Card className="mb-12 border-0 shadow-xl bg-gradient-to-r from-card/80 to-muted/20 backdrop-blur-sm">
+          <Card className="mb-12 border-2 shadow-xl bg-card backdrop-blur-sm hover:shadow-2xl transition-all duration-300 hover:border-primary/20">
             <CardContent className="p-8">
               <div className="flex flex-col lg:flex-row gap-6">
                 <div className="flex-1 relative group">
-                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5 group-focus-within:text-primary transition-colors" />
+                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5 group-focus-within:text-primary group-focus-within:scale-110 transition-all duration-300" />
                   <Input
                     placeholder="Search for natural products..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-12 h-14 text-lg border-2 focus:border-primary/50 rounded-xl transition-all duration-300 bg-background/50"
+                    className="pl-12 h-14 text-lg border-2 focus:border-primary focus:shadow-lg rounded-xl transition-all duration-300 bg-background hover:bg-muted/20"
                   />
                 </div>
                 
                 <div className="flex flex-col sm:flex-row gap-4 lg:w-auto">
                   <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                    <SelectTrigger className="w-full sm:w-56 h-14 border-2 rounded-xl">
+                    <SelectTrigger className="w-full sm:w-56 h-14 border-2 rounded-xl hover:border-primary/50 hover:shadow-md transition-all duration-300">
                       <div className="flex items-center">
                         <Filter className="h-5 w-5 mr-3 text-primary" />
                         <SelectValue placeholder="All Categories" />
@@ -143,7 +143,7 @@ export default function Shop() {
                   </Select>
 
                   <Select value={sortBy} onValueChange={setSortBy}>
-                    <SelectTrigger className="w-full sm:w-56 h-14 border-2 rounded-xl">
+                    <SelectTrigger className="w-full sm:w-56 h-14 border-2 rounded-xl hover:border-primary/50 hover:shadow-md transition-all duration-300">
                       <SelectValue placeholder="Sort by" />
                     </SelectTrigger>
                     <SelectContent className="rounded-xl border-2">
@@ -176,9 +176,9 @@ export default function Shop() {
               ))}
             </div>
           ) : sortedProducts?.length === 0 ? (
-            <Card className="border-0 shadow-xl bg-gradient-to-br from-muted/20 to-background">
+            <Card className="border-2 shadow-xl bg-muted/10 hover:shadow-2xl transition-all duration-300">
               <CardContent className="text-center py-20">
-                <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-primary/20 to-accent/20 rounded-full flex items-center justify-center">
+                <div className="w-24 h-24 mx-auto mb-6 bg-primary/10 rounded-full flex items-center justify-center hover:bg-primary/20 transition-all duration-300 hover:scale-110">
                   <Search className="h-12 w-12 text-muted-foreground" />
                 </div>
                 <h3 className="text-2xl font-bold mb-4">No products found</h3>
@@ -195,7 +195,7 @@ export default function Shop() {
               {sortedProducts?.map((product, index) => (
                 <Card 
                   key={product.id} 
-                  className="group overflow-hidden border-0 bg-gradient-to-br from-card to-muted/10 shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 animate-fade-in"
+                  className="group overflow-hidden border-2 bg-card shadow-lg hover:shadow-2xl hover:border-primary/30 transition-all duration-500 hover:-translate-y-3 hover:scale-105 animate-fade-in"
                   style={{ animationDelay: `${index * 0.1}s` }}
                 >
                   <div className="relative overflow-hidden">

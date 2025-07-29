@@ -8,9 +8,15 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <Hero />
-      <FeaturedProducts />
-      <Categories />
+      <div className="space-y-16">
+        <Hero />
+        <div className="animate-fade-in">
+          <FeaturedProducts />
+        </div>
+        <div className="animate-fade-in" style={{ animationDelay: '0.2s' }}>
+          <Categories />
+        </div>
+      </div>
       <Footer />
     </div>
   );
