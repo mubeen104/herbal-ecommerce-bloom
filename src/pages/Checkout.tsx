@@ -1,6 +1,6 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { ArrowLeft, CreditCard, Truck } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { ArrowLeft, CreditCard, Truck, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -8,10 +8,12 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
-import { useCart } from "@/hooks/useCart";
+import { Badge } from "@/components/ui/badge";
+import { useGuestCart } from "@/hooks/useGuestCart";
 import { useCheckout } from "@/hooks/useCheckout";
 import { useStoreSettings } from "@/hooks/useStoreSettings";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
@@ -28,12 +30,30 @@ interface Address {
   phone: string;
 }
 
+interface GuestInfo {
+  email: string;
+  firstName: string;
+  lastName: string;
+  phone: string;
+}
+
 const Checkout = () => {
   const navigate = useNavigate();
-  const { cartItems, cartTotal, cartCount, clearCart } = useCart();
+  const [searchParams] = useSearchParams();
+  const { cartItems, cartTotal, cartCount, clearCart, isGuest } = useGuestCart();
   const { createOrder, isCreatingOrder } = useCheckout();
   const { taxRate, shippingRate, freeShippingThreshold, currency } = useStoreSettings();
   const { toast } = useToast();
+  const { user } = useAuth();
+  
+  const isGuestCheckout = searchParams.get('guest') === 'true' || isGuest;
+
+  const [guestInfo, setGuestInfo] = useState<GuestInfo>({
+    email: "",
+    firstName: "",
+    lastName: "",
+    phone: "",
+  });
 
   const [shippingAddress, setShippingAddress] = useState<Address>({
     firstName: "",
@@ -99,7 +119,26 @@ const Checkout = () => {
     );
   };
 
+  const validateGuestInfo = (): boolean => {
+    return !!(
+      guestInfo.email &&
+      guestInfo.firstName &&
+      guestInfo.lastName &&
+      guestInfo.phone
+    );
+  };
+
   const handleSubmitOrder = async () => {
+    // Validate guest info for guest checkout
+    if (isGuestCheckout && !validateGuestInfo()) {
+      toast({
+        title: "Invalid guest information",
+        description: "Please fill in all required guest information fields.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     // Validate addresses
     if (!validateAddress(shippingAddress)) {
       toast({
@@ -142,15 +181,16 @@ const Checkout = () => {
         cartItems: cartItems.map(item => ({
           productId: item.product_id,
           quantity: item.quantity,
-          price: item.products?.price || 0,
-          total: (item.products?.price || 0) * item.quantity,
+          price: (item.products?.price || item.product?.price || 0),
+          total: (item.products?.price || item.product?.price || 0) * item.quantity,
         })),
+        guestInfo: isGuestCheckout ? guestInfo : undefined,
       };
 
       const order = await createOrder.mutateAsync(orderData);
       
       // Clear cart after successful order
-      await clearCart.mutateAsync();
+      await clearCart();
       
       toast({
         title: "Order placed successfully!",
@@ -169,8 +209,9 @@ const Checkout = () => {
   };
 
   const getMainImage = (item: any) => {
-    if (item.products?.product_images && item.products.product_images.length > 0) {
-      return item.products.product_images.sort((a: any, b: any) => a.sort_order - b.sort_order)[0]?.image_url;
+    const images = item.products?.product_images || item.product?.product_images;
+    if (images && images.length > 0) {
+      return images.sort((a: any, b: any) => a.sort_order - b.sort_order)[0]?.image_url;
     }
     return "/placeholder.svg";
   };
@@ -203,21 +244,86 @@ const Checkout = () => {
       <div className="min-h-screen bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Header */}
-          <div className="flex items-center space-x-4 mb-8">
-            <Button variant="ghost" size="icon" onClick={() => navigate("/cart")}>
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-            <div>
-              <h1 className="text-3xl font-bold text-foreground">Checkout</h1>
-              <p className="text-muted-foreground">
-                Review your order and complete your purchase
-              </p>
+          <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center space-x-4">
+              <Button variant="ghost" size="icon" onClick={() => navigate("/cart")}>
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+              <div>
+                <h1 className="text-3xl font-bold text-foreground">Checkout</h1>
+                <p className="text-muted-foreground">
+                  Review your order and complete your purchase
+                </p>
+              </div>
             </div>
+            {isGuestCheckout && (
+              <Badge variant="secondary" className="flex items-center space-x-2 px-3 py-1">
+                <User className="h-4 w-4" />
+                <span>Guest Checkout</span>
+              </Badge>
+            )}
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Left Column - Forms */}
             <div className="space-y-6">
+              {/* Guest Information - Only shown for guest checkout */}
+              {isGuestCheckout && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center space-x-2">
+                      <User className="h-5 w-5" />
+                      <span>Contact Information</span>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div>
+                      <Label htmlFor="guest-email">Email Address *</Label>
+                      <Input
+                        id="guest-email"
+                        type="email"
+                        value={guestInfo.email}
+                        onChange={(e) => setGuestInfo(prev => ({ ...prev, email: e.target.value }))}
+                        placeholder="your@email.com"
+                        required
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">
+                        You'll receive order confirmation and updates at this email.
+                      </p>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="guest-firstName">First Name *</Label>
+                        <Input
+                          id="guest-firstName"
+                          value={guestInfo.firstName}
+                          onChange={(e) => setGuestInfo(prev => ({ ...prev, firstName: e.target.value }))}
+                          required
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="guest-lastName">Last Name *</Label>
+                        <Input
+                          id="guest-lastName"
+                          value={guestInfo.lastName}
+                          onChange={(e) => setGuestInfo(prev => ({ ...prev, lastName: e.target.value }))}
+                          required
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <Label htmlFor="guest-phone">Phone Number *</Label>
+                      <Input
+                        id="guest-phone"
+                        type="tel"
+                        value={guestInfo.phone}
+                        onChange={(e) => setGuestInfo(prev => ({ ...prev, phone: e.target.value }))}
+                        required
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
               {/* Shipping Address */}
               <Card>
                 <CardHeader>
@@ -489,14 +595,14 @@ const Checkout = () => {
                         />
                         <div className="flex-1 min-w-0">
                           <h4 className="font-medium text-sm truncate">
-                            {item.products?.name || "Unknown Product"}
+                            {item.products?.name || item.product?.name || "Unknown Product"}
                           </h4>
                           <p className="text-sm text-muted-foreground">
                             Qty: {item.quantity}
                           </p>
                         </div>
                         <div className="text-sm font-medium">
-                          Rs {((item.products?.price || 0) * item.quantity).toFixed(2)}
+                          Rs {((item.products?.price || item.product?.price || 0) * item.quantity).toFixed(2)}
                         </div>
                       </div>
                     ))}

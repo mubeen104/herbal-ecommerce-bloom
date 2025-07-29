@@ -5,26 +5,30 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { useCart } from "@/hooks/useCart";
+import { useGuestCart } from "@/hooks/useGuestCart";
 import { useStoreSettings } from "@/hooks/useStoreSettings";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
+import { useAuth } from "@/contexts/AuthContext";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import CheckoutOptionsModal from "@/components/CheckoutOptionsModal";
 
 const Cart = () => {
   const navigate = useNavigate();
-  const { cartItems, cartTotal, cartCount, updateQuantity, removeFromCart, clearCart, isLoading } = useCart();
+  const { cartItems, cartTotal, cartCount, updateQuantity, removeFromCart, clearCart, isLoading } = useGuestCart();
   const { currency } = useStoreSettings();
   const { toast } = useToast();
+  const { user } = useAuth();
   const [updatingItems, setUpdatingItems] = useState<Set<string>>(new Set());
+  const [showCheckoutModal, setShowCheckoutModal] = useState(false);
 
   const handleQuantityChange = async (itemId: string, newQuantity: number) => {
     if (newQuantity < 0) return;
     
     setUpdatingItems(prev => new Set(prev).add(itemId));
     try {
-      await updateQuantity.mutateAsync({ itemId, quantity: newQuantity });
+      await updateQuantity({ itemId, quantity: newQuantity });
       if (newQuantity === 0) {
         toast({
           title: "Item removed",
@@ -49,7 +53,7 @@ const Cart = () => {
   const handleRemoveItem = async (itemId: string) => {
     setUpdatingItems(prev => new Set(prev).add(itemId));
     try {
-      await removeFromCart.mutateAsync(itemId);
+      await removeFromCart(itemId);
       toast({
         title: "Item removed",
         description: "Item has been removed from your cart.",
@@ -71,7 +75,7 @@ const Cart = () => {
 
   const handleClearCart = async () => {
     try {
-      await clearCart.mutateAsync();
+      await clearCart();
       toast({
         title: "Cart cleared",
         description: "All items have been removed from your cart.",
@@ -86,12 +90,19 @@ const Cart = () => {
   };
 
   const handleCheckout = () => {
-    navigate("/checkout");
+    if (user) {
+      // User is logged in, go directly to checkout
+      navigate("/checkout");
+    } else {
+      // User is not logged in, show checkout options modal
+      setShowCheckoutModal(true);
+    }
   };
 
   const getMainImage = (item: any) => {
-    if (item.products?.product_images && item.products.product_images.length > 0) {
-      return item.products.product_images.sort((a: any, b: any) => a.sort_order - b.sort_order)[0]?.image_url;
+    const images = item.products?.product_images || item.product?.product_images;
+    if (images && images.length > 0) {
+      return images.sort((a: any, b: any) => a.sort_order - b.sort_order)[0]?.image_url;
     }
     return "/placeholder.svg";
   };
@@ -176,10 +187,10 @@ const Cart = () => {
                         {/* Product Details */}
                         <div className="flex-1 min-w-0">
                           <h3 className="text-lg font-semibold text-foreground truncate">
-                            {item.products?.name || 'Unknown Product'}
+                            {item.products?.name || item.product?.name || 'Unknown Product'}
                           </h3>
                            <p className="text-xl font-bold text-primary">
-                             Rs {item.products?.price?.toFixed(2) || '0.00'}
+                             Rs {(item.products?.price || item.product?.price || 0).toFixed(2)}
                            </p>
                         </div>
 
@@ -219,7 +230,7 @@ const Cart = () => {
                         {/* Item Total */}
                         <div className="text-right min-w-0">
                            <p className="text-lg font-semibold text-foreground">
-                             Rs {((item.products?.price || 0) * item.quantity).toFixed(2)}
+                             Rs {((item.products?.price || item.product?.price || 0) * item.quantity).toFixed(2)}
                            </p>
                         </div>
 
@@ -293,6 +304,11 @@ const Cart = () => {
         </div>
       </div>
       <Footer />
+      
+      <CheckoutOptionsModal 
+        isOpen={showCheckoutModal} 
+        onClose={() => setShowCheckoutModal(false)} 
+      />
     </>
   );
 };

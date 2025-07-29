@@ -10,7 +10,7 @@ import { ShoppingCart, Eye, Search, Filter, Star } from 'lucide-react';
 import { useProducts } from '@/hooks/useProducts';
 import { useStoreSettings } from '@/hooks/useStoreSettings';
 import { useCategories } from '@/hooks/useCategories';
-import { useCart } from '@/hooks/useCart';
+import { useGuestCart } from '@/hooks/useGuestCart';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 
@@ -22,7 +22,7 @@ const ShopSection = () => {
 
   const { data: products, isLoading: productsLoading } = useProducts();
   const { data: categories, isLoading: categoriesLoading } = useCategories();
-  const { addToCart } = useCart();
+  const { addToCart, isLoading: cartLoading } = useGuestCart();
   const { currency } = useStoreSettings();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -66,14 +66,20 @@ const ShopSection = () => {
     }
   });
 
-  const handleAddToCart = (product: any) => {
-    addToCart.mutate(
-      { productId: product.id, quantity: 1 }
-    );
-    toast({
-      title: "Added to cart",
-      description: `${product.name} has been added to your cart.`,
-    });
+  const handleAddToCart = async (product: any) => {
+    try {
+      await addToCart(product.id, 1);
+      toast({
+        title: "Added to cart",
+        description: `${product.name} has been added to your cart.`,
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to add item to cart. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const getMainImage = (product: any) => {
@@ -215,7 +221,7 @@ const ShopSection = () => {
                   <div className="flex gap-2">
                     <Button
                       onClick={() => handleAddToCart(product)}
-                      disabled={addToCart.isPending || product.inventory_quantity === 0}
+                      disabled={cartLoading || product.inventory_quantity === 0}
                       className="flex-1"
                       variant="outline"
                     >
@@ -309,7 +315,7 @@ const ShopSection = () => {
 
                               <Button
                                 onClick={() => handleAddToCart(selectedProduct)}
-                                disabled={addToCart.isPending || selectedProduct.inventory_quantity === 0}
+                                disabled={cartLoading || selectedProduct.inventory_quantity === 0}
                                 className="w-full"
                                 size="lg"
                               >

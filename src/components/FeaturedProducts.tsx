@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Heart, ShoppingBag, Star, Eye, ShoppingCart } from "lucide-react";
 import { useFeaturedProducts } from "@/hooks/useProducts";
-import { useCart } from "@/hooks/useCart";
+import { useGuestCart } from "@/hooks/useGuestCart";
 import { useAuth } from "@/contexts/AuthContext";
 import { useStoreSettings } from "@/hooks/useStoreSettings";
 import { AuthModal } from "@/components/auth/AuthModal";
@@ -15,22 +15,27 @@ import { useToast } from "@/hooks/use-toast";
 
 const FeaturedProducts = () => {
   const { data: products = [], isLoading } = useFeaturedProducts();
-  const { addToCart } = useCart();
+  const { addToCart, isLoading: cartLoading } = useGuestCart();
   const { user } = useAuth();
   const { currency } = useStoreSettings();
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const handleAddToCart = (product: any) => {
-    if (!user) {
-      return;
+  const handleAddToCart = async (product: any) => {
+    try {
+      await addToCart(product.id, 1);
+      toast({
+        title: "Added to cart",
+        description: `${product.name} has been added to your cart.`,
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to add item to cart. Please try again.",
+        variant: "destructive",
+      });
     }
-    addToCart.mutate({ productId: product.id, quantity: 1 });
-    toast({
-      title: "Added to cart",
-      description: `${product.name} has been added to your cart.`,
-    });
   };
 
   const getMainImage = (product: any) => {
@@ -230,28 +235,15 @@ const FeaturedProducts = () => {
                                 </div>
                               </div>
 
-                              {user ? (
-                                <Button
-                                  onClick={() => handleAddToCart(selectedProduct)}
-                                  disabled={addToCart.isPending || selectedProduct.inventory_quantity === 0}
-                                  className="w-full"
-                                  size="lg"
-                                >
-                                  <ShoppingCart className="h-5 w-5 mr-2" />
-                                  {selectedProduct.inventory_quantity === 0 ? 'Out of Stock' : 'Add to Cart'}
-                                </Button>
-                              ) : (
-                                <AuthModal>
-                                  <Button 
-                                    className="w-full"
-                                    size="lg"
-                                    disabled={selectedProduct.inventory_quantity === 0}
-                                  >
-                                    <ShoppingCart className="h-5 w-5 mr-2" />
-                                    Add to Cart
-                                  </Button>
-                                </AuthModal>
-                              )}
+                              <Button
+                                onClick={() => handleAddToCart(selectedProduct)}
+                                disabled={cartLoading || selectedProduct.inventory_quantity === 0}
+                                className="w-full"
+                                size="lg"
+                              >
+                                <ShoppingCart className="h-5 w-5 mr-2" />
+                                {selectedProduct.inventory_quantity === 0 ? 'Out of Stock' : 'Add to Cart'}
+                              </Button>
                             </div>
                           </div>
                         )}
@@ -298,28 +290,15 @@ const FeaturedProducts = () => {
 
                   {/* Action Buttons */}
                   <div className="flex gap-2">
-                    {user ? (
-                      <Button
-                        onClick={() => handleAddToCart(product)}
-                        disabled={addToCart.isPending || product.inventory_quantity === 0}
-                        className="flex-1 h-9"
-                        variant="outline"
-                      >
-                        <ShoppingCart className="h-4 w-4 mr-2" />
-                        {product.inventory_quantity === 0 ? 'Out of Stock' : 'Add to Cart'}
-                      </Button>
-                    ) : (
-                      <AuthModal>
-                        <Button 
-                          className="flex-1 h-9"
-                          variant="outline"
-                          disabled={product.inventory_quantity === 0}
-                        >
-                          <ShoppingCart className="h-4 w-4 mr-2" />
-                          Add to Cart
-                        </Button>
-                      </AuthModal>
-                    )}
+                    <Button
+                      onClick={() => handleAddToCart(product)}
+                      disabled={cartLoading || product.inventory_quantity === 0}
+                      className="flex-1 h-9"
+                      variant="outline"
+                    >
+                      <ShoppingCart className="h-4 w-4 mr-2" />
+                      {product.inventory_quantity === 0 ? 'Out of Stock' : 'Add to Cart'}
+                    </Button>
                     
                     <Button
                       onClick={() => navigate(`/product/${product.id}`)}

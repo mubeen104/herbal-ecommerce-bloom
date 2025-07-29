@@ -3,7 +3,7 @@ import { Search, ShoppingBag, User, Menu, X, Leaf, LogOut, Settings } from "luci
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
-import { useCart } from "@/hooks/useCart";
+import { useGuestCart } from "@/hooks/useGuestCart";
 import { useStoreSettings } from "@/hooks/useStoreSettings";
 import { AuthModal } from "@/components/auth/AuthModal";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
@@ -13,7 +13,7 @@ const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const { user, signOut, isAdmin } = useAuth();
-  const { cartCount } = useCart();
+  const { cartCount } = useGuestCart();
   const { storeName } = useStoreSettings();
   const navigate = useNavigate();
 
