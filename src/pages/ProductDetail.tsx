@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useProductVariants, ProductVariant } from '@/hooks/useProductVariants';
+import { ProductVariantSelector } from '@/components/ProductVariantSelector';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
@@ -71,9 +73,11 @@ const ProductDetail = () => {
   const { currency, freeShippingThreshold } = useStoreSettings();
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
+  const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
 
   const { data: product, isLoading, error } = useProduct(id!);
   const { data: reviews } = useProductReviews(id!);
+  const { data: variants } = useProductVariants(id!);
 
   if (isLoading) {
     return (
@@ -115,13 +119,24 @@ const ProductDetail = () => {
   }
 
   const handleAddToCart = () => {
+    const productToAdd = selectedVariant ? {
+      productId: selectedVariant.id,
+      quantity
+    } : {
+      productId: product.id,
+      quantity
+    };
+    
     addToCart.mutate(
-      { productId: product.id, quantity },
+      productToAdd,
       {
         onSuccess: () => {
+          const displayName = selectedVariant ? 
+            `${product.name} - ${selectedVariant.name}` : 
+            product.name;
           toast({
             title: "Added to cart",
-            description: `${quantity} x ${product.name} added to your cart.`,
+            description: `${quantity} x ${displayName} added to your cart.`,
           });
         },
       }
@@ -141,12 +156,31 @@ const ProductDetail = () => {
   };
 
   const getMainImage = () => {
+    // Use variant images if variant is selected and has images
+    if (selectedVariant?.product_variant_images && selectedVariant.product_variant_images.length > 0) {
+      const sortedImages = [...selectedVariant.product_variant_images].sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
+      return sortedImages[selectedImage]?.image_url || sortedImages[0]?.image_url;
+    }
+    
+    // Fall back to product images
     if (product.product_images && product.product_images.length > 0) {
       const sortedImages = [...product.product_images].sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
       return sortedImages[selectedImage]?.image_url || sortedImages[0]?.image_url;
     }
+    
     return '/placeholder.svg';
   };
+
+  const getCurrentImages = () => {
+    if (selectedVariant?.product_variant_images && selectedVariant.product_variant_images.length > 0) {
+      return selectedVariant.product_variant_images.sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
+    }
+    return product.product_images?.sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0)) || [];
+  };
+
+  const getCurrentPrice = () => selectedVariant?.price || product.price;
+  const getCurrentComparePrice = () => selectedVariant?.compare_price || product.compare_price;
+  const getCurrentInventory = () => selectedVariant?.inventory_quantity || product.inventory_quantity;
 
   const averageRating = reviews && reviews.length > 0 
     ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length 
@@ -167,11 +201,9 @@ const ProductDetail = () => {
                 className="w-full h-full object-cover"
               />
             </div>
-            {product.product_images && product.product_images.length > 1 && (
+            {getCurrentImages().length > 1 && (
               <div className="flex space-x-2 overflow-x-auto">
-                {product.product_images
-                  .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0))
-                  .map((image, index) => (
+                {getCurrentImages().map((image, index) => (
                     <button
                       key={image.id}
                       onClick={() => setSelectedImage(index)}
@@ -195,15 +227,20 @@ const ProductDetail = () => {
             {/* Title */}
             <div>
               <h1 className="text-3xl font-bold text-foreground mb-2">{product.name}</h1>
+              {selectedVariant && (
+                <p className="text-lg text-muted-foreground">
+                  Variant: {selectedVariant.name}
+                </p>
+              )}
             </div>
 
             {/* Price */}
             <div className="space-y-2">
               <div className="flex items-center space-x-4">
-                 <span className="text-3xl font-bold text-primary">Rs {product.price.toFixed(2)}</span>
-                 {product.compare_price && product.compare_price > product.price && (
+                 <span className="text-3xl font-bold text-primary">Rs {getCurrentPrice().toFixed(2)}</span>
+                 {getCurrentComparePrice() && getCurrentComparePrice() > getCurrentPrice() && (
                    <span className="text-xl text-muted-foreground line-through">
-                     Rs {product.compare_price.toFixed(2)}
+                     Rs {getCurrentComparePrice().toFixed(2)}
                    </span>
                  )}
               </div>
@@ -228,11 +265,23 @@ const ProductDetail = () => {
               )}
             </div>
 
+            {/* Variant Selector */}
+            {variants && variants.length > 0 && (
+              <ProductVariantSelector
+                variants={variants}
+                selectedVariant={selectedVariant}
+                onVariantChange={(variant) => {
+                  setSelectedVariant(variant);
+                  setSelectedImage(0); // Reset image selection when variant changes
+                }}
+              />
+            )}
+
             {/* Description */}
             <div>
               <h3 className="text-lg font-semibold text-foreground mb-2">Description</h3>
               <p className="text-muted-foreground leading-relaxed">
-                {product.description || product.short_description}
+                {selectedVariant?.description || product.description || product.short_description}
               </p>
             </div>
 
@@ -254,7 +303,7 @@ const ProductDetail = () => {
                     variant="ghost"
                     size="sm"
                     onClick={() => setQuantity(quantity + 1)}
-                    disabled={quantity >= (product.inventory_quantity || 0)}
+                    disabled={quantity >= (getCurrentInventory() || 0)}
                   >
                     <Plus className="w-4 h-4" />
                   </Button>
@@ -374,7 +423,7 @@ const ProductDetail = () => {
                       <div className="flex justify-between">
                         <dt className="text-sm text-muted-foreground">Availability:</dt>
                         <dd className="text-sm text-foreground">
-                          {(product.inventory_quantity || 0) > 0 ? 'In Stock' : 'Out of Stock'}
+                          {(getCurrentInventory() || 0) > 0 ? 'In Stock' : 'Out of Stock'}
                         </dd>
                       </div>
                     </dl>

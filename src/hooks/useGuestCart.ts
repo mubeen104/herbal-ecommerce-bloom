@@ -6,6 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 export interface GuestCartItem {
   id: string;
   product_id: string;
+  variant_id?: string;
   quantity: number;
   product?: {
     id: string;
@@ -87,7 +88,7 @@ export const useGuestCart = () => {
     localStorage.setItem(GUEST_CART_KEY, JSON.stringify(items));
   }, []);
 
-  const addToGuestCart = useCallback(async (productId: string, quantity: number = 1) => {
+  const addToGuestCart = useCallback(async (productId: string, quantity: number = 1, variantId?: string) => {
     setIsLoading(true);
     try {
       // Fetch product details
@@ -110,7 +111,9 @@ export const useGuestCart = () => {
       if (error) throw error;
 
       setGuestCartItems(prevItems => {
-        const existingItemIndex = prevItems.findIndex(item => item.product_id === productId);
+        const existingItemIndex = prevItems.findIndex(item => 
+          item.product_id === productId && item.variant_id === variantId
+        );
         let newItems;
 
         if (existingItemIndex >= 0) {
@@ -123,8 +126,9 @@ export const useGuestCart = () => {
         } else {
           // Add new item
           const newItem: GuestCartItem = {
-            id: `guest_${Date.now()}_${productId}`,
+            id: `guest_${Date.now()}_${productId}_${variantId || 'default'}`,
             product_id: productId,
+            variant_id: variantId,
             quantity,
             product
           };
@@ -194,7 +198,7 @@ export const useGuestCart = () => {
       cartCount: authCart.cartCount,
       cartTotal: authCart.cartTotal,
       isLoading: authCart.isLoading,
-      addToCart: (productId: string, quantity: number = 1) => 
+      addToCart: (productId: string, quantity: number = 1, variantId?: string) => 
         authCart.addToCart.mutateAsync({ productId, quantity }),
       updateQuantity: ({ itemId, quantity }: { itemId: string; quantity: number }) => 
         authCart.updateQuantity.mutateAsync({ itemId, quantity }),

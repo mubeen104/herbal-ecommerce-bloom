@@ -15,6 +15,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useCategories } from '@/hooks/useCategories';
+import { useProductVariants } from '@/hooks/useProductVariants';
+import { ProductVariantForm } from '@/components/admin/ProductVariantForm';
 
 interface Product {
   id: string;
@@ -43,6 +45,8 @@ interface ProductImage {
 export default function AdminProducts() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [isVariantDialogOpen, setIsVariantDialogOpen] = useState(false);
+  const [selectedProductForVariants, setSelectedProductForVariants] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
   const [showBulkActions, setShowBulkActions] = useState(false);
@@ -1081,15 +1085,26 @@ export default function AdminProducts() {
                           >
                             <Edit className="h-4 w-4" />
                           </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => deleteMutation.mutate(product.id)}
-                            disabled={deleteMutation.isPending}
-                            className="hover:bg-destructive hover:text-destructive-foreground transition-colors"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                           <Button
+                             variant="outline"
+                             size="sm"
+                             onClick={() => {
+                               setSelectedProductForVariants(product.id);
+                               setIsVariantDialogOpen(true);
+                             }}
+                             className="hover:bg-secondary hover:text-secondary-foreground transition-colors"
+                           >
+                             Variants
+                           </Button>
+                           <Button
+                             variant="outline"
+                             size="sm"
+                             onClick={() => deleteMutation.mutate(product.id)}
+                             disabled={deleteMutation.isPending}
+                             className="hover:bg-destructive hover:text-destructive-foreground transition-colors"
+                           >
+                             <Trash2 className="h-4 w-4" />
+                           </Button>
                         </div>
                       </TableCell>
                     </TableRow>
@@ -1121,6 +1136,28 @@ export default function AdminProducts() {
           )}
         </CardContent>
       </Card>
+
+      {/* Variant Management Dialog */}
+      <Dialog open={isVariantDialogOpen} onOpenChange={setIsVariantDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Manage Product Variants</DialogTitle>
+          </DialogHeader>
+          {selectedProductForVariants && (
+            <ProductVariantForm
+              productId={selectedProductForVariants}
+              onSave={() => {
+                setIsVariantDialogOpen(false);
+                setSelectedProductForVariants(null);
+              }}
+              onCancel={() => {
+                setIsVariantDialogOpen(false);
+                setSelectedProductForVariants(null);
+              }}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

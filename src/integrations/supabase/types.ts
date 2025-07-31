@@ -371,6 +371,100 @@ export type Database = {
           },
         ]
       }
+      product_variant_images: {
+        Row: {
+          alt_text: string | null
+          created_at: string
+          id: string
+          image_url: string
+          sort_order: number | null
+          variant_id: string
+        }
+        Insert: {
+          alt_text?: string | null
+          created_at?: string
+          id?: string
+          image_url: string
+          sort_order?: number | null
+          variant_id: string
+        }
+        Update: {
+          alt_text?: string | null
+          created_at?: string
+          id?: string
+          image_url?: string
+          sort_order?: number | null
+          variant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_product_variant_images_variant_id"
+            columns: ["variant_id"]
+            isOneToOne: false
+            referencedRelation: "product_variants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      product_variants: {
+        Row: {
+          compare_price: number | null
+          created_at: string
+          description: string | null
+          id: string
+          inventory_quantity: number
+          is_active: boolean | null
+          name: string
+          price: number
+          product_id: string
+          sku: string | null
+          sort_order: number | null
+          updated_at: string
+          variant_options: Json | null
+          weight: number | null
+        }
+        Insert: {
+          compare_price?: number | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          inventory_quantity?: number
+          is_active?: boolean | null
+          name: string
+          price: number
+          product_id: string
+          sku?: string | null
+          sort_order?: number | null
+          updated_at?: string
+          variant_options?: Json | null
+          weight?: number | null
+        }
+        Update: {
+          compare_price?: number | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          inventory_quantity?: number
+          is_active?: boolean | null
+          name?: string
+          price?: number
+          product_id?: string
+          sku?: string | null
+          sort_order?: number | null
+          updated_at?: string
+          variant_options?: Json | null
+          weight?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_product_variants_product_id"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       products: {
         Row: {
           barcode: string | null
