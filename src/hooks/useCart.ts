@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 export interface CartItem {
   id: string;
   product_id: string;
+  variant_id?: string | null;
   quantity: number;
   created_at: string;
   updated_at: string;
@@ -13,6 +14,18 @@ export interface CartItem {
     name: string;
     price: number;
     product_images: Array<{
+      id: string;
+      image_url: string;
+      alt_text: string;
+      sort_order: number;
+    }>;
+  };
+  product_variants?: {
+    id: string;
+    name: string;
+    price: number;
+    inventory_quantity: number;
+    product_variant_images: Array<{
       id: string;
       image_url: string;
       alt_text: string;
@@ -41,6 +54,18 @@ export const useCart = () => {
               alt_text,
               sort_order
             )
+          ),
+          product_variants (
+            id,
+            name,
+            price,
+            inventory_quantity,
+            product_variant_images (
+              id,
+              image_url,
+              alt_text,
+              sort_order
+            )
           )
         `)
         .order('created_at', { ascending: false });
@@ -51,12 +76,13 @@ export const useCart = () => {
   });
 
   const addToCart = useMutation({
-    mutationFn: async ({ productId, quantity = 1 }: { productId: string; quantity?: number }) => {
-      // Check if item already exists in cart
+    mutationFn: async ({ productId, variantId, quantity = 1 }: { productId: string; variantId?: string | null; quantity?: number }) => {
+      // Check if item already exists in cart (same product and variant combination)
       const { data: existingItem } = await supabase
         .from('cart_items')
         .select('*')
         .eq('product_id', productId)
+        .eq('variant_id', variantId || null)
         .maybeSingle();
 
       if (existingItem) {
@@ -77,7 +103,12 @@ export const useCart = () => {
         
         const { data, error } = await supabase
           .from('cart_items')
-          .insert({ product_id: productId, quantity, user_id: user.user.id })
+          .insert({ 
+            product_id: productId, 
+            variant_id: variantId || null,
+            quantity, 
+            user_id: user.user.id 
+          })
           .select()
           .single();
 
@@ -147,7 +178,8 @@ export const useCart = () => {
 
   const cartCount = cartItems?.reduce((total, item) => total + item.quantity, 0) || 0;
   const cartTotal = cartItems?.reduce((total, item) => {
-    const price = item.products?.price || 0;
+    // Use variant price if available, otherwise use product price
+    const price = item.product_variants?.price || item.products?.price || 0;
     return total + (price * item.quantity);
   }, 0) || 0;
 

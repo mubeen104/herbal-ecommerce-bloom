@@ -181,6 +181,7 @@ export const useGuestCart = () => {
         for (const item of guestCartItems) {
           await authCart.addToCart.mutateAsync({
             productId: item.product_id,
+            variantId: item.variant_id,
             quantity: item.quantity
           });
         }
@@ -199,7 +200,7 @@ export const useGuestCart = () => {
       cartTotal: authCart.cartTotal,
       isLoading: authCart.isLoading,
       addToCart: (productId: string, quantity: number = 1, variantId?: string) => 
-        authCart.addToCart.mutateAsync({ productId, quantity }),
+        authCart.addToCart.mutateAsync({ productId, variantId, quantity }),
       updateQuantity: ({ itemId, quantity }: { itemId: string; quantity: number }) => 
         authCart.updateQuantity.mutateAsync({ itemId, quantity }),
       removeFromCart: (itemId: string) => authCart.removeFromCart.mutateAsync(itemId),

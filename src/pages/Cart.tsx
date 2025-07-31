@@ -100,6 +100,12 @@ const Cart = () => {
   };
 
   const getMainImage = (item: any) => {
+    // Check if item has variant with images
+    if (item.product_variants?.product_variant_images && item.product_variants.product_variant_images.length > 0) {
+      return item.product_variants.product_variant_images.sort((a: any, b: any) => a.sort_order - b.sort_order)[0]?.image_url;
+    }
+    
+    // Fall back to product images
     const images = item.products?.product_images || item.product?.product_images;
     if (images && images.length > 0) {
       return images.sort((a: any, b: any) => a.sort_order - b.sort_order)[0]?.image_url;
@@ -189,8 +195,13 @@ const Cart = () => {
                           <h3 className="text-lg font-semibold text-foreground truncate">
                             {item.products?.name || item.product?.name || 'Unknown Product'}
                           </h3>
+                          {item.product_variants?.name && (
+                            <p className="text-sm text-muted-foreground">
+                              Variant: {item.product_variants.name}
+                            </p>
+                          )}
                            <p className="text-xl font-bold text-primary">
-                             Rs {(item.products?.price || item.product?.price || 0).toFixed(2)}
+                             Rs {(item.product_variants?.price || item.products?.price || item.product?.price || 0).toFixed(2)}
                            </p>
                         </div>
 
@@ -230,7 +241,7 @@ const Cart = () => {
                         {/* Item Total */}
                         <div className="text-right min-w-0">
                            <p className="text-lg font-semibold text-foreground">
-                             Rs {((item.products?.price || item.product?.price || 0) * item.quantity).toFixed(2)}
+                             Rs {((item.product_variants?.price || item.products?.price || item.product?.price || 0) * item.quantity).toFixed(2)}
                            </p>
                         </div>
 

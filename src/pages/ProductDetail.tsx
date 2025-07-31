@@ -119,11 +119,9 @@ const ProductDetail = () => {
   }
 
   const handleAddToCart = () => {
-    const productToAdd = selectedVariant ? {
-      productId: selectedVariant.id,
-      quantity
-    } : {
+    const productToAdd = {
       productId: product.id,
+      variantId: selectedVariant?.id || null,
       quantity
     };
     
@@ -145,11 +143,9 @@ const ProductDetail = () => {
 
   const handleBuyNow = () => {
     // Add to cart and redirect to checkout
-    const productToAdd = selectedVariant ? {
-      productId: selectedVariant.id,
-      quantity
-    } : {
+    const productToAdd = {
       productId: product.id,
+      variantId: selectedVariant?.id || null,
       quantity
     };
     
