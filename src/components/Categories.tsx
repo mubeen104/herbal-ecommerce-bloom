@@ -4,13 +4,16 @@ import { useCategories } from "@/hooks/useCategories";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Leaf, Coffee, Sparkles, Droplets, Zap } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-
 const Categories = () => {
-  const { data: categories = [], isLoading } = useCategories();
+  const {
+    data: categories = [],
+    isLoading
+  } = useCategories();
   const navigate = useNavigate();
-
   const getIconForCategory = (slug: string) => {
-    const iconMap: { [key: string]: JSX.Element } = {
+    const iconMap: {
+      [key: string]: JSX.Element;
+    } = {
       supplements: <Leaf className="h-8 w-8 text-primary" />,
       "teas-beverages": <Coffee className="h-8 w-8 text-primary" />,
       skincare: <Sparkles className="h-8 w-8 text-primary" />,
@@ -19,9 +22,10 @@ const Categories = () => {
     };
     return iconMap[slug] || <Leaf className="h-8 w-8 text-primary" />;
   };
-
   const getImageForCategory = (slug: string) => {
-    const imageMap: { [key: string]: string } = {
+    const imageMap: {
+      [key: string]: string;
+    } = {
       supplements: "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=300&h=200&fit=crop&crop=center",
       "teas-beverages": "https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=300&h=200&fit=crop&crop=center",
       skincare: "https://images.unsplash.com/photo-1570194065650-d99fb4bedf0a?w=300&h=200&fit=crop&crop=center",
@@ -30,9 +34,10 @@ const Categories = () => {
     };
     return imageMap[slug] || "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=300&h=200&fit=crop&crop=center";
   };
-
   const getColorForCategory = (slug: string) => {
-    const colorMap: { [key: string]: string } = {
+    const colorMap: {
+      [key: string]: string;
+    } = {
       supplements: "from-amber-400 to-orange-600",
       "teas-beverages": "from-green-400 to-green-600",
       skincare: "from-pink-400 to-rose-600",
@@ -41,10 +46,8 @@ const Categories = () => {
     };
     return colorMap[slug] || "from-green-400 to-green-600";
   };
-
   if (isLoading) {
-    return (
-      <section className="py-16 bg-muted/30">
+    return <section className="py-16 bg-muted/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
@@ -56,8 +59,9 @@ const Categories = () => {
             </p>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {Array.from({ length: 6 }).map((_, index) => (
-              <Card key={index} className="border-border overflow-hidden">
+            {Array.from({
+            length: 6
+          }).map((_, index) => <Card key={index} className="border-border overflow-hidden">
                 <CardContent className="p-0">
                   <Skeleton className="w-full h-48" />
                   <div className="p-6 space-y-3">
@@ -66,22 +70,18 @@ const Categories = () => {
                     <Skeleton className="h-8 w-full" />
                   </div>
                 </CardContent>
-              </Card>
-            ))}
+              </Card>)}
           </div>
         </div>
-      </section>
-    );
+      </section>;
   }
-
-  return (
-    <section className="py-24 bg-background relative overflow-hidden">
+  return <section className="py-24 bg-background relative overflow-hidden">
       {/* Background Pattern */}
       <div className="absolute inset-0 bg-gradient-to-br from-muted/10 via-transparent to-primary/5" />
       <div className="absolute inset-0" style={{
-        backgroundImage: `radial-gradient(circle at 30% 70%, hsl(var(--accent) / 0.05) 0%, transparent 50%),
+      backgroundImage: `radial-gradient(circle at 30% 70%, hsl(var(--accent) / 0.05) 0%, transparent 50%),
                          radial-gradient(circle at 70% 30%, hsl(var(--primary) / 0.05) 0%, transparent 50%)`
-      }} />
+    }} />
       
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Enhanced Section Header */}
@@ -103,28 +103,19 @@ const Categories = () => {
 
         {/* Enhanced Categories Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 lg:gap-10 px-4 sm:px-6 lg:px-8">
-          {categories.map((category, index) => (
-            <Card 
-              key={category.id}
-              className="group cursor-pointer border border-border/50 bg-card/80 backdrop-blur-sm shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 hover:rotate-1 overflow-hidden animate-fade-in"
-              style={{ animationDelay: `${index * 0.15}s` }}
-            >
+          {categories.map((category, index) => <Card key={category.id} className="group cursor-pointer border border-border/50 bg-card/80 backdrop-blur-sm shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 hover:rotate-1 overflow-hidden animate-fade-in" style={{
+          animationDelay: `${index * 0.15}s`
+        }}>
               <CardContent className="p-0">
                 {/* Enhanced Category Image */}
                 <div className="relative h-56 overflow-hidden">
-                  <img
-                    src={category.image_url || getImageForCategory(category.slug)}
-                    alt={category.name}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                  />
+                  <img src={category.image_url || getImageForCategory(category.slug)} alt={category.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                   
                   {/* Enhanced Gradient Overlay */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-500" />
                   
                   {/* Floating Icon Badge */}
-                  <div className="absolute top-4 right-4 bg-white/90 text-primary p-3 rounded-full shadow-lg group-hover:scale-110 group-hover:rotate-12 transition-all duration-300">
-                    {getIconForCategory(category.slug)}
-                  </div>
+                  
                   
                   {/* Category Name Overlay */}
                   <div className="absolute bottom-4 left-4 right-4">
@@ -140,14 +131,13 @@ const Categories = () => {
                     {category.description}
                   </p>
 
-                  <Button 
-                    variant="outline" 
-                    className="w-full group border-2 border-primary/20 text-foreground hover:bg-primary hover:text-primary-foreground hover:border-primary hover:scale-105 transition-all duration-300 font-semibold"
-                    onClick={() => {
-                      navigate(`/shop?category=${category.slug}`);
-                      window.scrollTo({ top: 0, behavior: 'smooth' });
-                    }}
-                  >
+                  <Button variant="outline" className="w-full group border-2 border-primary/20 text-foreground hover:bg-primary hover:text-primary-foreground hover:border-primary hover:scale-105 transition-all duration-300 font-semibold" onClick={() => {
+                navigate(`/shop?category=${category.slug}`);
+                window.scrollTo({
+                  top: 0,
+                  behavior: 'smooth'
+                });
+              }}>
                     <span className="group-hover:translate-x-1 transition-transform duration-300">
                       Explore Collection
                     </span>
@@ -155,12 +145,9 @@ const Categories = () => {
                   </Button>
                 </div>
               </CardContent>
-            </Card>
-          ))}
+            </Card>)}
         </div>
       </div>
-    </section>
-  );
+    </section>;
 };
-
 export default Categories;
