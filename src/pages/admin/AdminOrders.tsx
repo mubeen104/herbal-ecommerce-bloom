@@ -31,7 +31,12 @@ interface Order {
     quantity: number;
     price: number;
     total: number;
+    variant_id?: string;
     products: {
+      name: string;
+      sku: string;
+    };
+    product_variants?: {
       name: string;
       sku: string;
     };
@@ -145,7 +150,12 @@ export default function AdminOrders() {
           quantity,
           price,
           total,
+          variant_id,
           products (
+            name,
+            sku
+          ),
+          product_variants (
             name,
             sku
           )
@@ -586,6 +596,7 @@ export default function AdminOrders() {
                         <TableHeader>
                           <TableRow>
                             <TableHead>Product</TableHead>
+                            <TableHead>Variant</TableHead>
                             <TableHead>SKU</TableHead>
                             <TableHead>Quantity</TableHead>
                             <TableHead>Price</TableHead>
@@ -596,10 +607,24 @@ export default function AdminOrders() {
                           {orderDetails.map((item: any) => (
                             <TableRow key={item.id}>
                               <TableCell className="font-medium">{item.products?.name}</TableCell>
-                              <TableCell>{item.products?.sku}</TableCell>
+                              <TableCell>
+                                {item.variant_id && item.product_variants?.name ? (
+                                  <Badge variant="secondary" className="text-xs">
+                                    {item.product_variants.name}
+                                  </Badge>
+                                ) : (
+                                  <span className="text-muted-foreground text-xs">No variant</span>
+                                )}
+                              </TableCell>
+                              <TableCell>
+                                {item.variant_id && item.product_variants?.sku 
+                                  ? item.product_variants.sku 
+                                  : item.products?.sku
+                                }
+                              </TableCell>
                               <TableCell>{item.quantity}</TableCell>
-                                <TableCell>Rs {Number(item.price).toFixed(2)}</TableCell>
-                                <TableCell>Rs {Number(item.total).toFixed(2)}</TableCell>
+                              <TableCell>Rs {Number(item.price).toFixed(2)}</TableCell>
+                              <TableCell>Rs {Number(item.total).toFixed(2)}</TableCell>
                             </TableRow>
                           ))}
                         </TableBody>

@@ -20,9 +20,14 @@ interface Order {
     quantity: number;
     price: number;
     total: number;
+    variant_id?: string;
     products: {
       name: string;
       slug: string;
+    };
+    product_variants?: {
+      name: string;
+      sku: string;
     };
   }[];
 }
@@ -55,9 +60,14 @@ const Orders = () => {
             quantity,
             price,
             total,
+            variant_id,
             products (
               name,
               slug
+            ),
+            product_variants (
+              name,
+              sku
             )
           )
         `)
@@ -65,7 +75,7 @@ const Orders = () => {
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      setOrders(data || []);
+      setOrders((data as any) || []);
     } catch (error) {
       console.error("Error fetching orders:", error);
     } finally {
@@ -199,6 +209,11 @@ const Orders = () => {
                             <p className="font-medium text-foreground">
                               {item.products.name}
                             </p>
+                            {item.variant_id && item.product_variants?.name && (
+                              <Badge variant="secondary" className="text-xs mb-1">
+                                {item.product_variants.name}
+                              </Badge>
+                            )}
                             <p className="text-sm text-muted-foreground">
                               Quantity: {item.quantity} × {currency} {item.price}
                             </p>

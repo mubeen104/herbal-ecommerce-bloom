@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 interface OrderItem {
   productId: string;
+  variantId?: string;
   quantity: number;
   price: number;
   total: number;
@@ -72,6 +73,7 @@ export const useCheckout = () => {
       const orderItems = orderData.cartItems.map(item => ({
         order_id: order.id,
         product_id: item.productId,
+        variant_id: item.variantId || null,
         quantity: item.quantity,
         price: item.price,
         total: item.total,

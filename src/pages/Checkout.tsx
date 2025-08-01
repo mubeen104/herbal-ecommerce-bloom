@@ -180,6 +180,7 @@ const Checkout = () => {
         notes,
         cartItems: cartItems.map(item => ({
           productId: item.product_id,
+          variantId: item.variant_id,
           quantity: item.quantity,
           price: (item.products?.price || item.product?.price || 0),
           total: (item.products?.price || item.product?.price || 0) * item.quantity,
