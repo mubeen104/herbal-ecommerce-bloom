@@ -14,9 +14,12 @@ import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 const FeaturedProducts = () => {
   const {
-    data: products = [],
+    data: featuredProducts = [],
     isLoading
   } = useFeaturedProducts();
+  
+  // Filter out kits & deals products to show only in dedicated section
+  const products = featuredProducts.filter(product => !product.is_kits_deals);
   const {
     addToCart,
     isLoading: cartLoading

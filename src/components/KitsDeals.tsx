@@ -4,9 +4,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { RupeeIcon } from "./icons/RupeeIcon";
+import { useStoreSettings } from "@/hooks/useStoreSettings";
 
 const KitsDeals = () => {
   const { data: products, isLoading } = useFeaturedProducts();
+  const { currency } = useStoreSettings();
   
   // Filter for kits & deals products
   const kitsDealsProducts = products?.filter(product => product.is_kits_deals) || [];
@@ -55,7 +57,7 @@ const KitsDeals = () => {
           {kitsDealsProducts.map((product) => (
             <Card key={product.id} className="group hover:shadow-lg transition-shadow duration-300 overflow-hidden">
               <CardContent className="p-0">
-                <Link to={`/products/${product.slug}`}>
+                <Link to={`/product/${product.id}`}>
                   <div className="relative h-64 overflow-hidden">
                     {product.product_images?.[0] && (
                       <img
@@ -80,7 +82,7 @@ const KitsDeals = () => {
                 </Link>
                 
                 <div className="p-6">
-                  <Link to={`/products/${product.slug}`}>
+                  <Link to={`/product/${product.id}`}>
                     <h3 className="text-lg font-semibold text-foreground mb-2 group-hover:text-primary transition-colors">
                       {product.name}
                     </h3>
@@ -93,19 +95,19 @@ const KitsDeals = () => {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <div className="flex items-center text-lg font-bold text-foreground">
-                        <RupeeIcon className="w-4 h-4" />
+                        {currency === 'INR' ? <RupeeIcon className="w-4 h-4" /> : <span className="text-sm mr-1">{currency}</span>}
                         {product.price.toFixed(2)}
                       </div>
                       {product.compare_price && product.compare_price > product.price && (
                         <div className="flex items-center text-sm text-muted-foreground line-through">
-                          <RupeeIcon className="w-3 h-3" />
+                          {currency === 'INR' ? <RupeeIcon className="w-3 h-3" /> : <span className="text-xs mr-1">{currency}</span>}
                           {product.compare_price.toFixed(2)}
                         </div>
                       )}
                     </div>
                     
                     <Button size="sm" asChild>
-                      <Link to={`/products/${product.slug}`}>
+                      <Link to={`/product/${product.id}`}>
                         View Deal
                       </Link>
                     </Button>
