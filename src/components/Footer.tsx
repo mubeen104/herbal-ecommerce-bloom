@@ -107,14 +107,14 @@ const Footer = () => {
           <div className="grid lg:grid-cols-4 gap-8">
             
             {/* Quick Links - Left */}
-            <div className="lg:col-span-1 space-y-6 animate-fade-in">
+            <div className="lg:col-span-1 space-y-6 animate-fade-in flex flex-col items-center text-center">
               <h3 className="text-lg font-bold text-foreground flex items-center">
                 <div className="w-6 h-0.5 bg-gradient-to-r from-primary to-transparent mr-3" />
                 Quick Links
               </h3>
               <ul className="space-y-3">
                 {quickLinks.map(link => <li key={link.name}>
-                    <a href={link.href} className="text-muted-foreground hover:text-primary transition-all duration-300 flex items-center group text-sm">
+                    <a href={link.href} className="text-muted-foreground hover:text-primary transition-all duration-300 flex items-center justify-center group text-sm">
                       <span className="group-hover:translate-x-1 transition-transform duration-300">
                         {link.name}
                       </span>
@@ -166,7 +166,7 @@ const Footer = () => {
             </div>
 
             {/* Legal Links - Right */}
-            <div className="lg:col-span-1 space-y-6 animate-fade-in" style={{
+            <div className="lg:col-span-1 space-y-6 animate-fade-in flex flex-col items-center text-center" style={{
             animationDelay: '0.2s'
           }}>
               <h3 className="text-lg font-bold text-foreground flex items-center">
@@ -175,7 +175,7 @@ const Footer = () => {
               </h3>
               <ul className="space-y-3">
                 {legalLinks.map(link => <li key={link.name}>
-                    <a href={link.href} className="text-muted-foreground hover:text-primary transition-all duration-300 flex items-center group text-sm">
+                    <a href={link.href} className="text-muted-foreground hover:text-primary transition-all duration-300 flex items-center justify-center group text-sm">
                       <span className="group-hover:translate-x-1 transition-transform duration-300">
                         {link.name}
                       </span>
