@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { useGuestCart } from "@/hooks/useGuestCart";
 import { useCheckout } from "@/hooks/useCheckout";
 import { useStoreSettings } from "@/hooks/useStoreSettings";
+import CouponInput from "@/components/CouponInput";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import Header from "@/components/Header";
@@ -84,10 +85,22 @@ const Checkout = () => {
   const [sameAsShipping, setSameAsShipping] = useState(true);
   const [paymentMethod, setPaymentMethod] = useState("cod");
   const [notes, setNotes] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
 
-  const shippingCost = cartTotal >= freeShippingThreshold ? 0 : shippingRate;
-  const tax = cartTotal * (taxRate / 100);
-  const totalAmount = cartTotal + shippingCost + tax;
+  // Calculate discount
+  let discountAmount = 0;
+  if (appliedCoupon) {
+    if (appliedCoupon.type === 'percentage') {
+      discountAmount = (cartTotal * appliedCoupon.value) / 100;
+    } else {
+      discountAmount = Math.min(appliedCoupon.value, cartTotal);
+    }
+  }
+
+  const discountedSubtotal = cartTotal - discountAmount;
+  const shippingCost = discountedSubtotal >= freeShippingThreshold ? 0 : shippingRate;
+  const tax = discountedSubtotal * (taxRate / 100);
+  const totalAmount = discountedSubtotal + shippingCost + tax;
 
   const handleShippingAddressChange = (field: keyof Address, value: string) => {
     setShippingAddress(prev => ({ ...prev, [field]: value }));
@@ -174,10 +187,13 @@ const Checkout = () => {
         shippingAmount: shippingCost,
         taxAmount: tax,
         totalAmount,
+        discountAmount,
         paymentMethod,
         shippingAddress,
         billingAddress: sameAsShipping ? shippingAddress : billingAddress,
         notes,
+        couponId: appliedCoupon?.id,
+        couponCode: appliedCoupon?.code,
         cartItems: cartItems.map(item => ({
           productId: item.product_id,
           variantId: item.variant_id,
@@ -611,12 +627,32 @@ const Checkout = () => {
 
                   <Separator />
 
+                  {/* Coupon Input */}
+                  <div>
+                    <h4 className="font-medium mb-2">Discount Code</h4>
+                    <CouponInput
+                      onCouponApply={setAppliedCoupon}
+                      onCouponRemove={() => setAppliedCoupon(null)}
+                      appliedCoupon={appliedCoupon}
+                      subtotal={cartTotal}
+                    />
+                  </div>
+
+                  <Separator />
+
                   {/* Order Totals */}
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm">
                       <span>Subtotal ({cartCount} items)</span>
                       <span>Rs {cartTotal.toFixed(2)}</span>
                     </div>
+                    
+                    {appliedCoupon && (
+                      <div className="flex justify-between text-sm text-success">
+                        <span>Discount ({appliedCoupon.code})</span>
+                        <span>-Rs {discountAmount.toFixed(2)}</span>
+                      </div>
+                    )}
                     
                     <div className="flex justify-between text-sm">
                       <span>Shipping</span>

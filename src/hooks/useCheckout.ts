@@ -27,10 +27,13 @@ interface CreateOrderData {
   shippingAmount: number;
   taxAmount: number;
   totalAmount: number;
+  discountAmount?: number;
   paymentMethod: string;
   shippingAddress: Address;
   billingAddress: Address;
   notes?: string;
+  couponId?: string;
+  couponCode?: string;
   cartItems: OrderItem[];
 }
 
@@ -53,6 +56,7 @@ export const useCheckout = () => {
           subtotal: orderData.subtotal,
           shipping_amount: orderData.shippingAmount,
           tax_amount: orderData.taxAmount,
+          discount_amount: orderData.discountAmount || 0,
           total_amount: orderData.totalAmount,
           payment_method: orderData.paymentMethod,
           payment_status: 'pending',
@@ -60,6 +64,8 @@ export const useCheckout = () => {
           shipping_address: orderData.shippingAddress as any,
           billing_address: orderData.billingAddress as any,
           notes: orderData.notes || null,
+          coupon_id: orderData.couponId || null,
+          coupon_code: orderData.couponCode || null,
           currency: 'PKR',
         } as any)
         .select()
@@ -87,6 +93,42 @@ export const useCheckout = () => {
         // If order items fail, we should delete the order to maintain consistency
         await supabase.from('orders').delete().eq('id', order.id);
         throw new Error(`Failed to create order items: ${itemsError.message}`);
+      }
+
+      // Track coupon usage if a coupon was applied
+      if (orderData.couponId && orderData.discountAmount) {
+        // Create coupon usage record
+        const { error: usageError } = await supabase
+          .from('coupon_usage')
+          .insert({
+            coupon_id: orderData.couponId,
+            user_id: userId,
+            order_id: order.id,
+            discount_amount: orderData.discountAmount,
+          });
+
+        if (usageError) {
+          console.error('Failed to track coupon usage:', usageError);
+        }
+
+        // Update coupon used count - increment by 1
+        const { data: currentCoupon } = await supabase
+          .from('coupons')
+          .select('used_count')
+          .eq('id', orderData.couponId)
+          .single();
+
+        if (currentCoupon) {
+          const { error: updateError } = await supabase
+            .from('coupons')
+            .update({ used_count: (currentCoupon.used_count || 0) + 1 })
+            .eq('id', orderData.couponId);
+
+          // Note: We don't fail the order if coupon tracking fails
+          if (updateError) {
+            console.error('Failed to update coupon used count:', updateError);
+          }
+        }
       }
 
       return order;
