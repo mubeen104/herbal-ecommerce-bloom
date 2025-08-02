@@ -104,10 +104,10 @@ const Footer = () => {
 
         {/* Middle Section - Links & Newsletter */}
         <div className="py-12 border-b border-border/30">
-          <div className="grid lg:grid-cols-3 gap-8">
+          <div className="grid lg:grid-cols-4 gap-8">
             
             {/* Quick Links - Left */}
-            <div className="space-y-6 animate-fade-in">
+            <div className="lg:col-span-1 space-y-6 animate-fade-in">
               <h3 className="text-lg font-bold text-foreground flex items-center">
                 <div className="w-6 h-0.5 bg-gradient-to-r from-primary to-transparent mr-3" />
                 Quick Links
@@ -125,7 +125,7 @@ const Footer = () => {
             </div>
 
             {/* Newsletter Section - Middle */}
-            <div className="bg-gradient-to-r from-primary/5 to-accent/5 rounded-2xl p-6 border border-border/30 animate-fade-in" style={{
+            <div className="lg:col-span-2 bg-gradient-to-r from-primary/5 to-accent/5 rounded-2xl p-6 border border-border/30 animate-fade-in" style={{
             animationDelay: '0.1s'
           }}>
               <div className="text-center space-y-4">
@@ -166,7 +166,7 @@ const Footer = () => {
             </div>
 
             {/* Legal Links - Right */}
-            <div className="space-y-6 animate-fade-in" style={{
+            <div className="lg:col-span-1 space-y-6 animate-fade-in" style={{
             animationDelay: '0.2s'
           }}>
               <h3 className="text-lg font-bold text-foreground flex items-center">
