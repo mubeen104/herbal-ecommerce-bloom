@@ -1,8 +1,16 @@
-import { Leaf, Mail, Phone, MapPin, Facebook, Instagram, Twitter, ArrowUp, Heart } from "lucide-react";
+import { Leaf, Mail, Phone, Facebook, Instagram, ArrowUp, Heart, Award, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useStoreSettings } from "@/hooks/useStoreSettings";
 import TikTokIcon from "@/components/icons/TikTokIcon";
+import { 
+  HalalCertIcon, 
+  NaturalCertIcon, 
+  EcoFriendlyIcon, 
+  GMOFreeIcon, 
+  NoChemicalsIcon,
+  OrganicCertIcon 
+} from "@/components/icons/CertificationIcons";
 import { useState } from "react";
 
 const Footer = () => {
@@ -31,96 +39,105 @@ const Footer = () => {
   ];
 
   const certifications = [
-    { icon: "حلال", label: "Halal Certified", color: "text-green-400" },
-    { icon: "🌿", label: "100% Natural", color: "text-emerald-400" },
-    { icon: "♻️", label: "Eco-Friendly", color: "text-blue-400" },
-    { icon: "🚫", label: "GMO Free", color: "text-red-400" },
-    { icon: "🧪", label: "No Chemicals", color: "text-purple-400" }
+    { 
+      icon: HalalCertIcon, 
+      label: "Halal Certified", 
+      color: "text-emerald-500",
+      bgColor: "bg-emerald-500/10",
+      borderColor: "border-emerald-500/20"
+    },
+    { 
+      icon: OrganicCertIcon, 
+      label: "100% Organic", 
+      color: "text-green-600",
+      bgColor: "bg-green-500/10",
+      borderColor: "border-green-500/20"
+    },
+    { 
+      icon: EcoFriendlyIcon, 
+      label: "Eco-Friendly", 
+      color: "text-blue-500",
+      bgColor: "bg-blue-500/10",
+      borderColor: "border-blue-500/20"
+    },
+    { 
+      icon: GMOFreeIcon, 
+      label: "GMO Free", 
+      color: "text-orange-500",
+      bgColor: "bg-orange-500/10",
+      borderColor: "border-orange-500/20"
+    },
+    { 
+      icon: NoChemicalsIcon, 
+      label: "Chemical Free", 
+      color: "text-purple-500",
+      bgColor: "bg-purple-500/10",
+      borderColor: "border-purple-500/20"
+    },
+    { 
+      icon: NaturalCertIcon, 
+      label: "100% Natural", 
+      color: "text-teal-500",
+      bgColor: "bg-teal-500/10",
+      borderColor: "border-teal-500/20"
+    }
   ];
 
   return (
-    <footer className="relative bg-background border-t border-border overflow-hidden">
-      {/* Background Pattern */}
-      <div className="absolute inset-0 bg-gradient-to-br from-muted/20 via-transparent to-primary/5" />
+    <footer className="relative bg-gradient-to-br from-background via-muted/5 to-primary/5 border-t border-border overflow-hidden">
+      {/* Enhanced Background Pattern */}
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/3 via-transparent to-accent/3" />
       <div className="absolute inset-0" style={{
-        backgroundImage: `radial-gradient(circle at 20% 80%, hsl(var(--primary) / 0.03) 0%, transparent 50%),
-                         radial-gradient(circle at 80% 20%, hsl(var(--accent) / 0.03) 0%, transparent 50%)`
+        backgroundImage: `
+          radial-gradient(circle at 25% 25%, hsl(var(--primary) / 0.05) 0%, transparent 45%),
+          radial-gradient(circle at 75% 75%, hsl(var(--accent) / 0.05) 0%, transparent 45%),
+          radial-gradient(circle at 50% 50%, hsl(var(--muted) / 0.02) 0%, transparent 70%)
+        `
       }} />
+      
+      {/* Floating Herb Elements */}
+      <div className="absolute top-10 left-10 w-8 h-8 text-primary/20 animate-float">
+        <Leaf className="w-full h-full" />
+      </div>
+      <div className="absolute top-32 right-16 w-6 h-6 text-accent/20 animate-float-delay">
+        <Leaf className="w-full h-full rotate-45" />
+      </div>
+      <div className="absolute bottom-40 left-20 w-10 h-10 text-primary/15 animate-float-slow">
+        <Leaf className="w-full h-full -rotate-12" />
+      </div>
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Newsletter Section */}
-        <div className="py-16 border-b border-border/50">
-          <div className="text-center max-w-3xl mx-auto space-y-8 animate-fade-in">
-            <div className="space-y-4">
-              <h3 className="text-3xl md:text-4xl font-bold text-foreground">
-                Stay Connected with 
-                <span className="text-primary"> Nature</span>
-              </h3>
-              <p className="text-muted-foreground text-lg leading-relaxed">
-                Subscribe to our newsletter for wellness tips, new product launches, and exclusive offers.
-                Join our community of wellness enthusiasts.
-              </p>
-            </div>
+        
+        {/* Top Section - Company Info */}
+        <div className="py-16 border-b border-border/30">
+          <div className="grid lg:grid-cols-3 gap-12 items-center">
             
-            <div className="flex flex-col sm:flex-row gap-4 max-w-lg mx-auto">
-              <Input 
-                type="email" 
-                placeholder="Enter your email address" 
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="flex-1 h-12 bg-card border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-300"
-              />
-              <Button 
-                className="h-12 px-8 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
-              >
-                Subscribe
-              </Button>
-            </div>
-
-            {/* Trust Indicators */}
-            <div className="flex justify-center items-center space-x-8 text-sm text-muted-foreground pt-4">
-              <span className="flex items-center">
-                <span className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse" />
-                No Spam
-              </span>
-              <span className="flex items-center">
-                <span className="w-2 h-2 bg-blue-500 rounded-full mr-2 animate-pulse" />
-                Unsubscribe Anytime
-              </span>
-              <span className="flex items-center">
-                <span className="w-2 h-2 bg-purple-500 rounded-full mr-2 animate-pulse" />
-                Weekly Updates
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Main Footer Content */}
-        <div className="py-16">
-          <div className="grid lg:grid-cols-4 md:grid-cols-2 gap-12">
-            {/* Company Info */}
-            <div className="lg:col-span-2 space-y-8 animate-fade-in">
-              <div className="flex items-center space-x-3 group">
-                <div className="p-2 bg-primary/10 rounded-full group-hover:bg-primary/20 transition-colors duration-300">
-                  <Leaf className="h-8 w-8 text-primary" />
+            {/* Brand Section */}
+            <div className="lg:col-span-1 space-y-6 animate-fade-in">
+              <div className="flex items-center space-x-4 group">
+                <div className="p-3 bg-gradient-to-br from-primary/20 to-accent/20 rounded-full group-hover:from-primary/30 group-hover:to-accent/30 transition-all duration-300 shadow-lg">
+                  <Leaf className="h-10 w-10 text-primary" />
                 </div>
-                <h2 className="text-2xl font-bold text-foreground">{storeName}</h2>
+                <div>
+                  <h2 className="text-3xl font-bold text-foreground">{storeName}</h2>
+                  <p className="text-sm text-muted-foreground">Natural Wellness Solutions</p>
+                </div>
               </div>
               
-              <p className="text-muted-foreground leading-relaxed text-lg max-w-md">
+              <p className="text-muted-foreground leading-relaxed text-base">
                 Dedicated to providing premium natural wellness products sourced 
                 ethically from trusted growers worldwide. Pure, organic, and authentic.
               </p>
 
-              {/* Contact Info */}
-              <div className="space-y-4">
-                <div className="flex items-center space-x-4 p-4 bg-card border border-border/50 rounded-xl hover:border-primary/30 transition-all duration-300 group">
+              {/* Contact Cards */}
+              <div className="space-y-3">
+                <div className="flex items-center space-x-4 p-4 bg-card/80 backdrop-blur-sm border border-border/50 rounded-xl hover:border-primary/30 transition-all duration-300 group hover:shadow-md">
                   <div className="p-2 bg-primary/10 rounded-full group-hover:bg-primary/20 transition-colors duration-300">
                     <Phone className="h-4 w-4 text-primary" />
                   </div>
                   <span className="text-foreground font-medium">{storePhone}</span>
                 </div>
-                <div className="flex items-center space-x-4 p-4 bg-card border border-border/50 rounded-xl hover:border-primary/30 transition-all duration-300 group">
+                <div className="flex items-center space-x-4 p-4 bg-card/80 backdrop-blur-sm border border-border/50 rounded-xl hover:border-primary/30 transition-all duration-300 group hover:shadow-md">
                   <div className="p-2 bg-primary/10 rounded-full group-hover:bg-primary/20 transition-colors duration-300">
                     <Mail className="h-4 w-4 text-primary" />
                   </div>
@@ -129,10 +146,68 @@ const Footer = () => {
               </div>
             </div>
 
+            {/* Newsletter Section - Middle */}
+            <div className="lg:col-span-2 bg-gradient-to-r from-primary/5 to-accent/5 rounded-2xl p-8 border border-border/30 animate-fade-in">
+              <div className="text-center space-y-6">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-center space-x-2 mb-2">
+                    <div className="w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center">
+                      <Mail className="w-4 h-4 text-primary" />
+                    </div>
+                    <h3 className="text-2xl md:text-3xl font-bold text-foreground">
+                      Join Our Wellness 
+                      <span className="text-primary"> Community</span>
+                    </h3>
+                  </div>
+                  <p className="text-muted-foreground leading-relaxed">
+                    Get exclusive herbal wellness tips, early access to new products, and special member discounts delivered to your inbox.
+                  </p>
+                </div>
+                
+                <div className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
+                  <Input 
+                    type="email" 
+                    placeholder="Your email address" 
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="flex-1 h-11 bg-background border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300"
+                  />
+                  <Button 
+                    className="h-11 px-6 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+                  >
+                    Subscribe
+                  </Button>
+                </div>
+
+                {/* Trust Badges */}
+                <div className="flex justify-center items-center space-x-6 text-xs text-muted-foreground pt-2">
+                  <span className="flex items-center">
+                    <ShieldCheck className="w-3 h-3 text-green-500 mr-1" />
+                    Secure & Private
+                  </span>
+                  <span className="flex items-center">
+                    <span className="w-2 h-2 bg-blue-500 rounded-full mr-1 animate-pulse" />
+                    Weekly Tips
+                  </span>
+                  <span className="flex items-center">
+                    <span className="w-2 h-2 bg-purple-500 rounded-full mr-1 animate-pulse" />
+                    Exclusive Offers
+                  </span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        {/* Middle Section - Quick Links */}
+        <div className="py-12 border-b border-border/30">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+            
             {/* Quick Links */}
-            <div className="space-y-6 animate-fade-in" style={{ animationDelay: '0.1s' }}>
-              <h3 className="text-xl font-bold text-foreground flex items-center">
-                <div className="w-8 h-0.5 bg-gradient-to-r from-primary to-transparent mr-3" />
+            <div className="space-y-6 animate-fade-in">
+              <h3 className="text-lg font-bold text-foreground flex items-center">
+                <div className="w-6 h-0.5 bg-gradient-to-r from-primary to-transparent mr-3" />
                 Quick Links
               </h3>
               <ul className="space-y-3">
@@ -140,9 +215,32 @@ const Footer = () => {
                   <li key={link.name}>
                     <a 
                       href={link.href} 
-                      className="text-muted-foreground hover:text-primary transition-colors duration-300 flex items-center group"
+                      className="text-muted-foreground hover:text-primary transition-all duration-300 flex items-center group text-sm"
                     >
-                      <span className="group-hover:translate-x-2 transition-transform duration-300">
+                      <span className="group-hover:translate-x-1 transition-transform duration-300">
+                        {link.name}
+                      </span>
+                      <span className="ml-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">→</span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Legal Links */}
+            <div className="space-y-6 animate-fade-in" style={{ animationDelay: '0.1s' }}>
+              <h3 className="text-lg font-bold text-foreground flex items-center">
+                <div className="w-6 h-0.5 bg-gradient-to-r from-accent to-transparent mr-3" />
+                Legal
+              </h3>
+              <ul className="space-y-3">
+                {legalLinks.map((link) => (
+                  <li key={link.name}>
+                    <a 
+                      href={link.href} 
+                      className="text-muted-foreground hover:text-primary transition-all duration-300 flex items-center group text-sm"
+                    >
+                      <span className="group-hover:translate-x-1 transition-transform duration-300">
                         {link.name}
                       </span>
                       <span className="ml-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">→</span>
@@ -153,52 +251,57 @@ const Footer = () => {
             </div>
 
             {/* Certifications */}
-            <div className="space-y-6 animate-fade-in" style={{ animationDelay: '0.2s' }}>
-              <h3 className="text-xl font-bold text-foreground flex items-center">
-                <div className="w-8 h-0.5 bg-gradient-to-r from-accent to-transparent mr-3" />
-                Certifications
+            <div className="md:col-span-2 space-y-6 animate-fade-in" style={{ animationDelay: '0.2s' }}>
+              <h3 className="text-lg font-bold text-foreground flex items-center">
+                <div className="w-6 h-0.5 bg-gradient-to-r from-emerald-500 to-transparent mr-3" />
+                Our Certifications & Standards
               </h3>
-              <div className="space-y-3">
-                {certifications.map((cert, index) => (
-                  <div 
-                    key={cert.label}
-                    className="group bg-card border border-border/50 rounded-xl p-3 hover:border-primary/30 transition-all duration-300 hover:shadow-md animate-fade-in"
-                    style={{ animationDelay: `${0.3 + index * 0.1}s` }}
-                  >
-                    <div className="flex items-center space-x-3">
-                      <div className={`text-xl ${cert.color} group-hover:scale-110 transition-transform duration-300`}>
-                        {cert.icon}
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                {certifications.map((cert, index) => {
+                  const IconComponent = cert.icon;
+                  return (
+                    <div 
+                      key={cert.label}
+                      className={`group ${cert.bgColor} border ${cert.borderColor} rounded-xl p-4 hover:shadow-lg hover:scale-105 transition-all duration-300 animate-fade-in cursor-pointer`}
+                      style={{ animationDelay: `${0.3 + index * 0.1}s` }}
+                    >
+                      <div className="flex flex-col items-center text-center space-y-2">
+                        <div className={`${cert.color} group-hover:scale-110 transition-transform duration-300`}>
+                          <IconComponent className="w-8 h-8" />
+                        </div>
+                        <span className="font-medium text-foreground text-xs leading-tight">
+                          {cert.label}
+                        </span>
                       </div>
-                      <span className="font-medium text-foreground group-hover:text-primary transition-colors duration-300">
-                        {cert.label}
-                      </span>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
+
           </div>
         </div>
 
-        {/* Bottom Footer */}
-        <div className="py-8 border-t border-border/50">
+        {/* Bottom Section - Social & Copyright */}
+        <div className="py-8">
           <div className="flex flex-col lg:flex-row justify-between items-center space-y-6 lg:space-y-0">
+            
             {/* Copyright */}
-            <div className="flex items-center space-x-2 text-muted-foreground">
-              <span>© 2025 {storeName}. Made with</span>
+            <div className="flex items-center space-x-2 text-muted-foreground text-sm">
+              <span>© 2025 {storeName}. Crafted with</span>
               <Heart className="h-4 w-4 text-red-500 animate-pulse" />
-              <span>for your wellness</span>
+              <span>for your wellness journey</span>
             </div>
 
-            {/* Social Links */}
+            {/* Social Media */}
             <div className="flex items-center space-x-6">
-              <span className="text-sm font-medium text-foreground">Follow Us:</span>
-              <div className="flex items-center space-x-4">
+              <span className="text-sm font-medium text-foreground">Connect With Us:</span>
+              <div className="flex items-center space-x-3">
                 <a 
                   href="https://www.instagram.com/neweraherbal/" 
                   target="_blank" 
                   rel="noopener noreferrer" 
-                  className="p-3 bg-card border border-border/50 rounded-full text-muted-foreground hover:text-pink-500 hover:border-pink-500/30 hover:bg-pink-500/5 transition-all duration-300 hover:scale-110"
+                  className="p-3 bg-gradient-to-br from-pink-500/10 to-purple-500/10 border border-pink-500/20 rounded-xl text-muted-foreground hover:text-pink-500 hover:border-pink-500/40 hover:from-pink-500/20 hover:to-purple-500/20 transition-all duration-300 hover:scale-110 hover:shadow-lg"
                 >
                   <Instagram className="h-5 w-5" />
                 </a>
@@ -206,7 +309,7 @@ const Footer = () => {
                   href="https://www.tiktok.com/@new.era7904?_t=ZS-8yCtFWlprdo&_r=1" 
                   target="_blank" 
                   rel="noopener noreferrer" 
-                  className="p-3 bg-card border border-border/50 rounded-full text-muted-foreground hover:text-black hover:border-black/30 hover:bg-black/5 transition-all duration-300 hover:scale-110"
+                  className="p-3 bg-gradient-to-br from-gray-500/10 to-black/10 border border-gray-500/20 rounded-xl text-muted-foreground hover:text-black hover:border-black/40 hover:from-gray-500/20 hover:to-black/20 transition-all duration-300 hover:scale-110 hover:shadow-lg"
                 >
                   <TikTokIcon className="h-5 w-5" />
                 </a>
@@ -214,33 +317,22 @@ const Footer = () => {
                   href="https://www.facebook.com/new.era.151908" 
                   target="_blank" 
                   rel="noopener noreferrer" 
-                  className="p-3 bg-card border border-border/50 rounded-full text-muted-foreground hover:text-blue-600 hover:border-blue-600/30 hover:bg-blue-600/5 transition-all duration-300 hover:scale-110"
+                  className="p-3 bg-gradient-to-br from-blue-500/10 to-blue-600/10 border border-blue-500/20 rounded-xl text-muted-foreground hover:text-blue-600 hover:border-blue-600/40 hover:from-blue-500/20 hover:to-blue-600/20 transition-all duration-300 hover:scale-110 hover:shadow-lg"
                 >
                   <Facebook className="h-5 w-5" />
                 </a>
               </div>
             </div>
 
-            {/* Legal Links */}
-            <div className="flex items-center space-x-6">
-              {legalLinks.map((link, index) => (
-                <a 
-                  key={link.name}
-                  href={link.href} 
-                  className="text-muted-foreground hover:text-primary transition-colors duration-300 text-sm"
-                >
-                  {link.name}
-                </a>
-              ))}
-            </div>
           </div>
         </div>
+
       </div>
 
       {/* Back to Top Button */}
       <button
         onClick={scrollToTop}
-        className="fixed bottom-24 right-6 p-4 bg-primary text-primary-foreground rounded-full shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-300 z-50 animate-bounce"
+        className="fixed bottom-24 right-6 p-4 bg-gradient-to-br from-primary to-accent text-primary-foreground rounded-full shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-300 z-50 animate-bounce"
         aria-label="Back to top"
       >
         <ArrowUp className="h-5 w-5" />
