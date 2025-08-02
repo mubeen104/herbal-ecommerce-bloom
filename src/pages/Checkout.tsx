@@ -13,6 +13,7 @@ import { useGuestCart } from "@/hooks/useGuestCart";
 import { useCheckout } from "@/hooks/useCheckout";
 import { useStoreSettings } from "@/hooks/useStoreSettings";
 import CouponInput from "@/components/CouponInput";
+import AddressSelector from "@/components/AddressSelector";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import Header from "@/components/Header";
@@ -86,6 +87,8 @@ const Checkout = () => {
   const [paymentMethod, setPaymentMethod] = useState("cod");
   const [notes, setNotes] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
+  const [useCustomShipping, setUseCustomShipping] = useState(false);
+  const [useCustomBilling, setUseCustomBilling] = useState(false);
 
   // Calculate discount
   let discountAmount = 0;
@@ -342,105 +345,115 @@ const Checkout = () => {
                 </Card>
               )}
               {/* Shipping Address */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <Truck className="h-5 w-5" />
-                    <span>Shipping Address</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {!isGuestCheckout ? (
+                <AddressSelector
+                  selectedAddress={shippingAddress}
+                  onAddressChange={setShippingAddress}
+                  title="Shipping Address"
+                  useCustomAddress={useCustomShipping}
+                  onUseCustomAddressChange={setUseCustomShipping}
+                />
+              ) : (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center space-x-2">
+                      <Truck className="h-5 w-5" />
+                      <span>Shipping Address</span>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="shipping-firstName">First Name *</Label>
+                        <Input
+                          id="shipping-firstName"
+                          value={shippingAddress.firstName}
+                          onChange={(e) => handleShippingAddressChange("firstName", e.target.value)}
+                          required
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="shipping-lastName">Last Name *</Label>
+                        <Input
+                          id="shipping-lastName"
+                          value={shippingAddress.lastName}
+                          onChange={(e) => handleShippingAddressChange("lastName", e.target.value)}
+                          required
+                        />
+                      </div>
+                    </div>
+                    
                     <div>
-                      <Label htmlFor="shipping-firstName">First Name *</Label>
+                      <Label htmlFor="shipping-company">Company (Optional)</Label>
                       <Input
-                        id="shipping-firstName"
-                        value={shippingAddress.firstName}
-                        onChange={(e) => handleShippingAddressChange("firstName", e.target.value)}
-                        required
+                        id="shipping-company"
+                        value={shippingAddress.company}
+                        onChange={(e) => handleShippingAddressChange("company", e.target.value)}
                       />
                     </div>
-                    <div>
-                      <Label htmlFor="shipping-lastName">Last Name *</Label>
-                      <Input
-                        id="shipping-lastName"
-                        value={shippingAddress.lastName}
-                        onChange={(e) => handleShippingAddressChange("lastName", e.target.value)}
-                        required
-                      />
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <Label htmlFor="shipping-company">Company (Optional)</Label>
-                    <Input
-                      id="shipping-company"
-                      value={shippingAddress.company}
-                      onChange={(e) => handleShippingAddressChange("company", e.target.value)}
-                    />
-                  </div>
 
-                  <div>
-                    <Label htmlFor="shipping-address1">Address Line 1 *</Label>
-                    <Input
-                      id="shipping-address1"
-                      value={shippingAddress.addressLine1}
-                      onChange={(e) => handleShippingAddressChange("addressLine1", e.target.value)}
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="shipping-address2">Address Line 2 (Optional)</Label>
-                    <Input
-                      id="shipping-address2"
-                      value={shippingAddress.addressLine2}
-                      onChange={(e) => handleShippingAddressChange("addressLine2", e.target.value)}
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                      <Label htmlFor="shipping-city">City *</Label>
+                      <Label htmlFor="shipping-address1">Address Line 1 *</Label>
                       <Input
-                        id="shipping-city"
-                        value={shippingAddress.city}
-                        onChange={(e) => handleShippingAddressChange("city", e.target.value)}
+                        id="shipping-address1"
+                        value={shippingAddress.addressLine1}
+                        onChange={(e) => handleShippingAddressChange("addressLine1", e.target.value)}
                         required
                       />
                     </div>
-                    <div>
-                      <Label htmlFor="shipping-state">State/Province *</Label>
-                      <Input
-                        id="shipping-state"
-                        value={shippingAddress.state}
-                        onChange={(e) => handleShippingAddressChange("state", e.target.value)}
-                        required
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="shipping-postal">Postal Code *</Label>
-                      <Input
-                        id="shipping-postal"
-                        value={shippingAddress.postalCode}
-                        onChange={(e) => handleShippingAddressChange("postalCode", e.target.value)}
-                        required
-                      />
-                    </div>
-                  </div>
 
-                  <div>
-                    <Label htmlFor="shipping-phone">Phone Number *</Label>
-                    <Input
-                      id="shipping-phone"
-                      type="tel"
-                      value={shippingAddress.phone}
-                      onChange={(e) => handleShippingAddressChange("phone", e.target.value)}
-                      required
-                    />
-                  </div>
-                </CardContent>
-              </Card>
+                    <div>
+                      <Label htmlFor="shipping-address2">Address Line 2 (Optional)</Label>
+                      <Input
+                        id="shipping-address2"
+                        value={shippingAddress.addressLine2}
+                        onChange={(e) => handleShippingAddressChange("addressLine2", e.target.value)}
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div>
+                        <Label htmlFor="shipping-city">City *</Label>
+                        <Input
+                          id="shipping-city"
+                          value={shippingAddress.city}
+                          onChange={(e) => handleShippingAddressChange("city", e.target.value)}
+                          required
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="shipping-state">State/Province *</Label>
+                        <Input
+                          id="shipping-state"
+                          value={shippingAddress.state}
+                          onChange={(e) => handleShippingAddressChange("state", e.target.value)}
+                          required
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="shipping-postal">Postal Code *</Label>
+                        <Input
+                          id="shipping-postal"
+                          value={shippingAddress.postalCode}
+                          onChange={(e) => handleShippingAddressChange("postalCode", e.target.value)}
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="shipping-phone">Phone Number *</Label>
+                      <Input
+                        id="shipping-phone"
+                        type="tel"
+                        value={shippingAddress.phone}
+                        onChange={(e) => handleShippingAddressChange("phone", e.target.value)}
+                        required
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
 
               {/* Billing Address */}
               <Card>
@@ -460,97 +473,109 @@ const Checkout = () => {
                   </div>
 
                   {!sameAsShipping && (
-                    <div className="space-y-4">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <Label htmlFor="billing-firstName">First Name *</Label>
-                          <Input
-                            id="billing-firstName"
-                            value={billingAddress.firstName}
-                            onChange={(e) => handleBillingAddressChange("firstName", e.target.value)}
-                            required
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="billing-lastName">Last Name *</Label>
-                          <Input
-                            id="billing-lastName"
-                            value={billingAddress.lastName}
-                            onChange={(e) => handleBillingAddressChange("lastName", e.target.value)}
-                            required
-                          />
-                        </div>
-                      </div>
-                      
-                      <div>
-                        <Label htmlFor="billing-company">Company (Optional)</Label>
-                        <Input
-                          id="billing-company"
-                          value={billingAddress.company}
-                          onChange={(e) => handleBillingAddressChange("company", e.target.value)}
+                    <>
+                      {!isGuestCheckout ? (
+                        <AddressSelector
+                          selectedAddress={billingAddress}
+                          onAddressChange={setBillingAddress}
+                          title="Select Billing Address"
+                          useCustomAddress={useCustomBilling}
+                          onUseCustomAddressChange={setUseCustomBilling}
                         />
-                      </div>
+                      ) : (
+                        <div className="space-y-4">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <Label htmlFor="billing-firstName">First Name *</Label>
+                              <Input
+                                id="billing-firstName"
+                                value={billingAddress.firstName}
+                                onChange={(e) => handleBillingAddressChange("firstName", e.target.value)}
+                                required
+                              />
+                            </div>
+                            <div>
+                              <Label htmlFor="billing-lastName">Last Name *</Label>
+                              <Input
+                                id="billing-lastName"
+                                value={billingAddress.lastName}
+                                onChange={(e) => handleBillingAddressChange("lastName", e.target.value)}
+                                required
+                              />
+                            </div>
+                          </div>
+                          
+                          <div>
+                            <Label htmlFor="billing-company">Company (Optional)</Label>
+                            <Input
+                              id="billing-company"
+                              value={billingAddress.company}
+                              onChange={(e) => handleBillingAddressChange("company", e.target.value)}
+                            />
+                          </div>
 
-                      <div>
-                        <Label htmlFor="billing-address1">Address Line 1 *</Label>
-                        <Input
-                          id="billing-address1"
-                          value={billingAddress.addressLine1}
-                          onChange={(e) => handleBillingAddressChange("addressLine1", e.target.value)}
-                          required
-                        />
-                      </div>
+                          <div>
+                            <Label htmlFor="billing-address1">Address Line 1 *</Label>
+                            <Input
+                              id="billing-address1"
+                              value={billingAddress.addressLine1}
+                              onChange={(e) => handleBillingAddressChange("addressLine1", e.target.value)}
+                              required
+                            />
+                          </div>
 
-                      <div>
-                        <Label htmlFor="billing-address2">Address Line 2 (Optional)</Label>
-                        <Input
-                          id="billing-address2"
-                          value={billingAddress.addressLine2}
-                          onChange={(e) => handleBillingAddressChange("addressLine2", e.target.value)}
-                        />
-                      </div>
+                          <div>
+                            <Label htmlFor="billing-address2">Address Line 2 (Optional)</Label>
+                            <Input
+                              id="billing-address2"
+                              value={billingAddress.addressLine2}
+                              onChange={(e) => handleBillingAddressChange("addressLine2", e.target.value)}
+                            />
+                          </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div>
-                          <Label htmlFor="billing-city">City *</Label>
-                          <Input
-                            id="billing-city"
-                            value={billingAddress.city}
-                            onChange={(e) => handleBillingAddressChange("city", e.target.value)}
-                            required
-                          />
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                              <Label htmlFor="billing-city">City *</Label>
+                              <Input
+                                id="billing-city"
+                                value={billingAddress.city}
+                                onChange={(e) => handleBillingAddressChange("city", e.target.value)}
+                                required
+                              />
+                            </div>
+                            <div>
+                              <Label htmlFor="billing-state">State/Province *</Label>
+                              <Input
+                                id="billing-state"
+                                value={billingAddress.state}
+                                onChange={(e) => handleBillingAddressChange("state", e.target.value)}
+                                required
+                              />
+                            </div>
+                            <div>
+                              <Label htmlFor="billing-postal">Postal Code *</Label>
+                              <Input
+                                id="billing-postal"
+                                value={billingAddress.postalCode}
+                                onChange={(e) => handleBillingAddressChange("postalCode", e.target.value)}
+                                required
+                              />
+                            </div>
+                          </div>
+
+                          <div>
+                            <Label htmlFor="billing-phone">Phone Number *</Label>
+                            <Input
+                              id="billing-phone"
+                              type="tel"
+                              value={billingAddress.phone}
+                              onChange={(e) => handleBillingAddressChange("phone", e.target.value)}
+                              required
+                            />
+                          </div>
                         </div>
-                        <div>
-                          <Label htmlFor="billing-state">State/Province *</Label>
-                          <Input
-                            id="billing-state"
-                            value={billingAddress.state}
-                            onChange={(e) => handleBillingAddressChange("state", e.target.value)}
-                            required
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="billing-postal">Postal Code *</Label>
-                          <Input
-                            id="billing-postal"
-                            value={billingAddress.postalCode}
-                            onChange={(e) => handleBillingAddressChange("postalCode", e.target.value)}
-                            required
-                          />
-                        </div>
-                      </div>
-
-                      <div>
-                        <Label htmlFor="billing-phone">Phone Number *</Label>
-                        <Input
-                          id="billing-phone"
-                          type="tel"
-                          value={billingAddress.phone}
-                          onChange={(e) => handleBillingAddressChange("phone", e.target.value)}
-                          required
-                        />
-                      </div>
-                    </div>
+                      )}
+                    </>
                   )}
                 </CardContent>
               </Card>

@@ -5,9 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Save, User, ArrowLeft } from "lucide-react";
+import { Loader2, Save, User, ArrowLeft, MapPin } from "lucide-react";
 import Header from "@/components/Header";
+import AddressManager from "@/components/AddressManager";
 
 interface UserProfile {
   id: string;
@@ -177,91 +179,110 @@ const Profile = () => {
           </p>
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Personal Information</CardTitle>
-            <CardDescription>
-              Update your profile details below
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {loading ? (
-              <div className="flex items-center justify-center py-8">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              </div>
-            ) : (
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="first_name">First Name</Label>
-                    <Input
-                      id="first_name"
-                      value={formData.first_name}
-                      onChange={(e) => handleInputChange("first_name", e.target.value)}
-                      placeholder="Enter your first name"
-                    />
+        <Tabs defaultValue="profile" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="profile" className="flex items-center space-x-2">
+              <User className="h-4 w-4" />
+              <span>Profile</span>
+            </TabsTrigger>
+            <TabsTrigger value="addresses" className="flex items-center space-x-2">
+              <MapPin className="h-4 w-4" />
+              <span>Addresses</span>
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="profile" className="mt-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Personal Information</CardTitle>
+                <CardDescription>
+                  Update your profile details below
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {loading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
                   </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="last_name">Last Name</Label>
-                    <Input
-                      id="last_name"
-                      value={formData.last_name}
-                      onChange={(e) => handleInputChange("last_name", e.target.value)}
-                      placeholder="Enter your last name"
-                    />
-                  </div>
-                </div>
+                ) : (
+                  <form onSubmit={handleSubmit} className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="first_name">First Name</Label>
+                        <Input
+                          id="first_name"
+                          value={formData.first_name}
+                          onChange={(e) => handleInputChange("first_name", e.target.value)}
+                          placeholder="Enter your first name"
+                        />
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="last_name">Last Name</Label>
+                        <Input
+                          id="last_name"
+                          value={formData.last_name}
+                          onChange={(e) => handleInputChange("last_name", e.target.value)}
+                          placeholder="Enter your last name"
+                        />
+                      </div>
+                    </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => handleInputChange("email", e.target.value)}
-                    placeholder="Enter your email"
-                  />
-                </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="email">Email</Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        value={formData.email}
+                        onChange={(e) => handleInputChange("email", e.target.value)}
+                        placeholder="Enter your email"
+                      />
+                    </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="phone">Phone Number</Label>
-                  <Input
-                    id="phone"
-                    type="tel"
-                    value={formData.phone}
-                    onChange={(e) => handleInputChange("phone", e.target.value)}
-                    placeholder="Enter your phone number"
-                  />
-                </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="phone">Phone Number</Label>
+                      <Input
+                        id="phone"
+                        type="tel"
+                        value={formData.phone}
+                        onChange={(e) => handleInputChange("phone", e.target.value)}
+                        placeholder="Enter your phone number"
+                      />
+                    </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="date_of_birth">Date of Birth</Label>
-                  <Input
-                    id="date_of_birth"
-                    type="date"
-                    value={formData.date_of_birth}
-                    onChange={(e) => handleInputChange("date_of_birth", e.target.value)}
-                  />
-                </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="date_of_birth">Date of Birth</Label>
+                      <Input
+                        id="date_of_birth"
+                        type="date"
+                        value={formData.date_of_birth}
+                        onChange={(e) => handleInputChange("date_of_birth", e.target.value)}
+                      />
+                    </div>
 
-                <Button type="submit" disabled={saving} className="w-full">
-                  {saving ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Saving...
-                    </>
-                  ) : (
-                    <>
-                      <Save className="h-4 w-4 mr-2" />
-                      Save Changes
-                    </>
-                  )}
-                </Button>
-              </form>
-            )}
-          </CardContent>
-        </Card>
+                    <Button type="submit" disabled={saving} className="w-full">
+                      {saving ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Saving...
+                        </>
+                      ) : (
+                        <>
+                          <Save className="h-4 w-4 mr-2" />
+                          Save Changes
+                        </>
+                      )}
+                    </Button>
+                  </form>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="addresses" className="mt-6">
+            <AddressManager />
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
