@@ -251,6 +251,7 @@ export type Database = {
       }
       hero_slides: {
         Row: {
+          auto_scroll_speed: number | null
           created_at: string
           display_order: number
           id: string
@@ -263,6 +264,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          auto_scroll_speed?: number | null
           created_at?: string
           display_order?: number
           id?: string
@@ -275,6 +277,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          auto_scroll_speed?: number | null
           created_at?: string
           display_order?: number
           id?: string

@@ -11,6 +11,7 @@ export interface HeroSlide {
   link_text?: string;
   is_active: boolean;
   display_order: number;
+  auto_scroll_speed?: number;
   created_at: string;
   updated_at: string;
 }

@@ -6,23 +6,26 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Plus, Edit, Trash2, Image as ImageIcon, Link as LinkIcon, Eye } from "lucide-react";
+import { Plus, Edit, Trash2, Image as ImageIcon, Link as LinkIcon, Eye, Settings } from "lucide-react";
 import { useHeroSlides, useCreateHeroSlide, useUpdateHeroSlide, useDeleteHeroSlide } from "@/hooks/useHeroSlides";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
+import ImageUpload from "@/components/ImageUpload";
 
 const slideSchema = z.object({
   title: z.string().min(1, "Title is required"),
   subtitle: z.string().optional(),
-  image_url: z.string().url("Must be a valid URL"),
-  link_url: z.string().url("Must be a valid URL").optional().or(z.literal("")),
+  image_url: z.string().min(1, "Image is required"),
+  link_url: z.string().optional(),
   link_text: z.string().optional(),
   is_active: z.boolean(),
   display_order: z.number().min(0),
+  auto_scroll_speed: z.number().min(1000).max(30000),
 });
 
 type SlideFormData = z.infer<typeof slideSchema>;
@@ -46,6 +49,7 @@ const AdminHeroSlides = () => {
       link_text: "Shop Now",
       is_active: true,
       display_order: 0,
+      auto_scroll_speed: 5000,
     },
   });
 
@@ -62,6 +66,7 @@ const AdminHeroSlides = () => {
           link_text: data.link_text,
           is_active: data.is_active,
           display_order: data.display_order,
+          auto_scroll_speed: data.auto_scroll_speed,
         });
       }
       setIsDialogOpen(false);
@@ -82,6 +87,7 @@ const AdminHeroSlides = () => {
       link_text: slide.link_text || "Shop Now",
       is_active: slide.is_active,
       display_order: slide.display_order,
+      auto_scroll_speed: slide.auto_scroll_speed || 5000,
     });
     setIsDialogOpen(true);
   };
@@ -102,6 +108,7 @@ const AdminHeroSlides = () => {
       link_text: "Shop Now",
       is_active: true,
       display_order: slides ? slides.length : 0,
+      auto_scroll_speed: 5000,
     });
     setIsDialogOpen(true);
   };
@@ -192,9 +199,13 @@ const AdminHeroSlides = () => {
                   name="image_url"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Image URL (4:3 Aspect Ratio Recommended)</FormLabel>
+                      <FormLabel>Slide Image (4:3 aspect ratio recommended)</FormLabel>
                       <FormControl>
-                        <Input placeholder="https://example.com/image.jpg" {...field} />
+                        <ImageUpload
+                          currentImage={field.value}
+                          onImageUploaded={field.onChange}
+                          bucketName="hero-slides"
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -251,25 +262,52 @@ const AdminHeroSlides = () => {
 
                   <FormField
                     control={form.control}
-                    name="is_active"
+                    name="auto_scroll_speed"
                     render={({ field }) => (
-                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                        <div className="space-y-0.5">
-                          <FormLabel className="text-base">Active</FormLabel>
-                          <div className="text-sm text-muted-foreground">
-                            Show this slide on the homepage
-                          </div>
-                        </div>
+                      <FormItem>
+                        <FormLabel>Auto Scroll Speed</FormLabel>
                         <FormControl>
-                          <Switch
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
+                          <Select
+                            value={field.value?.toString() || "5000"}
+                            onValueChange={(value) => field.onChange(Number(value))}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select speed" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="3000">Fast (3 seconds)</SelectItem>
+                              <SelectItem value="5000">Normal (5 seconds)</SelectItem>
+                              <SelectItem value="7000">Slow (7 seconds)</SelectItem>
+                              <SelectItem value="10000">Very Slow (10 seconds)</SelectItem>
+                            </SelectContent>
+                          </Select>
                         </FormControl>
+                        <FormMessage />
                       </FormItem>
                     )}
                   />
                 </div>
+
+                <FormField
+                  control={form.control}
+                  name="is_active"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                      <div className="space-y-0.5">
+                        <FormLabel className="text-base">Active</FormLabel>
+                        <div className="text-sm text-muted-foreground">
+                          Show this slide on the homepage
+                        </div>
+                      </div>
+                      <FormControl>
+                        <Switch
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
 
                 <div className="flex justify-end space-x-2">
                   <Button 
@@ -303,6 +341,10 @@ const AdminHeroSlides = () => {
                     {slide.is_active ? "Active" : "Inactive"}
                   </Badge>
                   <Badge variant="outline">Order: {slide.display_order}</Badge>
+                  <Badge variant="outline" className="text-xs">
+                    <Settings className="w-3 h-3 mr-1" />
+                    {slide.auto_scroll_speed ? `${slide.auto_scroll_speed / 1000}s` : '5s'}
+                  </Badge>
                 </div>
                 <div className="flex space-x-1">
                   <Button
