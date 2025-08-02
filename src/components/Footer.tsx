@@ -222,7 +222,7 @@ const Footer = () => {
             
             {/* Copyright */}
             <div className="flex items-center space-x-2 text-muted-foreground text-sm">
-              <span>© 2025 {storeName}. Crafted with</span>
+              <span>© 2025 {storeName}.</span>
               
               
             </div>
