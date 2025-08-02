@@ -73,7 +73,7 @@ const FeaturedProducts = () => {
             <Skeleton className="h-12 w-64 mx-auto mb-4 rounded-lg" />
             <Skeleton className="h-6 w-96 mx-auto rounded-lg" />
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 lg:gap-8">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6 lg:gap-8">
             {Array.from({
             length: 4
           }).map((_, index) => <div key={index} className="group relative">
@@ -142,7 +142,7 @@ const FeaturedProducts = () => {
         >
           <CarouselContent className="-ml-2 md:-ml-4">
             {products.map((product, index) => (
-              <CarouselItem key={product.id} className="pl-2 md:pl-4 basis-full sm:basis-1/2 lg:basis-1/3 xl:basis-1/4">
+              <CarouselItem key={product.id} className="pl-2 md:pl-4 basis-1/2 sm:basis-1/2 lg:basis-1/3 xl:basis-1/4">
                 <div className="group relative animate-fade-in hover-scale" style={{
                   animationDelay: `${index * 0.1}s`
                 }}>

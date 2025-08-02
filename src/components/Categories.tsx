@@ -65,7 +65,7 @@ const Categories = () => {
               each designed to support your healthy lifestyle.
             </p>
           </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
             {Array.from({
             length: 6
           }).map((_, index) => <Card key={index} className="border-border overflow-hidden">
