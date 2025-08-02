@@ -149,7 +149,7 @@ export const useValidateCoupon = () => {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async ({ code, userId, isGuest }: { code: string; userId?: string; isGuest: boolean }) => {
+    mutationFn: async ({ code, userId, isGuest, subtotal }: { code: string; userId?: string; isGuest: boolean; subtotal: number }) => {
       // Get coupon details
       const { data: coupon, error } = await supabase
         .from('coupons')
@@ -199,6 +199,11 @@ export const useValidateCoupon = () => {
         if (userUsage && userUsage.length >= coupon.user_usage_limit) {
           throw new Error('You have reached the usage limit for this coupon');
         }
+      }
+
+      // Check minimum amount requirement
+      if (coupon.minimum_amount && subtotal < coupon.minimum_amount) {
+        throw new Error(`Minimum order amount of PKR ${coupon.minimum_amount} required`);
       }
 
       return coupon;

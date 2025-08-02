@@ -26,16 +26,13 @@ const CouponInput = ({ onCouponApply, onCouponRemove, appliedCoupon, subtotal }:
         code: couponCode.trim(),
         userId: user?.id,
         isGuest: !user,
+        subtotal: subtotal,
       });
-
-      // Check minimum amount requirement
-      if (coupon.minimum_amount && subtotal < coupon.minimum_amount) {
-        throw new Error(`Minimum order amount of PKR ${coupon.minimum_amount} required`);
-      }
 
       onCouponApply(coupon);
       setCouponCode('');
     } catch (error) {
+      // Error is already handled by the mutation's onError handler
       console.error('Coupon validation failed:', error);
     }
   };
