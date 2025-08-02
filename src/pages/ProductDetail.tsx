@@ -241,10 +241,10 @@ const ProductDetail = () => {
             {/* Price */}
             <div className="space-y-2">
               <div className="flex items-center space-x-4">
-                 <span className="text-3xl font-bold text-primary">Rs {getCurrentPrice().toFixed(2)}</span>
+                 <span className="text-3xl font-bold text-primary">{currency} {getCurrentPrice().toFixed(2)}</span>
                  {getCurrentComparePrice() && getCurrentComparePrice() > getCurrentPrice() && (
                    <span className="text-xl text-muted-foreground line-through">
-                     Rs {getCurrentComparePrice().toFixed(2)}
+                     {currency} {getCurrentComparePrice().toFixed(2)}
                    </span>
                  )}
               </div>

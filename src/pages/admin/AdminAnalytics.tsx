@@ -9,8 +9,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { useState } from 'react';
 import { format, subDays, startOfDay, endOfDay } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { useStoreSettings } from '@/hooks/useStoreSettings';
 
 export default function AdminAnalytics() {
+  const { currency } = useStoreSettings();
+  
   // State for date filtering
   const [dateRange, setDateRange] = useState<{
     from: Date;
@@ -295,7 +298,7 @@ export default function AdminAnalytics() {
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Total Revenue</p>
                 <p className="text-2xl font-bold">
-                  PKR {(analytics?.totalRevenue as number)?.toFixed(2) || '0.00'}
+                  {currency} {(analytics?.totalRevenue as number)?.toFixed(2) || '0.00'}
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
                   {format(dateRange.from, 'MMM dd')} - {format(dateRange.to, 'MMM dd')}
@@ -348,7 +351,7 @@ export default function AdminAnalytics() {
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Avg. Order Value</p>
                 <p className="text-2xl font-bold">
-                  PKR {(analytics?.totalOrders as number) > 0 ? ((analytics.totalRevenue as number) / (analytics.totalOrders as number)).toFixed(2) : '0.00'}
+                  {currency} {(analytics?.totalOrders as number) > 0 ? ((analytics.totalRevenue as number) / (analytics.totalOrders as number)).toFixed(2) : '0.00'}
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
                   Per order
@@ -379,7 +382,7 @@ export default function AdminAnalytics() {
                 .map(([period, revenue]: [string, any]) => (
                 <div key={period} className="flex justify-between items-center p-3 bg-muted/30 rounded-lg">
                   <span className="text-sm font-medium">{period}</span>
-                  <span className="font-bold text-lg">PKR {Number(revenue).toFixed(2)}</span>
+                  <span className="font-bold text-lg">{currency} {Number(revenue).toFixed(2)}</span>
                 </div>
               ))}
               {Object.keys(analytics?.periodRevenue || {}).length === 0 && (
@@ -441,7 +444,7 @@ export default function AdminAnalytics() {
                   </div>
                   <div className="flex justify-between items-center mt-2 text-xs text-muted-foreground">
                     <span>Revenue:</span>
-                    <span className="font-semibold">PKR {product.revenue.toFixed(2)}</span>
+                    <span className="font-semibold">{currency} {product.revenue.toFixed(2)}</span>
                   </div>
                 </div>
               ))}
@@ -481,7 +484,7 @@ export default function AdminAnalytics() {
                   </p>
                 </div>
                 <div className="text-right space-y-1">
-                  <p className="font-bold text-lg">PKR {Number(order.total_amount).toFixed(2)}</p>
+                  <p className="font-bold text-lg">{currency} {Number(order.total_amount).toFixed(2)}</p>
                   <p className="text-sm text-muted-foreground capitalize px-2 py-1 bg-muted rounded">
                     {order.status}
                   </p>

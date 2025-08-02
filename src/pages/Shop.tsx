@@ -331,11 +331,11 @@ export default function Shop() {
                                         <div>
                                           <div className="flex items-center gap-3 mb-3">
                                              <span className="text-3xl font-bold text-foreground">
-                                               Rs {selectedProduct.price.toFixed(2)}
+                                               {currency} {selectedProduct.price.toFixed(2)}
                                              </span>
                                              {selectedProduct.compare_price && selectedProduct.compare_price > selectedProduct.price && (
                                                <span className="text-lg text-muted-foreground line-through">
-                                                 Rs {selectedProduct.compare_price.toFixed(2)}
+                                                 {currency} {selectedProduct.compare_price.toFixed(2)}
                                                </span>
                                              )}
                                           </div>
@@ -414,11 +414,11 @@ export default function Shop() {
                           <div className="flex items-center justify-between mb-6">
                             <div className="flex items-center gap-2">
                               <span className="font-bold text-xl text-foreground">
-                                Rs {product.price.toFixed(2)}
+                                {currency} {product.price.toFixed(2)}
                               </span>
                               {product.compare_price && product.compare_price > product.price && (
                                 <span className="text-sm text-muted-foreground line-through">
-                                  Rs {product.compare_price.toFixed(2)}
+                                  {currency} {product.compare_price.toFixed(2)}
                                 </span>
                               )}
                             </div>

@@ -7,8 +7,10 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
+import { useStoreSettings } from '@/hooks/useStoreSettings';
 
 export default function AdminDashboard() {
+  const { currency } = useStoreSettings();
   const navigate = useNavigate();
   const [timeFilter, setTimeFilter] = useState<string>('all');
 
@@ -281,7 +283,7 @@ export default function AdminDashboard() {
                     </div>
                     <div className="text-right space-y-2">
                       <p className="font-bold text-lg text-foreground">
-                        Rs {Number(order.total_amount).toFixed(2)}
+                        {currency} {Number(order.total_amount).toFixed(2)}
                       </p>
                       <Badge className={getStatusColor(order.status)}>
                         {order.status}

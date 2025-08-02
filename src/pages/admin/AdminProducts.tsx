@@ -19,6 +19,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useCategories } from '@/hooks/useCategories';
+import { useStoreSettings } from '@/hooks/useStoreSettings';
 
 interface Product {
   id: string;
@@ -88,6 +89,7 @@ export default function AdminProducts() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { data: categories } = useCategories();
+  const { currency } = useStoreSettings();
 
   // Fetch products
   const { data: products, isLoading } = useQuery({
@@ -1144,7 +1146,7 @@ export default function AdminProducts() {
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell>Rs {product.price.toFixed(2)}</TableCell>
+                    <TableCell>{currency} {product.price.toFixed(2)}</TableCell>
                     <TableCell>
                       <Badge variant={product.inventory_quantity > 10 ? "default" : product.inventory_quantity > 0 ? "secondary" : "destructive"}>
                         {product.inventory_quantity}

@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { X, Check } from 'lucide-react';
 import { useValidateCoupon } from '@/hooks/useCoupons';
 import { useAuth } from '@/contexts/AuthContext';
+import { useStoreSettings } from '@/hooks/useStoreSettings';
 
 interface CouponInputProps {
   onCouponApply: (coupon: any) => void;
@@ -16,6 +17,7 @@ interface CouponInputProps {
 const CouponInput = ({ onCouponApply, onCouponRemove, appliedCoupon, subtotal }: CouponInputProps) => {
   const [couponCode, setCouponCode] = useState('');
   const { user } = useAuth();
+  const { currency } = useStoreSettings();
   const validateCoupon = useValidateCoupon();
 
   const handleApplyCoupon = async () => {
@@ -78,8 +80,8 @@ const CouponInput = ({ onCouponApply, onCouponRemove, appliedCoupon, subtotal }:
               <p className="text-sm text-muted-foreground mt-1">
                 {appliedCoupon.type === 'percentage' 
                   ? `${appliedCoupon.value}% off`
-                  : `PKR ${appliedCoupon.value} off`
-                } - Saved PKR {appliedCoupon.type === 'percentage' 
+                  : `${currency} ${appliedCoupon.value} off`
+                } - Saved {currency} {appliedCoupon.type === 'percentage'
                   ? `${calculateDiscount(appliedCoupon, subtotal).toFixed(2)}`
                   : `${Math.min(appliedCoupon.value, subtotal).toFixed(2)}`
                 }

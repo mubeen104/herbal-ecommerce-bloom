@@ -201,7 +201,7 @@ const Cart = () => {
                             </p>
                           )}
                            <p className="text-xl font-bold text-primary">
-                             Rs {(item.product_variants?.price || item.products?.price || item.product?.price || 0).toFixed(2)}
+                             {currency} {(item.product_variants?.price || item.products?.price || item.product?.price || 0).toFixed(2)}
                            </p>
                         </div>
 
@@ -241,7 +241,7 @@ const Cart = () => {
                         {/* Item Total */}
                         <div className="text-right min-w-0">
                            <p className="text-lg font-semibold text-foreground">
-                             Rs {((item.product_variants?.price || item.products?.price || item.product?.price || 0) * item.quantity).toFixed(2)}
+                             {currency} {((item.product_variants?.price || item.products?.price || item.product?.price || 0) * item.quantity).toFixed(2)}
                            </p>
                         </div>
 
@@ -270,7 +270,7 @@ const Cart = () => {
                   <CardContent className="space-y-4">
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Subtotal ({cartCount} items)</span>
-                      <span className="font-semibold">Rs {cartTotal.toFixed(2)}</span>
+                      <span className="font-semibold">{currency} {cartTotal.toFixed(2)}</span>
                     </div>
                     
                     <div className="flex justify-between">
@@ -287,7 +287,7 @@ const Cart = () => {
                     
                     <div className="flex justify-between text-lg font-bold">
                       <span>Total</span>
-                      <span>Rs {cartTotal.toFixed(2)}</span>
+                      <span>{currency} {cartTotal.toFixed(2)}</span>
                     </div>
                     
                     <Button 

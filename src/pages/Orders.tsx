@@ -215,7 +215,7 @@ const Orders = () => {
                               </Badge>
                             )}
                             <p className="text-sm text-muted-foreground">
-                              Quantity: {item.quantity} × {currency} {item.price}
+                             Quantity: {item.quantity} × {currency} {item.price}
                             </p>
                           </div>
                           <p className="font-medium text-foreground">

@@ -11,6 +11,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useStoreSettings } from '@/hooks/useStoreSettings';
 
 interface User {
   id: string;
@@ -55,6 +56,7 @@ export default function AdminUsers() {
   const [sortBy, setSortBy] = useState('name'); // 'name', 'earliest', 'latest'
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { currency } = useStoreSettings();
 
   // Fetch users with roles - optimized approach
   const { data: users = [], isLoading } = useQuery({
@@ -482,7 +484,7 @@ export default function AdminUsers() {
                           {userOrders.map((order: Order) => (
                             <TableRow key={order.id}>
                               <TableCell className="font-medium">{order.order_number}</TableCell>
-                              <TableCell>Rs {order.total_amount}</TableCell>
+                              <TableCell>{currency} {order.total_amount}</TableCell>
                               <TableCell>
                                 <Badge variant="outline">{order.status}</Badge>
                               </TableCell>

@@ -644,7 +644,7 @@ const Checkout = () => {
                           </p>
                         </div>
                         <div className="text-sm font-medium">
-                          Rs {((item.products?.price || item.product?.price || 0) * item.quantity).toFixed(2)}
+                          {currency} {((item.products?.price || item.product?.price || 0) * item.quantity).toFixed(2)}
                         </div>
                       </div>
                     ))}
@@ -669,20 +669,20 @@ const Checkout = () => {
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm">
                       <span>Subtotal ({cartCount} items)</span>
-                      <span>Rs {cartTotal.toFixed(2)}</span>
+                      <span>{currency} {cartTotal.toFixed(2)}</span>
                     </div>
                     
                     {appliedCoupon && (
                       <div className="flex justify-between text-sm text-success">
                         <span>Discount ({appliedCoupon.code})</span>
-                        <span>-Rs {discountAmount.toFixed(2)}</span>
+                        <span>-{currency} {discountAmount.toFixed(2)}</span>
                       </div>
                     )}
                     
                     <div className="flex justify-between text-sm">
                       <span>Shipping</span>
                       <span>
-                        {shippingCost === 0 ? "Free" : `Rs ${shippingCost.toFixed(2)}`}
+                        {shippingCost === 0 ? "Free" : `${currency} ${shippingCost.toFixed(2)}`}
                       </span>
                     </div>
                     
@@ -701,7 +701,7 @@ const Checkout = () => {
                     
                     <div className="flex justify-between text-lg font-bold">
                       <span>Total</span>
-                      <span>Rs {totalAmount.toFixed(2)}</span>
+                      <span>{currency} {totalAmount.toFixed(2)}</span>
                     </div>
                   </div>
 
