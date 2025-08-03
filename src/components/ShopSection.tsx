@@ -19,6 +19,7 @@ const ShopSection = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [sortBy, setSortBy] = useState<string>('newest');
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
+  const [isFiltersExpanded, setIsFiltersExpanded] = useState(false);
 
   const { data: products, isLoading: productsLoading } = useProducts();
   const { data: categories, isLoading: categoriesLoading } = useCategories();
@@ -118,45 +119,77 @@ const ShopSection = () => {
           </p>
         </div>
 
-        {/* Modern Filters and Search */}
-        <div className="flex flex-col md:flex-row gap-4 mb-12 p-6 bg-card/40 backdrop-blur-xl border border-border/20 rounded-3xl shadow-lg">
-          <div className="flex-1 relative">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5" />
-            <Input
-              placeholder="Search products..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-12 h-12 rounded-2xl border-border/30 bg-background/50 backdrop-blur-sm"
-            />
-          </div>
-          
-          <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-            <SelectTrigger className="w-full md:w-52 h-12 rounded-2xl border-border/30 bg-background/50 backdrop-blur-sm">
-              <Filter className="h-4 w-4 mr-2" />
-              <SelectValue placeholder="Category" />
-            </SelectTrigger>
-            <SelectContent className="rounded-2xl border-border/20 bg-card/90 backdrop-blur-xl">
-              <SelectItem value="all">All Categories</SelectItem>
-              {categories?.map((category) => (
-                <SelectItem key={category.id} value={category.slug}>
-                  {category.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        {/* Collapsible Filters Section (Category & Sort Only) */}
+        <div className="mb-12">
+          {/* Filters Toggle Button */}
+          <button
+            type="button"
+            onClick={() => setIsFiltersExpanded((prev) => !prev)}
+            className="flex items-center justify-between w-full p-4 bg-card/40 backdrop-blur-xl border border-border/20 rounded-3xl shadow-lg hover:bg-card/60 transition-colors focus:outline-none"
+            aria-expanded={isFiltersExpanded}
+            aria-controls="shop-filters-panel"
+          >
+            <span className="flex items-center gap-2 font-medium">
+              <Filter className="h-4 w-4" />
+              Filters
+            </span>
+            <svg
+              className={`w-4 h-4 transition-transform duration-300 ${isFiltersExpanded ? 'rotate-180' : ''}`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
 
-          <Select value={sortBy} onValueChange={setSortBy}>
-            <SelectTrigger className="w-full md:w-52 h-12 rounded-2xl border-border/30 bg-background/50 backdrop-blur-sm">
-              <SelectValue placeholder="Sort by" />
-            </SelectTrigger>
-            <SelectContent className="rounded-2xl border-border/20 bg-card/90 backdrop-blur-xl">
-              <SelectItem value="newest">Newest First</SelectItem>
-              <SelectItem value="name">Name A-Z</SelectItem>
-              <SelectItem value="price-low">Price: Low to High</SelectItem>
-              <SelectItem value="price-high">Price: High to Low</SelectItem>
-              <SelectItem value="kits-deals">Kits & Deals</SelectItem>
-            </SelectContent>
-          </Select>
+          {/* Collapsible Filters Section */}
+          <div
+            id="shop-filters-panel"
+            className={`overflow-hidden transition-all duration-300 ease-in-out bg-card/40 backdrop-blur-xl border-x border-b border-border/20 rounded-b-3xl shadow-lg ${isFiltersExpanded ? 'border-opacity-100' : 'border-opacity-0'}`}
+            style={{
+              maxHeight: isFiltersExpanded ? '500px' : '0',
+              opacity: isFiltersExpanded ? '1' : '0',
+              transform: isFiltersExpanded ? 'translateY(0)' : 'translateY(-8px)',
+            }}
+          >
+            <div className={`p-6 space-y-4 ${isFiltersExpanded ? 'opacity-100' : 'opacity-0'} transition-opacity duration-200`}>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-muted-foreground">Category</label>
+                  <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                    <SelectTrigger className="w-full h-12 rounded-2xl border-border/30 bg-background/50 backdrop-blur-sm">
+                      <SelectValue placeholder="Select Category" />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-2xl border-border/20 bg-card/90 backdrop-blur-xl">
+                      <SelectItem value="all">All Categories</SelectItem>
+                      {categories?.map((category) => (
+                        <SelectItem key={category.id} value={category.slug}>
+                          {category.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-muted-foreground">Sort By</label>
+                  <Select value={sortBy} onValueChange={setSortBy}>
+                    <SelectTrigger className="w-full h-12 rounded-2xl border-border/30 bg-background/50 backdrop-blur-sm">
+                      <SelectValue placeholder="Sort by" />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-2xl border-border/20 bg-card/90 backdrop-blur-xl">
+                      <SelectItem value="newest">Newest First</SelectItem>
+                      <SelectItem value="name">Name A-Z</SelectItem>
+                      <SelectItem value="price-low">Price: Low to High</SelectItem>
+                      <SelectItem value="price-high">Price: High to Low</SelectItem>
+                      <SelectItem value="kits-deals">Kits & Deals</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Modern Products Grid */}
