@@ -10,6 +10,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
+import { useEffect } from "react";
 import { useFeaturedProducts } from "@/hooks/useProducts";
 import { useGuestCart } from "@/hooks/useGuestCart";
 import { useAuth } from "@/contexts/AuthContext";
@@ -139,6 +140,23 @@ const FeaturedProducts = () => {
             loop: true,
           }}
           className="w-full max-w-7xl mx-auto"
+          setApi={(api) => {
+            if (api) {
+              // Auto-scroll functionality
+              const autoScroll = () => {
+                if (api.canScrollNext()) {
+                  api.scrollNext();
+                } else {
+                  api.scrollTo(0);
+                }
+              };
+              
+              const interval = setInterval(autoScroll, 3000);
+              
+              // Clean up interval when component unmounts or API changes
+              return () => clearInterval(interval);
+            }
+          }}
         >
           <CarouselContent className="-ml-2 md:-ml-4">
             {products.map((product, index) => (
@@ -298,8 +316,6 @@ const FeaturedProducts = () => {
               </CarouselItem>
             ))}
           </CarouselContent>
-          <CarouselPrevious className="hidden md:flex -left-12 hover:bg-primary hover:text-primary-foreground" />
-          <CarouselNext className="hidden md:flex -right-12 hover:bg-primary hover:text-primary-foreground" />
         </Carousel>
 
         {/* Modern View All Button */}

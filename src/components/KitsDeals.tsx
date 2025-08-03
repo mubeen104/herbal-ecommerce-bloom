@@ -4,6 +4,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+} from "@/components/ui/carousel";
 const KitsDeals = () => {
   const {
     data: products,
@@ -48,57 +53,86 @@ const KitsDeals = () => {
           <p className="text-lg text-muted-foreground">Special product bundles and exclusive deals</p>
         </div>
         
-        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 lg:gap-8">
-          {kitsDealsProducts.map(product => <Card key={product.id} className="group hover:shadow-lg transition-shadow duration-300 overflow-hidden">
-              <CardContent className="p-0">
-                <Link to={`/products/${product.slug}`}>
-                   <div className="relative aspect-square overflow-hidden">
-                     {product.product_images?.[0] && <img src={product.product_images[0].image_url} alt={product.product_images[0].alt_text || product.name} className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300" />}
-                    <div className="absolute top-4 left-4">
-                      
-                    </div>
-                    {product.compare_price && product.compare_price > product.price && <div className="absolute top-4 right-4">
-                        <Badge variant="destructive">
-                          {Math.round((product.compare_price - product.price) / product.compare_price * 100)}% OFF
-                        </Badge>
-                      </div>}
-                  </div>
-                </Link>
-                
-                <div className="p-2 sm:p-4 lg:p-6">
-                  <Link to={`/products/${product.slug}`}>
-                    <h3 className="font-semibold text-sm sm:text-base lg:text-lg leading-tight line-clamp-2 group-hover:text-primary transition-colors duration-300 mb-1 sm:mb-2">
-                      {product.name}
-                    </h3>
-                  </Link>
-                  
-                  <p className="text-xs sm:text-sm text-muted-foreground mb-2 sm:mb-4 line-clamp-2">
-                    {product.short_description}
-                  </p>
-                  
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                    <div className="flex flex-col gap-0.5">
-                      <div className="flex items-center text-sm sm:text-lg font-bold text-foreground">
-                        <span className="mr-1">{currency}</span>
-                        {product.price.toFixed(2)}
+        <Carousel
+          opts={{
+            align: "start",
+            loop: true,
+          }}
+          className="w-full max-w-7xl mx-auto"
+          setApi={(api) => {
+            if (api) {
+              // Auto-scroll functionality
+              const autoScroll = () => {
+                if (api.canScrollNext()) {
+                  api.scrollNext();
+                } else {
+                  api.scrollTo(0);
+                }
+              };
+              
+              const interval = setInterval(autoScroll, 4000);
+              
+              // Clean up interval when component unmounts or API changes
+              return () => clearInterval(interval);
+            }
+          }}
+        >
+          <CarouselContent className="-ml-2 md:-ml-4">
+            {kitsDealsProducts.map((product, index) => (
+              <CarouselItem key={product.id} className="pl-2 md:pl-4 basis-1/2 sm:basis-1/2 lg:basis-1/3">
+                <Card className="group hover:shadow-lg transition-shadow duration-300 overflow-hidden">
+                  <CardContent className="p-0">
+                    <Link to={`/products/${product.slug}`}>
+                       <div className="relative aspect-square overflow-hidden">
+                         {product.product_images?.[0] && <img src={product.product_images[0].image_url} alt={product.product_images[0].alt_text || product.name} className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300" />}
+                        <div className="absolute top-4 left-4">
+                          
+                        </div>
+                        {product.compare_price && product.compare_price > product.price && <div className="absolute top-4 right-4">
+                            <Badge variant="destructive">
+                              {Math.round((product.compare_price - product.price) / product.compare_price * 100)}% OFF
+                            </Badge>
+                          </div>}
                       </div>
-                      {product.compare_price && product.compare_price > product.price && <div className="flex items-center text-xs sm:text-sm text-muted-foreground line-through">
-                          <span className="mr-1">{currency}</span>
-                          {product.compare_price.toFixed(2)}
-                        </div>}
-                    </div>
+                    </Link>
                     
-                    <Button size="sm" asChild className="text-xs sm:text-sm py-1.5 sm:py-2 px-2 sm:px-3 rounded-full">
+                    <div className="p-2 sm:p-4 lg:p-6">
                       <Link to={`/products/${product.slug}`}>
-                        <span className="hidden sm:inline">View Deal</span>
-                        <span className="sm:hidden">View</span>
+                        <h3 className="font-semibold text-sm sm:text-base lg:text-lg leading-tight line-clamp-2 group-hover:text-primary transition-colors duration-300 mb-1 sm:mb-2">
+                          {product.name}
+                        </h3>
                       </Link>
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>)}
-        </div>
+                      
+                      <p className="text-xs sm:text-sm text-muted-foreground mb-2 sm:mb-4 line-clamp-2">
+                        {product.short_description}
+                      </p>
+                      
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                        <div className="flex flex-col gap-0.5">
+                          <div className="flex items-center text-sm sm:text-lg font-bold text-foreground">
+                            <span className="mr-1">{currency}</span>
+                            {product.price.toFixed(2)}
+                          </div>
+                          {product.compare_price && product.compare_price > product.price && <div className="flex items-center text-xs sm:text-sm text-muted-foreground line-through">
+                              <span className="mr-1">{currency}</span>
+                              {product.compare_price.toFixed(2)}
+                            </div>}
+                        </div>
+                        
+                        <Button size="sm" asChild className="text-xs sm:text-sm py-1.5 sm:py-2 px-2 sm:px-3 rounded-full">
+                          <Link to={`/products/${product.slug}`}>
+                            <span className="hidden sm:inline">View Deal</span>
+                            <span className="sm:hidden">View</span>
+                          </Link>
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+        </Carousel>
         
         <div className="text-center mt-12">
           <Button size="lg" variant="outline" asChild>
