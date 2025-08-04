@@ -192,8 +192,14 @@ const Checkout = () => {
         totalAmount,
         discountAmount,
         paymentMethod,
-        shippingAddress,
-        billingAddress: sameAsShipping ? shippingAddress : billingAddress,
+        shippingAddress: {
+          ...shippingAddress,
+          email: isGuestCheckout ? guestInfo.email : '',
+        },
+        billingAddress: sameAsShipping ? {
+          ...shippingAddress,
+          email: isGuestCheckout ? guestInfo.email : '',
+        } : billingAddress,
         notes,
         couponId: appliedCoupon?.id,
         couponCode: appliedCoupon?.code,
@@ -204,7 +210,6 @@ const Checkout = () => {
           price: (item.products?.price || item.product?.price || 0),
           total: (item.products?.price || item.product?.price || 0) * item.quantity,
         })),
-        guestInfo: isGuestCheckout ? guestInfo : undefined,
       };
 
       const order = await createOrder.mutateAsync(orderData);

@@ -4,12 +4,13 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { ShoppingCart, Package, Eye, Truck, CheckCircle, XCircle, Clock, Edit, Calendar, MapPin } from 'lucide-react';
+import { ShoppingCart, Package, Eye, Truck, CheckCircle, XCircle, Clock, Edit, Calendar, MapPin, Mail } from 'lucide-react';
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useStoreSettings } from '@/hooks/useStoreSettings';
+import { useEmailNotifications } from '@/hooks/useEmailNotifications';
 
 interface Order {
   id: string;
@@ -53,6 +54,7 @@ export default function AdminOrders() {
   const { currency } = useStoreSettings();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { sendShippingNotificationEmail } = useEmailNotifications();
 
   // Fetch orders
   const { data: orders, isLoading } = useQuery({
@@ -551,6 +553,30 @@ export default function AdminOrders() {
                       Update Status
                     </Button>
                   </div>
+                  
+                  {(selectedOrder.status === 'shipped' || selectedOrder.status === 'completed') && (
+                    <div className="pt-4 border-t">
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          const email = selectedOrder.profiles?.email || selectedOrder.shipping_address?.email;
+                          if (email) {
+                            sendShippingNotificationEmail(selectedOrder.id, email);
+                          } else {
+                            toast({
+                              title: 'Error',
+                              description: 'No email address found for this order',
+                              variant: 'destructive',
+                            });
+                          }
+                        }}
+                        className="w-full"
+                      >
+                        <Mail className="h-4 w-4 mr-2" />
+                        Send Shipping Notification Email
+                      </Button>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
 

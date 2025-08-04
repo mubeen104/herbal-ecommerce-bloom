@@ -131,6 +131,19 @@ export const useCheckout = () => {
         }
       }
 
+      // Send order confirmation email
+      try {
+        await supabase.functions.invoke('send-order-emails', {
+          body: {
+            type: 'order_confirmation',
+            orderId: order.id,
+          },
+        });
+      } catch (emailError) {
+        console.error('Failed to send order confirmation email:', emailError);
+        // Don't fail the order creation if email fails
+      }
+
       return order;
     },
   });
