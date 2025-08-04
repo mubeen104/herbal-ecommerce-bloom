@@ -352,10 +352,7 @@ export default function Shop() {
                           </div>
 
                           {/* Rating */}
-                          <div className="flex items-center gap-0.5 sm:gap-1 mb-2 sm:mb-3">
-                            {[...Array(5)].map((_, i) => <Star key={i} className={`h-2.5 w-2.5 sm:h-3 sm:w-3 lg:h-4 lg:w-4 ${i < 4 ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground/30'}`} />)}
-                            <span className="text-xs text-muted-foreground ml-1">(4.5)</span>
-                          </div>
+                          
 
                           {/* Price */}
                           <div className="flex items-center justify-between mb-2 sm:mb-4">
