@@ -115,7 +115,7 @@ export default function Shop() {
             {/* Search Bar */}
             <div className="mb-6">
               <div className="relative max-w-2xl mx-auto">
-                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                
                 
               </div>
             </div>
