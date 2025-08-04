@@ -3,13 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Heart, ShoppingBag, Star, Eye, ShoppingCart } from "lucide-react";
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel";
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { useEffect } from "react";
 import { useFeaturedProducts } from "@/hooks/useProducts";
 import { useGuestCart } from "@/hooks/useGuestCart";
@@ -25,7 +19,7 @@ const FeaturedProducts = () => {
     data: featuredProducts = [],
     isLoading
   } = useFeaturedProducts();
-  
+
   // Filter out kits & deals products to show only in dedicated section
   const products = featuredProducts.filter(product => !product.is_kits_deals);
   const {
@@ -134,36 +128,30 @@ const FeaturedProducts = () => {
         </div>
 
         {/* Modern Products Carousel */}
-        <Carousel
-          opts={{
-            align: "start",
-            loop: true,
-          }}
-          className="w-full max-w-7xl mx-auto"
-          setApi={(api) => {
-            if (api) {
-              // Auto-scroll functionality
-              const autoScroll = () => {
-                if (api.canScrollNext()) {
-                  api.scrollNext();
-                } else {
-                  api.scrollTo(0);
-                }
-              };
-              
-              const interval = setInterval(autoScroll, 3000);
-              
-              // Clean up interval when component unmounts or API changes
-              return () => clearInterval(interval);
+        <Carousel opts={{
+        align: "start",
+        loop: true
+      }} className="w-full max-w-7xl mx-auto" setApi={api => {
+        if (api) {
+          // Auto-scroll functionality
+          const autoScroll = () => {
+            if (api.canScrollNext()) {
+              api.scrollNext();
+            } else {
+              api.scrollTo(0);
             }
-          }}
-        >
+          };
+          const interval = setInterval(autoScroll, 3000);
+
+          // Clean up interval when component unmounts or API changes
+          return () => clearInterval(interval);
+        }
+      }}>
           <CarouselContent className="-ml-2 md:-ml-4">
-            {products.map((product, index) => (
-              <CarouselItem key={product.id} className="pl-2 md:pl-4 basis-1/2 sm:basis-1/2 lg:basis-1/3 xl:basis-1/4">
+            {products.map((product, index) => <CarouselItem key={product.id} className="pl-2 md:pl-4 basis-1/2 sm:basis-1/2 lg:basis-1/3 xl:basis-1/4">
                 <div className="group relative animate-fade-in hover-scale" style={{
-                  animationDelay: `${index * 0.1}s`
-                }}>
+              animationDelay: `${index * 0.1}s`
+            }}>
                   {/* Floating Card Container */}
                   <div className="relative bg-card/40 backdrop-blur-xl border border-border/20 rounded-3xl p-1 shadow-lg group-hover:shadow-2xl transition-all duration-700 group-hover:border-primary/30">
                     {/* Gradient Border Effect */}
@@ -274,15 +262,7 @@ const FeaturedProducts = () => {
                           </div>
 
                           {/* Rating */}
-                          <div className="flex items-center gap-0.5 sm:gap-1 mb-2 sm:mb-3">
-                            {[...Array(5)].map((_, i) => (
-                              <Star 
-                                key={i} 
-                                className={`h-2.5 w-2.5 sm:h-3 sm:w-3 lg:h-4 lg:w-4 ${i < 4 ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground/30'}`} 
-                              />
-                            ))}
-                            <span className="text-xs text-muted-foreground ml-1">(4.5)</span>
-                          </div>
+                          
 
                           {/* Price */}
                           <div className="flex items-center justify-between mb-2 sm:mb-4 lg:mb-6">
@@ -313,8 +293,7 @@ const FeaturedProducts = () => {
                     </Card>
                   </div>
                 </div>
-              </CarouselItem>
-            ))}
+              </CarouselItem>)}
           </CarouselContent>
         </Carousel>
 
