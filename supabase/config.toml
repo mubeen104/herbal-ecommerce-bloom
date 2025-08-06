@@ -69,3 +69,9 @@ template_path = "./supabase/templates"
 
 [functions.send-order-emails]
 verify_jwt = false
+
+[functions.newsletter-signup]
+verify_jwt = false
+
+[functions.contact-form]
+verify_jwt = false

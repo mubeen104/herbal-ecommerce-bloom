@@ -38,14 +38,50 @@ const HeroSlider = () => {
     return () => clearInterval(interval);
   }, [api, autoScrollSpeed]);
 
-  if (isLoading || !slides || slides.length === 0) {
+  if (isLoading) {
     return (
-      <section className="relative h-screen w-full bg-gradient-hero overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-transparent to-accent/20 animate-pulse" />
-        <div className="flex items-center justify-center h-full">
-          <div className="text-center animate-fade-in">
-            <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-            <p className="text-muted-foreground">Loading slides...</p>
+      <section className="relative w-full overflow-hidden">
+        <div className="w-full aspect-[16/9] sm:aspect-[16/10] md:aspect-[16/9] lg:aspect-[21/9] max-w-full">
+          <div className="relative h-full w-full bg-gradient-to-br from-muted/20 to-background animate-pulse">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-accent/10" />
+            
+            {/* Skeleton content */}
+            <div className="flex items-center justify-center h-full">
+              <div className="text-center space-y-4 animate-fade-in">
+                <div className="w-20 h-20 mx-auto">
+                  <div className="w-full h-full border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
+                </div>
+                <div className="space-y-2">
+                  <div className="h-4 bg-muted/40 rounded-full w-32 mx-auto animate-pulse" />
+                  <div className="h-3 bg-muted/30 rounded-full w-24 mx-auto animate-pulse" style={{ animationDelay: '0.2s' }} />
+                </div>
+              </div>
+            </div>
+            
+            {/* Skeleton slide indicators */}
+            <div className="absolute bottom-4 sm:bottom-6 md:bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-2 sm:space-x-3">
+              {[...Array(3)].map((_, index) => (
+                <div
+                  key={index}
+                  className="w-6 sm:w-8 h-1.5 sm:h-2 bg-white/20 rounded-full animate-pulse"
+                  style={{ animationDelay: `${index * 0.1}s` }}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (!slides || slides.length === 0) {
+    return (
+      <section className="relative w-full overflow-hidden">
+        <div className="w-full aspect-[16/9] sm:aspect-[16/10] md:aspect-[16/9] lg:aspect-[21/9] max-w-full">
+          <div className="relative h-full w-full bg-gradient-to-br from-muted/20 to-background flex items-center justify-center">
+            <div className="text-center animate-fade-in">
+              <p className="text-muted-foreground text-lg">No slides available</p>
+            </div>
           </div>
         </div>
       </section>
@@ -66,12 +102,23 @@ const HeroSlider = () => {
           <CarouselContent className="h-full">
             {slides.map((slide, index) => (
               <CarouselItem key={slide.id} className="h-full">
-                <div className="relative h-full w-full group">
-                  {/* Responsive image with proper object-fit */}
+                <div className="relative h-full w-full group animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
+                  {/* Responsive image with proper object-fit and loading optimization */}
                   <img 
                     src={slide.image_url} 
                     alt={slide.title}
-                    className="w-full h-full object-cover sm:object-contain md:object-cover bg-gradient-to-br from-muted/20 to-background"
+                    loading={index === 0 ? "eager" : "lazy"}
+                    decoding="async"
+                    className="w-full h-full object-cover sm:object-contain md:object-cover bg-gradient-to-br from-muted/20 to-background transition-transform duration-700 ease-out group-hover:scale-[1.02]"
+                    onLoad={(e) => {
+                      // Add smooth transition when image loads
+                      e.currentTarget.style.opacity = '1';
+                    }}
+                    style={{ opacity: '0', transition: 'opacity 0.5s ease-in-out' }}
+                    onError={(e) => {
+                      // Fallback for broken images
+                      e.currentTarget.style.background = 'linear-gradient(135deg, hsl(var(--muted)), hsl(var(--background)))';
+                    }}
                   />
                 
                 {/* Subtle gradient overlay for better contrast on indicators */}

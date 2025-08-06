@@ -5,6 +5,9 @@ import { useStoreSettings } from "@/hooks/useStoreSettings";
 import TikTokIcon from "@/components/icons/TikTokIcon";
 import { HalalCertIcon, NaturalCertIcon, EcoFriendlyIcon, GMOFreeIcon, NoChemicalsIcon, OrganicCertIcon } from "@/components/icons/CertificationIcons";
 import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+
 const Footer = () => {
   const {
     storeName,
@@ -12,11 +15,52 @@ const Footer = () => {
     storePhone
   } = useStoreSettings();
   const [email, setEmail] = useState('');
+  const [isSubscribing, setIsSubscribing] = useState(false);
+  const { toast } = useToast();
   const scrollToTop = () => {
     window.scrollTo({
       top: 0,
       behavior: 'smooth'
     });
+  };
+
+  const handleNewsletterSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!email) {
+      toast({
+        title: "Email Required",
+        description: "Please enter your email address.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsSubscribing(true);
+
+    try {
+      const { data, error } = await supabase.functions.invoke('newsletter-signup', {
+        body: { email }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Success!",
+        description: "Thank you for subscribing to our newsletter!",
+      });
+      
+      setEmail(''); // Clear the form
+    } catch (error: any) {
+      console.error('Newsletter signup error:', error);
+      toast({
+        title: "Subscription Failed",
+        description: error.message || "Please try again later.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubscribing(false);
+    }
   };
   const legalLinks = [{
     name: "Privacy Policy",
@@ -144,18 +188,30 @@ const Footer = () => {
                   </p>
                 </div>
                 
-                <div className="flex flex-col gap-2 max-w-sm mx-auto">
+                <form onSubmit={handleNewsletterSubmit} className="flex flex-col gap-2 max-w-sm mx-auto">
                   <Input 
                     type="email" 
                     placeholder="Your email address" 
                     value={email} 
                     onChange={e => setEmail(e.target.value)} 
+                    disabled={isSubscribing}
                     className="h-9 sm:h-10 bg-background border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300 text-sm" 
                   />
-                  <Button className="h-9 sm:h-10 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 text-sm">
-                    Subscribe
+                  <Button 
+                    type="submit"
+                    disabled={isSubscribing}
+                    className="h-9 sm:h-10 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isSubscribing ? (
+                      <div className="flex items-center space-x-2">
+                        <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                        <span>Subscribing...</span>
+                      </div>
+                    ) : (
+                      'Subscribe'
+                    )}
                   </Button>
-                </div>
+                </form>
 
                 {/* Trust Badges */}
                 <div className="flex justify-center items-center space-x-3 sm:space-x-4 text-xs text-muted-foreground pt-1">
