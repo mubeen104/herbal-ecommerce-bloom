@@ -15,6 +15,7 @@ export default function AdminSettings() {
   const { data: storeSettings, isLoading: storeLoading } = useSettings('store');
   const { data: emailSettings, isLoading: emailLoading } = useSettings('email');
   const { data: securitySettings, isLoading: securityLoading } = useSettings('security');
+  const { data: uiSettings, isLoading: uiLoading } = useSettings('ui');
   const updateSettings = useUpdateSettings();
 
   const [localStoreSettings, setLocalStoreSettings] = useState({
@@ -41,6 +42,12 @@ export default function AdminSettings() {
     twoFactorAuth: false,
     passwordMinLength: '8',
     sessionTimeout: '30'
+  });
+
+  const [localUISettings, setLocalUISettings] = useState({
+    carouselScrollSpeed: '3000',
+    enableSmoothScrolling: true,
+    animationDuration: '500'
   });
 
   // Update local state when settings are loaded
@@ -82,6 +89,16 @@ export default function AdminSettings() {
     }
   }, [securitySettings]);
 
+  useEffect(() => {
+    if (uiSettings) {
+      setLocalUISettings({
+        carouselScrollSpeed: String(uiSettings.carousel_scroll_speed || '3000'),
+        enableSmoothScrolling: uiSettings.enable_smooth_scrolling ?? true,
+        animationDuration: String(uiSettings.animation_duration || '500')
+      });
+    }
+  }, [uiSettings]);
+
   const handleSaveStoreSettings = () => {
     updateSettings.mutate([
       { key: 'store_name', value: localStoreSettings.storeName, category: 'store' },
@@ -114,7 +131,15 @@ export default function AdminSettings() {
     ]);
   };
 
-  if (storeLoading || emailLoading || securityLoading) {
+  const handleSaveUISettings = () => {
+    updateSettings.mutate([
+      { key: 'carousel_scroll_speed', value: parseInt(localUISettings.carouselScrollSpeed) || 3000, category: 'ui' },
+      { key: 'enable_smooth_scrolling', value: localUISettings.enableSmoothScrolling, category: 'ui' },
+      { key: 'animation_duration', value: parseInt(localUISettings.animationDuration) || 500, category: 'ui' }
+    ]);
+  };
+
+  if (storeLoading || emailLoading || securityLoading || uiLoading) {
     return (
       <div className="space-y-8 animate-fade-in">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
@@ -407,6 +432,78 @@ export default function AdminSettings() {
               <Button onClick={handleSaveSecuritySettings} className="hover-scale">
                 <Save className="h-4 w-4 mr-2" />
                 Save Security Settings
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* UI Settings */}
+        <Card className="border-border/50">
+          <CardHeader className="pb-6">
+            <CardTitle className="flex items-center text-xl">
+              <Palette className="h-6 w-6 mr-3 text-primary" />
+              User Interface & Animation
+            </CardTitle>
+            <p className="text-muted-foreground mt-2">
+              Configure visual animations and scrolling behavior for your store
+            </p>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="space-y-6">
+              <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
+                <div className="space-y-1">
+                  <Label htmlFor="enableSmoothScrolling" className="text-sm font-medium">Smooth Scrolling</Label>
+                  <p className="text-sm text-muted-foreground">Enable smooth scrolling animations for carousels and lists</p>
+                </div>
+                <Switch
+                  id="enableSmoothScrolling"
+                  checked={localUISettings.enableSmoothScrolling}
+                  onCheckedChange={(checked) => setLocalUISettings({ ...localUISettings, enableSmoothScrolling: checked })}
+                />
+              </div>
+            </div>
+
+            <Separator />
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label htmlFor="carouselScrollSpeed" className="text-sm font-medium">Carousel Auto-Scroll Speed (ms)</Label>
+                <Input
+                  id="carouselScrollSpeed"
+                  type="number"
+                  min="1000"
+                  max="10000"
+                  step="500"
+                  value={localUISettings.carouselScrollSpeed}
+                  onChange={(e) => setLocalUISettings({ ...localUISettings, carouselScrollSpeed: e.target.value })}
+                  className="h-11"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Time between automatic carousel transitions (1000-10000ms)
+                </p>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="animationDuration" className="text-sm font-medium">Animation Duration (ms)</Label>
+                <Input
+                  id="animationDuration"
+                  type="number"
+                  min="200"
+                  max="1000"
+                  step="100"
+                  value={localUISettings.animationDuration}
+                  onChange={(e) => setLocalUISettings({ ...localUISettings, animationDuration: e.target.value })}
+                  className="h-11"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Duration for hover and transition animations (200-1000ms)
+                </p>
+              </div>
+            </div>
+
+            <div className="flex justify-end pt-4">
+              <Button onClick={handleSaveUISettings} className="hover-scale">
+                <Save className="h-4 w-4 mr-2" />
+                Save UI Settings
               </Button>
             </div>
           </CardContent>

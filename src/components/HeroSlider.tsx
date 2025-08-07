@@ -8,14 +8,16 @@ import {
   type CarouselApi 
 } from "@/components/ui/carousel";
 import { useHeroSlides } from "@/hooks/useHeroSlides";
+import { useUISettings } from "@/hooks/useStoreSettings";
 
 const HeroSlider = () => {
   const { data: slides, isLoading } = useHeroSlides();
   const [api, setApi] = useState<CarouselApi>();
   const [current, setCurrent] = useState(0);
+  const { carouselScrollSpeed, animationDuration, enableSmoothScrolling } = useUISettings();
 
-  // Get auto scroll speed from first slide or default to 5000ms
-  const autoScrollSpeed = slides?.[0]?.auto_scroll_speed || 5000;
+  // Use configurable speed, with slide-specific override as fallback
+  const autoScrollSpeed = carouselScrollSpeed || slides?.[0]?.auto_scroll_speed || 5000;
 
   useEffect(() => {
     if (!api) return;
@@ -97,6 +99,9 @@ const HeroSlider = () => {
           opts={{
             align: "start",
             loop: true,
+            duration: enableSmoothScrolling ? animationDuration : 0,
+            skipSnaps: false,
+            dragFree: false
           }}
         >
           <CarouselContent className="h-full">
@@ -109,12 +114,14 @@ const HeroSlider = () => {
                     alt={slide.title}
                     loading={index === 0 ? "eager" : "lazy"}
                     decoding="async"
-                    className="w-full h-full object-cover sm:object-contain md:object-cover bg-gradient-to-br from-muted/20 to-background transition-transform duration-700 ease-out group-hover:scale-[1.02]"
+                    className="w-full h-full object-cover sm:object-contain md:object-cover bg-gradient-to-br from-muted/20 to-background group-hover:scale-[1.02]"
+                    style={{
+                      transition: `transform ${animationDuration}ms cubic-bezier(0.4, 0, 0.2, 1), opacity 0.5s ease-in-out`
+                    }}
                     onLoad={(e) => {
                       // Add smooth transition when image loads
                       e.currentTarget.style.opacity = '1';
                     }}
-                    style={{ opacity: '0', transition: 'opacity 0.5s ease-in-out' }}
                     onError={(e) => {
                       // Fallback for broken images
                       e.currentTarget.style.background = 'linear-gradient(135deg, hsl(var(--muted)), hsl(var(--background)))';
@@ -162,11 +169,14 @@ const HeroSlider = () => {
             <button
               key={index}
               onClick={() => api?.scrollTo(index)}
-              className={`transition-all duration-300 ${
+              className={`${
                 current === index + 1 
                   ? 'w-6 sm:w-8 h-1.5 sm:h-2 bg-white rounded-full' 
                   : 'w-1.5 sm:w-2 h-1.5 sm:h-2 bg-white/50 hover:bg-white/80 rounded-full hover:scale-125'
               }`}
+              style={{
+                transition: `all ${animationDuration}ms cubic-bezier(0.4, 0, 0.2, 1)`
+              }}
               aria-label={`Go to slide ${index + 1}`}
             />
           ))}

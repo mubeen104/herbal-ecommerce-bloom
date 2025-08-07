@@ -4,6 +4,7 @@ import { useCategories } from "@/hooks/useCategories";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Leaf, Coffee, Sparkles, Droplets, Zap } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useUISettings } from "@/hooks/useStoreSettings";
 import {
   Carousel,
   CarouselContent,
@@ -11,12 +12,11 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
+
 const Categories = () => {
-  const {
-    data: categories = [],
-    isLoading
-  } = useCategories();
+  const { data: categories = [], isLoading } = useCategories();
   const navigate = useNavigate();
+  const { carouselScrollSpeed, animationDuration, enableSmoothScrolling } = useUISettings();
   const getIconForCategory = (slug: string) => {
     const iconMap: {
       [key: string]: JSX.Element;
@@ -113,11 +113,14 @@ const Categories = () => {
           opts={{
             align: "start",
             loop: true,
+            duration: enableSmoothScrolling ? animationDuration : 0,
+            skipSnaps: false,
+            dragFree: true
           }}
           className="w-full max-w-7xl mx-auto"
           setApi={(api) => {
             if (api) {
-              // Auto-scroll functionality
+              // Auto-scroll functionality with configurable speed
               const autoScroll = () => {
                 if (api.canScrollNext()) {
                   api.scrollNext();
@@ -126,7 +129,7 @@ const Categories = () => {
                 }
               };
               
-              const interval = setInterval(autoScroll, 5000);
+              const interval = setInterval(autoScroll, carouselScrollSpeed + 1000); // Slightly slower than products
               
               // Clean up interval when component unmounts or API changes
               return () => clearInterval(interval);
@@ -136,23 +139,33 @@ const Categories = () => {
           <CarouselContent className="-ml-2 md:-ml-4">
             {categories.map((category, index) => (
               <CarouselItem key={category.id} className="pl-2 md:pl-4 basis-1/2 sm:basis-1/2 lg:basis-1/3">
-                <Card className="group cursor-pointer border border-border/50 bg-card/80 backdrop-blur-sm shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 hover:rotate-1 overflow-hidden animate-fade-in" style={{
-                  animationDelay: `${index * 0.15}s`
+                <Card className="group cursor-pointer border border-border/50 bg-card/80 backdrop-blur-sm shadow-lg hover:shadow-2xl hover:-translate-y-2 hover:rotate-1 overflow-hidden animate-fade-in" style={{
+                  animationDelay: `${index * 0.15}s`,
+                  transition: `all ${animationDuration}ms cubic-bezier(0.4, 0, 0.2, 1)`
                 }}>
                   <CardContent className="p-0">
                     {/* Enhanced Category Image */}
                     <div className="relative h-40 sm:h-48 lg:h-56 overflow-hidden">
-                      <img src={category.image_url || getImageForCategory(category.slug)} alt={category.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                      <img src={category.image_url || getImageForCategory(category.slug)} alt={category.name} className="w-full h-full object-cover group-hover:scale-110" 
+                        style={{
+                          transition: `transform ${animationDuration}ms cubic-bezier(0.4, 0, 0.2, 1)`
+                        }} />
                       
                       {/* Enhanced Gradient Overlay */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-500" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/20 to-transparent opacity-60 group-hover:opacity-80" 
+                        style={{
+                          transition: `opacity ${animationDuration}ms cubic-bezier(0.4, 0, 0.2, 1)`
+                        }} />
                       
                       {/* Floating Icon Badge */}
                       
                       
                       {/* Category Name Overlay */}
                       <div className="absolute bottom-2 sm:bottom-4 left-2 sm:left-4 right-2 sm:right-4">
-                        <h3 className="text-lg sm:text-xl lg:text-2xl font-bold text-white mb-1 sm:mb-2 group-hover:text-accent transition-colors duration-300">
+                        <h3 className="text-lg sm:text-xl lg:text-2xl font-bold text-white mb-1 sm:mb-2 group-hover:text-accent" 
+                          style={{
+                            transition: `color ${animationDuration}ms cubic-bezier(0.4, 0, 0.2, 1)`
+                          }}>
                           {category.name}
                         </h3>
                       </div>

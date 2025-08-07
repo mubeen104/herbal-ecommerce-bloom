@@ -8,7 +8,7 @@ import { useEffect } from "react";
 import { useFeaturedProducts } from "@/hooks/useProducts";
 import { useGuestCart } from "@/hooks/useGuestCart";
 import { useAuth } from "@/contexts/AuthContext";
-import { useStoreSettings } from "@/hooks/useStoreSettings";
+import { useStoreSettings, useUISettings } from "@/hooks/useStoreSettings";
 import { AuthModal } from "@/components/auth/AuthModal";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useState } from "react";
@@ -33,6 +33,11 @@ const FeaturedProducts = () => {
   const {
     currency
   } = useStoreSettings();
+  const {
+    carouselScrollSpeed,
+    animationDuration,
+    enableSmoothScrolling
+  } = useUISettings();
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [addToCartProduct, setAddToCartProduct] = useState<any>(null);
   const navigate = useNavigate();
@@ -124,10 +129,13 @@ const FeaturedProducts = () => {
         {/* Modern Products Carousel */}
         <Carousel opts={{
         align: "start",
-        loop: true
+        loop: true,
+        duration: enableSmoothScrolling ? animationDuration : 0,
+        skipSnaps: false,
+        dragFree: true
       }} className="w-full max-w-7xl mx-auto" setApi={api => {
         if (api) {
-          // Auto-scroll functionality
+          // Auto-scroll functionality with configurable speed
           const autoScroll = () => {
             if (api.canScrollNext()) {
               api.scrollNext();
@@ -135,7 +143,7 @@ const FeaturedProducts = () => {
               api.scrollTo(0);
             }
           };
-          const interval = setInterval(autoScroll, 3000);
+          const interval = setInterval(autoScroll, carouselScrollSpeed);
 
           // Clean up interval when component unmounts or API changes
           return () => clearInterval(interval);
@@ -144,18 +152,28 @@ const FeaturedProducts = () => {
           <CarouselContent className="-ml-2 md:-ml-4">
             {products.map((product, index) => <CarouselItem key={product.id} className="pl-2 md:pl-4 basis-1/2 sm:basis-1/2 lg:basis-1/3 xl:basis-1/4">
                 <div className="group relative animate-fade-in hover-scale" style={{
-              animationDelay: `${index * 0.1}s`
+              animationDelay: `${index * 0.1}s`,
+              transition: `transform ${animationDuration}ms cubic-bezier(0.4, 0, 0.2, 1)`
             }}>
-                  {/* Floating Card Container */}
-                  <div className="relative bg-card/40 backdrop-blur-xl border border-border/20 rounded-3xl p-1 shadow-lg group-hover:shadow-2xl transition-all duration-700 group-hover:border-primary/30">
-                    {/* Gradient Border Effect */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-accent/20 to-secondary/20 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm" />
+                   {/* Floating Card Container */}
+                  <div className="relative bg-card/40 backdrop-blur-xl border border-border/20 rounded-3xl p-1 shadow-lg group-hover:shadow-2xl group-hover:border-primary/30"
+                    style={{
+                      transition: `all ${animationDuration}ms cubic-bezier(0.4, 0, 0.2, 1)`
+                    }}>
+                     {/* Gradient Border Effect */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-accent/20 to-secondary/20 rounded-3xl opacity-0 group-hover:opacity-100 blur-sm"
+                      style={{
+                        transition: `opacity ${animationDuration}ms cubic-bezier(0.4, 0, 0.2, 1)`
+                      }} />
                     
                     <Card className="relative bg-card/80 backdrop-blur-sm border-0 rounded-3xl overflow-hidden shadow-none">
                       <CardContent className="p-0">
                         {/* Product Image Container */}
                          <div className="relative overflow-hidden rounded-t-3xl aspect-square">
-                           <img src={getMainImage(product)} alt={product.name} className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-700" />
+                           <img src={getMainImage(product)} alt={product.name} className="w-full h-full object-contain group-hover:scale-105"
+                             style={{
+                               transition: `transform ${animationDuration}ms cubic-bezier(0.4, 0, 0.2, 1)`
+                             }} />
                           
                            {/* Sale Badge Only */}
                            {product.compare_price && product.compare_price > product.price && (
