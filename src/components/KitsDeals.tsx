@@ -1,4 +1,4 @@
-import { useFeaturedProducts } from "@/hooks/useProducts";
+import { useKitsDealsProducts } from "@/hooks/useProducts";
 import { useStoreSettings } from "@/hooks/useStoreSettings";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -16,11 +16,12 @@ import {
   CarouselContent,
   CarouselItem,
 } from "@/components/ui/carousel";
+
 const KitsDeals = () => {
   const {
-    data: products,
+    data: kitsDealsProducts,
     isLoading
-  } = useFeaturedProducts();
+  } = useKitsDealsProducts();
   const {
     currency
   } = useStoreSettings();
@@ -29,9 +30,6 @@ const KitsDeals = () => {
   const navigate = useNavigate();
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [addToCartProduct, setAddToCartProduct] = useState<any>(null);
-
-  // Filter for kits & deals products
-  const kitsDealsProducts = products?.filter(product => product.is_kits_deals) || [];
 
   const handleAddToCartRequest = (product: any) => {
     setAddToCartProduct(product);
@@ -88,8 +86,33 @@ const KitsDeals = () => {
         </div>
       </section>;
   }
-  if (kitsDealsProducts.length === 0) {
-    return null;
+  
+  if (!kitsDealsProducts || kitsDealsProducts.length === 0) {
+    return <section className="py-20 bg-gradient-to-br from-background via-background to-muted/20 relative overflow-hidden">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16 animate-fade-in">
+            <div className="inline-flex items-center justify-center p-2 bg-primary/10 rounded-full mb-6">
+              <span className="text-sm font-medium text-primary px-4 py-1 bg-primary/20 rounded-full">
+                🎯 Special Offers
+              </span>
+            </div>
+            
+            <h2 className="text-4xl md:text-6xl font-bold text-foreground mb-6 tracking-tight">
+              Kits &
+              <span className="block text-transparent bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text">
+                Deals
+              </span>
+            </h2>
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto leading-relaxed mb-8">
+              No special deals are currently available. Check back soon for exclusive product bundles and offers!
+            </p>
+            
+            <Button asChild className="rounded-full px-8 py-6 text-base font-medium">
+              <Link to="/shop">Browse All Products</Link>
+            </Button>
+          </div>
+        </div>
+      </section>;
   }
   return <section className="py-20 bg-gradient-to-br from-background via-background to-muted/20 relative overflow-hidden">
       {/* Modern Floating Elements */}

@@ -105,3 +105,40 @@ export const useFeaturedProducts = () => {
     },
   });
 };
+
+export const useKitsDealsProducts = () => {
+  return useQuery({
+    queryKey: ['kits-deals-products'],
+    queryFn: async (): Promise<Product[]> => {
+      const { data, error } = await supabase
+        .from('products')
+        .select(`
+          *,
+          product_images (
+            id,
+            image_url,
+            alt_text,
+            sort_order
+          ),
+          product_categories (
+            category_id,
+            categories (
+              id,
+              name,
+              slug
+            )
+          )
+        `)
+        .eq('is_active', true)
+        .eq('is_kits_deals', true)
+        .order('created_at', { ascending: false })
+        .limit(12);
+
+      if (error) {
+        throw error;
+      }
+
+      return data || [];
+    },
+  });
+};
