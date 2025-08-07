@@ -16,14 +16,3 @@ export const useStoreSettings = () => {
     isLoading
   };
 };
-
-export const useUISettings = () => {
-  const { data: uiSettings, isLoading } = useSettings('ui');
-  
-  return {
-    carouselScrollSpeed: uiSettings?.carousel_scroll_speed || 3000,
-    enableSmoothScrolling: uiSettings?.enable_smooth_scrolling ?? true,
-    animationDuration: uiSettings?.animation_duration || 500,
-    isLoading
-  };
-};
