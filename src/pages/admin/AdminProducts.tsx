@@ -198,6 +198,11 @@ export default function AdminProducts() {
       await supabase.from('product_variants').delete().eq('product_id', editingProduct.id);
     }
 
+    // Skip variants for Kit & Deals products
+    if (formData.is_kits_deals) {
+      return;
+    }
+
     if (productVariants.length > 0) {
       // Enhanced deduplication - check DB first, then local duplicates
       const { data: existingVariants } = await supabase
@@ -301,7 +306,9 @@ export default function AdminProducts() {
     });
     setSelectedCategories([]);
     setProductImages([]);
-    setProductVariants([]);
+    if (!formData.is_kits_deals) {
+      setProductVariants([]);
+    }
   };
 
   // Image management
@@ -519,14 +526,19 @@ export default function AdminProducts() {
         alt_text: img.alt_text || '',
         sort_order: img.sort_order || 0
       })) || []);
-      setProductVariants(variantsRes.data?.map(variant => ({
-        id: variant.id,
-        name: variant.name,
-        price: variant.price.toString(),
-        inventory_quantity: variant.inventory_quantity.toString(),
-        image_url: variant.product_variant_images?.[0]?.image_url || '',
-        isUploading: false
-      })) || []);
+      // Only load variants if not Kit & Deals
+      if (!product.is_kits_deals) {
+        setProductVariants(variantsRes.data?.map(variant => ({
+          id: variant.id,
+          name: variant.name,
+          price: variant.price.toString(),
+          inventory_quantity: variant.inventory_quantity.toString(),
+          image_url: variant.product_variant_images?.[0]?.image_url || '',
+          isUploading: false
+        })) || []);
+      } else {
+        setProductVariants([]);
+      }
     } catch (error) {
       console.error('Error loading product data:', error);
     }
@@ -667,38 +679,39 @@ export default function AdminProducts() {
                   </CardContent>
                 </Card>
 
-                {/* Product Variants */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg flex items-center justify-between">
-                      Product Variants
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={addVariant}
-                      >
-                        <Plus className="h-4 w-4 mr-2" />
-                        Add Variant
-                      </Button>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    {productVariants.length === 0 ? (
-                      <div className="text-center py-8 border-2 border-dashed border-border rounded-lg">
-                        <Package className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                        <p className="text-muted-foreground mb-4">No variants added yet</p>
-                        <p className="text-sm text-muted-foreground mb-4">
-                          Create variants for different sizes, colors, or flavors
-                        </p>
+                {/* Product Variants - Hidden for Kit & Deals */}
+                {!formData.is_kits_deals && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center justify-between">
+                        Product Variants
                         <Button
                           type="button"
                           variant="outline"
+                          size="sm"
                           onClick={addVariant}
                         >
-                          Add First Variant
+                          <Plus className="h-4 w-4 mr-2" />
+                          Add Variant
                         </Button>
-                      </div>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {productVariants.length === 0 ? (
+                        <div className="text-center py-8 border-2 border-dashed border-border rounded-lg">
+                          <Package className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                          <p className="text-muted-foreground mb-4">No variants added yet</p>
+                          <p className="text-sm text-muted-foreground mb-4">
+                            Create variants for different sizes, colors, or flavors
+                          </p>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={addVariant}
+                          >
+                            Add First Variant
+                          </Button>
+                        </div>
                     ) : (
                       <div className="space-y-4">
                         {productVariants.map((variant, index) => (
@@ -797,9 +810,29 @@ export default function AdminProducts() {
                           </Card>
                         ))}
                       </div>
-                    )}
-                  </CardContent>
-                </Card>
+                      )}
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Kit & Deals Notice */}
+                {formData.is_kits_deals && (
+                  <Card className="border-amber-200 bg-amber-50 dark:bg-amber-950 dark:border-amber-800">
+                    <CardContent className="p-6">
+                      <div className="flex items-center space-x-3">
+                        <div className="h-8 w-8 rounded-full bg-amber-100 dark:bg-amber-900 flex items-center justify-center">
+                          <Package className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                        </div>
+                        <div>
+                          <h3 className="font-medium text-amber-800 dark:text-amber-200">Kit & Deal Product</h3>
+                          <p className="text-sm text-amber-700 dark:text-amber-300">
+                            Product variants are not available for Kit & Deal items. These products use a single base configuration.
+                          </p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
 
                 {/* Product Images */}
                 <Card>
