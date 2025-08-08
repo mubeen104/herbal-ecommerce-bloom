@@ -161,13 +161,13 @@ const handler = async (req: Request): Promise<Response> => {
     // Send emails in parallel
     const [adminEmailResponse, customerEmailResponse] = await Promise.allSettled([
       resend.emails.send({
-        from: `${storeConfig.store_name || 'New Era Herbals'} Contact Form <onboarding@resend.dev>`,
-        to: [storeConfig.store_email || 'admin@neweraherbals.com'],
+        from: `${storeConfig.store_name || 'Store'} Contact Form <${storeConfig.from_email || 'onboarding@resend.dev'}>`,
+        to: [storeConfig.store_email || storeConfig.contact_email || 'contact@store.com'],
         subject: `New Contact Form Submission from ${name}`,
         html: adminNotificationHtml,
       }),
       resend.emails.send({
-        from: `${storeConfig.store_name || 'New Era Herbals'} <onboarding@resend.dev>`,
+        from: `${storeConfig.store_name || 'Store'} <${storeConfig.from_email || 'onboarding@resend.dev'}>`,
         to: [email],
         subject: `Thank you for contacting ${storeConfig.store_name || 'New Era Herbals'}!`,
         html: customerConfirmationHtml,

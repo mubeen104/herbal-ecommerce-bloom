@@ -145,7 +145,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Send email using Resend
     const emailResponse = await resend.emails.send({
-      from: `${storeConfig.store_name || 'New Era Herbals'} <onboarding@resend.dev>`,
+      from: `${storeConfig.store_name || 'Store'} <${storeConfig.from_email || 'onboarding@resend.dev'}>`,
       to: [toEmail],
       subject,
       html: emailHtml,

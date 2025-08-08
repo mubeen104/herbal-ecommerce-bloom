@@ -199,15 +199,32 @@ export default function AdminProducts() {
     }
 
     if (productVariants.length > 0) {
-      // Deduplicate variants by name/price/qty and drop invalid ones
+      // Enhanced deduplication - check DB first, then local duplicates
+      const { data: existingVariants } = await supabase
+        .from('product_variants')
+        .select('name, price')
+        .eq('product_id', productId);
+
+      const existingSet = new Set(
+        (existingVariants || []).map(v => `${v.name.toLowerCase().trim()}|${v.price}`)
+      );
+
       const seen = new Set<string>();
       const cleanedVariants = productVariants.filter(v => {
         const name = (v.name || '').trim();
-        if (!name) return false;
+        if (!name || name.length < 2) return false; // Require meaningful names
+        
         const price = parseFloat(v.price || '0') || 0;
-        const qty = parseInt(v.inventory_quantity || '0') || 0;
-        const key = `${name.toLowerCase()}|${price}|${qty}`;
+        if (price <= 0) return false; // Require valid prices
+        
+        const key = `${name.toLowerCase()}|${price}`;
+        
+        // Skip if already exists in DB
+        if (existingSet.has(key)) return false;
+        
+        // Skip local duplicates
         if (seen.has(key)) return false;
+        
         seen.add(key);
         return true;
       });

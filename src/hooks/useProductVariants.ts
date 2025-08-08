@@ -58,19 +58,35 @@ export const useCreateProductVariant = () => {
 
   return useMutation({
     mutationFn: async (variant: Omit<ProductVariant, 'id' | 'created_at' | 'updated_at' | 'product_variant_images'>) => {
-      // Prevent duplicate variants by name for the same product (case-insensitive)
+      // Prevent duplicate variants by name, price and options for the same product
       const { data: existing, error: checkError } = await supabase
         .from('product_variants')
-        .select('id')
-        .eq('product_id', variant.product_id)
-        .ilike('name', variant.name);
+        .select('id, name, price, variant_options')
+        .eq('product_id', variant.product_id);
 
       if (checkError) {
         throw checkError;
       }
 
       if (existing && existing.length > 0) {
-        throw new Error('A variant with this name already exists for this product.');
+        // Check for exact match by name (case-insensitive)
+        const nameMatch = existing.find(v => 
+          v.name.toLowerCase().trim() === variant.name.toLowerCase().trim()
+        );
+        
+        if (nameMatch) {
+          throw new Error('A variant with this name already exists for this product.');
+        }
+
+        // Check for near-duplicate (same price and similar options)
+        const priceMatch = existing.find(v => 
+          Math.abs(v.price - variant.price) < 0.01 && 
+          JSON.stringify(v.variant_options || {}) === JSON.stringify(variant.variant_options || {})
+        );
+        
+        if (priceMatch) {
+          throw new Error('A variant with the same price and options already exists for this product.');
+        }
       }
 
       const { data, error } = await supabase
