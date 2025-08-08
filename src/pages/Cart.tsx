@@ -13,33 +13,47 @@ import { useAuth } from "@/contexts/AuthContext";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import CheckoutOptionsModal from "@/components/CheckoutOptionsModal";
-
 const Cart = () => {
   const navigate = useNavigate();
-  const { cartItems, cartTotal, cartCount, updateQuantity, removeFromCart, clearCart, isLoading } = useGuestCart();
-  const { currency } = useStoreSettings();
-  const { toast } = useToast();
-  const { user } = useAuth();
+  const {
+    cartItems,
+    cartTotal,
+    cartCount,
+    updateQuantity,
+    removeFromCart,
+    clearCart,
+    isLoading
+  } = useGuestCart();
+  const {
+    currency
+  } = useStoreSettings();
+  const {
+    toast
+  } = useToast();
+  const {
+    user
+  } = useAuth();
   const [updatingItems, setUpdatingItems] = useState<Set<string>>(new Set());
   const [showCheckoutModal, setShowCheckoutModal] = useState(false);
-
   const handleQuantityChange = async (itemId: string, newQuantity: number) => {
     if (newQuantity < 0) return;
-    
     setUpdatingItems(prev => new Set(prev).add(itemId));
     try {
-      await updateQuantity({ itemId, quantity: newQuantity });
+      await updateQuantity({
+        itemId,
+        quantity: newQuantity
+      });
       if (newQuantity === 0) {
         toast({
           title: "Item removed",
-          description: "Item has been removed from your cart.",
+          description: "Item has been removed from your cart."
         });
       }
     } catch (error) {
       toast({
         title: "Error",
         description: "Failed to update quantity. Please try again.",
-        variant: "destructive",
+        variant: "destructive"
       });
     } finally {
       setUpdatingItems(prev => {
@@ -49,20 +63,19 @@ const Cart = () => {
       });
     }
   };
-
   const handleRemoveItem = async (itemId: string) => {
     setUpdatingItems(prev => new Set(prev).add(itemId));
     try {
       await removeFromCart(itemId);
       toast({
         title: "Item removed",
-        description: "Item has been removed from your cart.",
+        description: "Item has been removed from your cart."
       });
     } catch (error) {
       toast({
         title: "Error",
         description: "Failed to remove item. Please try again.",
-        variant: "destructive",
+        variant: "destructive"
       });
     } finally {
       setUpdatingItems(prev => {
@@ -72,23 +85,21 @@ const Cart = () => {
       });
     }
   };
-
   const handleClearCart = async () => {
     try {
       await clearCart();
       toast({
         title: "Cart cleared",
-        description: "All items have been removed from your cart.",
+        description: "All items have been removed from your cart."
       });
     } catch (error) {
       toast({
         title: "Error",
         description: "Failed to clear cart. Please try again.",
-        variant: "destructive",
+        variant: "destructive"
       });
     }
   };
-
   const handleCheckout = () => {
     if (user) {
       // User is logged in, go directly to checkout
@@ -98,13 +109,12 @@ const Cart = () => {
       setShowCheckoutModal(true);
     }
   };
-
   const getMainImage = (item: any) => {
     // Check if item has variant with images
     if (item.product_variants?.product_variant_images && item.product_variants.product_variant_images.length > 0) {
       return item.product_variants.product_variant_images.sort((a: any, b: any) => a.sort_order - b.sort_order)[0]?.image_url;
     }
-    
+
     // Fall back to product images
     const images = item.products?.product_images || item.product?.product_images;
     if (images && images.length > 0) {
@@ -112,10 +122,8 @@ const Cart = () => {
     }
     return "/placeholder.svg";
   };
-
   if (isLoading) {
-    return (
-      <>
+    return <>
         <Header />
         <div className="min-h-screen bg-background">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -123,9 +131,7 @@ const Cart = () => {
               <div className="h-16 sm:h-20 bg-muted rounded mb-6 sm:mb-8"></div>
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
                 <div className="lg:col-span-2 space-y-3 sm:space-y-4">
-                  {[1, 2, 3].map((i) => (
-                    <div key={i} className="h-40 sm:h-32 bg-muted rounded"></div>
-                  ))}
+                  {[1, 2, 3].map(i => <div key={i} className="h-40 sm:h-32 bg-muted rounded"></div>)}
                 </div>
                 <div className="hidden lg:block h-96 bg-muted rounded"></div>
               </div>
@@ -133,12 +139,9 @@ const Cart = () => {
           </div>
         </div>
         <Footer />
-      </>
-    );
+      </>;
   }
-
-  return (
-    <>
+  return <>
       <Header />
       <div className="min-h-screen bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -157,20 +160,13 @@ const Cart = () => {
                 </p>
               </div>
             </div>
-            {cartCount > 0 && (
-              <Button 
-                variant="outline" 
-                onClick={handleClearCart}
-                className="w-full sm:w-auto text-sm sm:text-base h-9 sm:h-10"
-              >
+            {cartCount > 0 && <Button variant="outline" onClick={handleClearCart} className="w-full sm:w-auto text-sm sm:text-base h-9 sm:h-10">
                 Clear Cart
-              </Button>
-            )}
+              </Button>}
           </div>
 
-          {cartCount === 0 ? (
-            /* Empty Cart */
-            <div className="text-center py-12 sm:py-16">
+          {cartCount === 0 ? (/* Empty Cart */
+        <div className="text-center py-12 sm:py-16">
               <ShoppingBag className="h-20 w-20 sm:h-24 sm:w-24 text-muted-foreground mx-auto mb-4 sm:mb-6" />
               <h2 className="text-xl sm:text-2xl font-semibold text-foreground mb-2 sm:mb-4">Your cart is empty</h2>
               <p className="text-sm sm:text-base text-muted-foreground mb-6 sm:mb-8">
@@ -179,22 +175,15 @@ const Cart = () => {
               <Button asChild className="h-11 px-8 text-base">
                 <a href="/shop">Continue Shopping</a>
               </Button>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
+            </div>) : <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
               {/* Cart Items */}
               <div className="lg:col-span-2 space-y-3 sm:space-y-4">
-                {cartItems?.map((item) => (
-                  <Card key={item.id}>
+                {cartItems?.map(item => <Card key={item.id}>
                     <CardContent className="p-4 sm:p-6">
                       <div className="flex flex-col sm:flex-row sm:items-center gap-4">
                         {/* Product Image */}
                         <div className="flex-shrink-0">
-                          <img
-                            src={getMainImage(item)}
-                            alt={item.products?.name || 'Product'}
-                            className="h-24 w-24 sm:h-20 sm:w-20 object-cover rounded-lg border border-border"
-                          />
+                          <img src={getMainImage(item)} alt={item.products?.name || 'Product'} className="h-24 w-24 sm:h-20 sm:w-20 object-cover rounded-lg border border-border" />
                         </div>
 
                         <div className="flex flex-col sm:flex-row sm:items-center gap-4 flex-1">
@@ -203,11 +192,9 @@ const Cart = () => {
                             <h3 className="text-base sm:text-lg font-semibold text-foreground line-clamp-2 sm:truncate">
                               {item.products?.name || item.product?.name || 'Unknown Product'}
                             </h3>
-                            {item.product_variants?.name && (
-                              <p className="text-sm text-muted-foreground mt-1">
+                            {item.product_variants?.name && <p className="text-sm text-muted-foreground mt-1">
                                 Variant: {item.product_variants.name}
-                              </p>
-                            )}
+                              </p>}
                             <p className="text-lg sm:text-xl font-bold text-primary mt-1 sm:mt-2">
                               {currency} {(item.product_variants?.price || item.products?.price || item.product?.price || 0).toFixed(2)}
                             </p>
@@ -216,33 +203,14 @@ const Cart = () => {
                           <div className="flex flex-row sm:flex-col items-center justify-between sm:items-end gap-4">
                             {/* Quantity Controls */}
                             <div className="flex items-center space-x-3">
-                              <Button
-                                variant="outline"
-                                size="icon"
-                                onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
-                                disabled={updatingItems.has(item.id)}
-                                className="h-9 w-9 sm:h-8 sm:w-8"
-                              >
+                              <Button variant="outline" size="icon" onClick={() => handleQuantityChange(item.id, item.quantity - 1)} disabled={updatingItems.has(item.id)} className="h-9 w-9 sm:h-8 sm:w-8">
                                 <Minus className="h-4 w-4" />
                               </Button>
-                              <Input
-                                type="number"
-                                value={item.quantity}
-                                onChange={(e) => {
-                                  const value = parseInt(e.target.value) || 0;
-                                  handleQuantityChange(item.id, value);
-                                }}
-                                className="w-16 text-center h-9 sm:h-8"
-                                min="0"
-                                disabled={updatingItems.has(item.id)}
-                              />
-                              <Button
-                                variant="outline"
-                                size="icon"
-                                onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
-                                disabled={updatingItems.has(item.id)}
-                                className="h-9 w-9 sm:h-8 sm:w-8"
-                              >
+                              <Input type="number" value={item.quantity} onChange={e => {
+                          const value = parseInt(e.target.value) || 0;
+                          handleQuantityChange(item.id, value);
+                        }} className="w-16 text-center h-9 sm:h-8" min="0" disabled={updatingItems.has(item.id)} />
+                              <Button variant="outline" size="icon" onClick={() => handleQuantityChange(item.id, item.quantity + 1)} disabled={updatingItems.has(item.id)} className="h-9 w-9 sm:h-8 sm:w-8">
                                 <Plus className="h-4 w-4" />
                               </Button>
                             </div>
@@ -254,13 +222,7 @@ const Cart = () => {
                               </p>
 
                               {/* Remove Button */}
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => handleRemoveItem(item.id)}
-                                disabled={updatingItems.has(item.id)}
-                                className="text-destructive hover:text-destructive h-9 w-9 sm:h-8 sm:w-8"
-                              >
+                              <Button variant="ghost" size="icon" onClick={() => handleRemoveItem(item.id)} disabled={updatingItems.has(item.id)} className="text-destructive hover:text-destructive h-9 w-9 sm:h-8 sm:w-8">
                                 <Trash2 className="h-4 w-4" />
                               </Button>
                             </div>
@@ -268,8 +230,7 @@ const Cart = () => {
                         </div>
                       </div>
                     </CardContent>
-                  </Card>
-                ))}
+                  </Card>)}
               </div>
 
               {/* Order Summary */}
@@ -302,10 +263,7 @@ const Cart = () => {
                     </div>
                     
                     <div className="space-y-3 pt-2">
-                      <Button 
-                        className="w-full h-11 text-base"
-                        onClick={handleCheckout}
-                      >
+                      <Button className="w-full h-11 text-base" onClick={handleCheckout}>
                         Proceed to Checkout
                       </Button>
                       
@@ -315,25 +273,17 @@ const Cart = () => {
                     </div>
                     
                     <div className="pt-2">
-                      <Badge variant="secondary" className="w-full justify-center py-2 text-sm">
-                        Free shipping on orders over {currency} 10,000
-                      </Badge>
+                      
                     </div>
                   </CardContent>
                 </Card>
               </div>
-            </div>
-          )}
+            </div>}
         </div>
       </div>
       <Footer />
       
-      <CheckoutOptionsModal 
-        isOpen={showCheckoutModal} 
-        onClose={() => setShowCheckoutModal(false)} 
-      />
-    </>
-  );
+      <CheckoutOptionsModal isOpen={showCheckoutModal} onClose={() => setShowCheckoutModal(false)} />
+    </>;
 };
-
 export default Cart;
