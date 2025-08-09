@@ -39,16 +39,20 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log(`Processing newsletter signup for: ${email}`);
 
-    // Get store settings
-    const { data: storeSettings } = await supabase
+    // Get email and store settings in one query
+    const { data: allSettings } = await supabase
       .from('settings')
-      .select('key, value')
-      .eq('category', 'store');
+      .select('key, value, category')
+      .in('category', ['store', 'email']);
 
-    const storeConfig: Record<string, any> = {};
-    storeSettings?.forEach(setting => {
-      storeConfig[setting.key] = setting.value;
+    const settings: Record<string, any> = {};
+    allSettings?.forEach(setting => {
+      settings[setting.key] = typeof setting.value === 'string' 
+        ? JSON.parse(setting.value) 
+        : setting.value;
     });
+
+    console.log('Retrieved settings:', settings);
 
     // Store email in newsletter table (create if doesn't exist)
     const { error: insertError } = await supabase
@@ -66,12 +70,17 @@ const handler = async (req: Request): Promise<Response> => {
       console.error('Error storing newsletter subscription:', insertError);
     }
 
+    // Determine sender settings
+    const fromEmail = settings.from_email || 'noreply@neweraherbals.com';
+    const storeName = settings.store_name || 'New Era Herbals';
+    const websiteUrl = settings.website_url || 'https://neweraherbals.com';
+
     // Send welcome email
     const welcomeEmailHtml = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8fdf8;">
         <div style="background: linear-gradient(135deg, #059669, #10b981); padding: 30px; border-radius: 15px; text-align: center; margin-bottom: 30px;">
           <h1 style="color: white; font-size: 32px; margin: 0; text-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-            Welcome to ${storeConfig.store_name || 'New Era Herbals'}!
+            Welcome to ${storeName}!
           </h1>
           <p style="color: rgba(255,255,255,0.9); font-size: 18px; margin: 15px 0 0 0;">
             🌿 Your journey to natural wellness begins now
@@ -99,7 +108,7 @@ const handler = async (req: Request): Promise<Response> => {
           </div>
           
           <div style="text-align: center; margin-top: 30px;">
-            <a href="${storeConfig.website_url || 'https://neweraherbals.com'}" 
+            <a href="${websiteUrl}" 
                style="background: linear-gradient(135deg, #059669, #10b981); color: white; padding: 15px 30px; border-radius: 25px; text-decoration: none; font-size: 16px; font-weight: 600; display: inline-block; box-shadow: 0 4px 15px rgba(5, 150, 105, 0.3);">
               🛍️ Start Shopping
             </a>
@@ -113,23 +122,31 @@ const handler = async (req: Request): Promise<Response> => {
             <a href="https://www.facebook.com/new.era.151908" style="color: #059669; margin: 0 10px; text-decoration: none;">📘 Facebook</a>
             <a href="https://www.tiktok.com/@new.era7904" style="color: #059669; margin: 0 10px; text-decoration: none;">🎵 TikTok</a>
           </div>
+          <div style="margin-top: 15px;">
+            <p style="font-size: 12px; color: #9ca3af;">
+              Don't want to receive these emails? <a href="${websiteUrl}/unsubscribe?email=${encodeURIComponent(email)}" style="color: #059669;">Unsubscribe here</a>
+            </p>
+          </div>
         </div>
       </div>
     `;
 
     const emailResponse = await resend.emails.send({
-      from: `${storeConfig.store_name || 'Store'} <${storeConfig.from_email || 'onboarding@resend.dev'}>`,
+      from: `${storeName} <${fromEmail}>`,
       to: [email],
-      subject: `Welcome to ${storeConfig.store_name || 'New Era Herbals'} Newsletter! 🌿`,
+      subject: `Welcome to ${storeName} Newsletter! 🌿`,
       html: welcomeEmailHtml,
     });
 
     if (emailResponse.error) {
       console.error('Failed to send welcome email:', emailResponse.error);
-      // Don't fail the subscription if email fails
+      // Don't fail the subscription if email fails, but log it
     }
 
-    console.log('Newsletter signup successful:', emailResponse);
+    console.log('Newsletter signup successful:', {
+      emailId: emailResponse.data?.id,
+      error: emailResponse.error
+    });
 
     return new Response(JSON.stringify({ 
       success: true,

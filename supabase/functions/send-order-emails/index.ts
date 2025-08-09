@@ -35,19 +35,23 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log(`Processing ${type} email for order ${orderId}`);
 
-    // Get email settings to check if this type of email is enabled
-    const { data: emailSettings } = await supabase
+    // Get email and store settings in one query
+    const { data: allSettings } = await supabase
       .from('settings')
-      .select('key, value')
-      .eq('category', 'email');
+      .select('key, value, category')
+      .in('category', ['store', 'email']);
 
-    const emailConfig: Record<string, boolean> = {};
-    emailSettings?.forEach(setting => {
-      emailConfig[setting.key] = setting.value;
+    const settings: Record<string, any> = {};
+    allSettings?.forEach(setting => {
+      settings[setting.key] = typeof setting.value === 'string' 
+        ? JSON.parse(setting.value) 
+        : setting.value;
     });
 
+    console.log('Retrieved settings:', settings);
+
     // Check if this email type is enabled
-    if (type === 'order_confirmation' && !emailConfig.order_confirmation_emails) {
+    if (type === 'order_confirmation' && !settings.order_confirmation_emails) {
       console.log('Order confirmation emails are disabled');
       return new Response(JSON.stringify({ message: 'Order confirmation emails are disabled' }), {
         status: 200,
@@ -55,24 +59,13 @@ const handler = async (req: Request): Promise<Response> => {
       });
     }
 
-    if (type === 'shipping_notification' && !emailConfig.shipping_notification_emails) {
+    if (type === 'shipping_notification' && !settings.shipping_notification_emails) {
       console.log('Shipping notification emails are disabled');
       return new Response(JSON.stringify({ message: 'Shipping notification emails are disabled' }), {
         status: 200,
         headers: { 'Content-Type': 'application/json', ...corsHeaders },
       });
     }
-
-    // Get store settings
-    const { data: storeSettings } = await supabase
-      .from('settings')
-      .select('key, value')
-      .eq('category', 'store');
-
-    const storeConfig: Record<string, any> = {};
-    storeSettings?.forEach(setting => {
-      storeConfig[setting.key] = setting.value;
-    });
 
     // Get order details with related data
     const { data: order, error: orderError } = await supabase
@@ -101,7 +94,7 @@ const handler = async (req: Request): Promise<Response> => {
     let subject: string;
     let toEmail: string;
 
-    // Determine recipient email
+    // Determine recipient email with better fallback logic
     if (recipientEmail) {
       toEmail = recipientEmail;
     } else if (order.user_id) {
@@ -114,20 +107,26 @@ const handler = async (req: Request): Promise<Response> => {
       
       toEmail = profile?.email || '';
     } else {
-      // For guest orders, email should be in shipping address
-      toEmail = order.shipping_address?.email || '';
+      // For guest orders, try to get email from shipping or billing address
+      toEmail = order.shipping_address?.email || order.billing_address?.email || '';
     }
 
     if (!toEmail) {
-      throw new Error('No recipient email found for order');
+      throw new Error('No recipient email found for order. Please provide recipientEmail parameter.');
     }
+
+    console.log(`Sending ${type} email to: ${toEmail}`);
+
+    // Determine sender settings
+    const fromEmail = settings.from_email || 'noreply@neweraherbals.com';
+    const storeName = settings.store_name || 'New Era Herbals';
 
     // Generate email content based on type
     if (type === 'order_confirmation') {
       emailHtml = await renderAsync(
         React.createElement(OrderConfirmationEmail, {
           order,
-          storeConfig
+          storeConfig: settings
         })
       );
       subject = `Order Confirmation - ${order.order_number}`;
@@ -135,7 +134,7 @@ const handler = async (req: Request): Promise<Response> => {
       emailHtml = await renderAsync(
         React.createElement(ShippingNotificationEmail, {
           order,
-          storeConfig
+          storeConfig: settings
         })
       );
       subject = `Your Order Has Shipped - ${order.order_number}`;
@@ -145,21 +144,26 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Send email using Resend
     const emailResponse = await resend.emails.send({
-      from: `${storeConfig.store_name || 'Store'} <${storeConfig.from_email || 'onboarding@resend.dev'}>`,
+      from: `${storeName} <${fromEmail}>`,
       to: [toEmail],
       subject,
       html: emailHtml,
     });
 
     if (emailResponse.error) {
+      console.error('Failed to send email:', emailResponse.error);
       throw emailResponse.error;
     }
 
-    console.log(`${type} email sent successfully:`, emailResponse);
+    console.log(`${type} email sent successfully:`, {
+      emailId: emailResponse.data?.id,
+      recipient: toEmail
+    });
 
     return new Response(JSON.stringify({ 
       success: true, 
       emailId: emailResponse.data?.id,
+      recipient: toEmail,
       message: `${type} email sent successfully`
     }), {
       status: 200,

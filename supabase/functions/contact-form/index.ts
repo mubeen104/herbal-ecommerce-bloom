@@ -42,16 +42,20 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log(`Processing contact form submission from: ${email}`);
 
-    // Get store settings
-    const { data: storeSettings } = await supabase
+    // Get email and store settings in one query
+    const { data: allSettings } = await supabase
       .from('settings')
-      .select('key, value')
-      .eq('category', 'store');
+      .select('key, value, category')
+      .in('category', ['store', 'email']);
 
-    const storeConfig: Record<string, any> = {};
-    storeSettings?.forEach(setting => {
-      storeConfig[setting.key] = setting.value;
+    const settings: Record<string, any> = {};
+    allSettings?.forEach(setting => {
+      settings[setting.key] = typeof setting.value === 'string' 
+        ? JSON.parse(setting.value) 
+        : setting.value;
     });
+
+    console.log('Retrieved settings:', settings);
 
     // Store contact submission in database
     const { error: insertError } = await supabase
@@ -69,13 +73,20 @@ const handler = async (req: Request): Promise<Response> => {
       console.error('Error storing contact submission:', insertError);
     }
 
+    // Determine sender and recipient
+    const fromEmail = settings.from_email || 'noreply@neweraherbals.com';
+    const storeName = settings.store_name || 'New Era Herbals';
+    const contactEmail = settings.contact_email || settings.store_email || 'neweraorganic101@gmail.com';
+    const websiteUrl = settings.website_url || 'https://neweraherbals.com';
+    const storePhone = settings.store_phone || '+92 304 3073838';
+
     // Send notification email to store admin
     const adminNotificationHtml = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #fef3f2;">
         <div style="background: linear-gradient(135deg, #dc2626, #ef4444); padding: 25px; border-radius: 12px; text-align: center; margin-bottom: 25px;">
           <h1 style="color: white; font-size: 28px; margin: 0;">📬 New Contact Form Submission</h1>
           <p style="color: rgba(255,255,255,0.9); font-size: 16px; margin: 10px 0 0 0;">
-            ${storeConfig.store_name || 'New Era Herbals'}
+            ${storeName}
           </p>
         </div>
         
@@ -104,7 +115,7 @@ const handler = async (req: Request): Promise<Response> => {
           </div>
           
           <div style="text-align: center; margin-top: 25px;">
-            <a href="mailto:${email}?subject=Re: Your inquiry to ${storeConfig.store_name || 'New Era Herbals'}" 
+            <a href="mailto:${email}?subject=Re: Your inquiry to ${storeName}" 
                style="background: linear-gradient(135deg, #dc2626, #ef4444); color: white; padding: 12px 25px; border-radius: 20px; text-decoration: none; font-size: 16px; font-weight: 600; display: inline-block;">
               📧 Reply to Customer
             </a>
@@ -112,7 +123,7 @@ const handler = async (req: Request): Promise<Response> => {
         </div>
         
         <div style="text-align: center; margin-top: 20px; color: #6b7280; font-size: 12px;">
-          <p>This notification was sent from your ${storeConfig.store_name || 'New Era Herbals'} contact form</p>
+          <p>This notification was sent from your ${storeName} contact form</p>
         </div>
       </div>
     `;
@@ -131,7 +142,7 @@ const handler = async (req: Request): Promise<Response> => {
           <h2 style="color: #059669; font-size: 22px; margin-bottom: 20px;">Your Message Has Been Received</h2>
           
           <p style="color: #374151; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
-            Thank you for contacting ${storeConfig.store_name || 'New Era Herbals'}! We've received your message and our team will get back to you within 24 hours during business days.
+            Thank you for contacting ${storeName}! We've received your message and our team will get back to you within 24 hours during business days.
           </p>
           
           <div style="background: #f0fdf4; border-left: 4px solid #059669; padding: 20px; border-radius: 8px; margin: 20px 0;">
@@ -140,7 +151,7 @@ const handler = async (req: Request): Promise<Response> => {
           </div>
           
           <div style="text-align: center; margin-top: 25px;">
-            <a href="${storeConfig.website_url || 'https://neweraherbals.com'}" 
+            <a href="${websiteUrl}" 
                style="background: linear-gradient(135deg, #059669, #10b981); color: white; padding: 12px 25px; border-radius: 20px; text-decoration: none; font-size: 16px; font-weight: 600; display: inline-block;">
               🌿 Visit Our Store
             </a>
@@ -148,7 +159,7 @@ const handler = async (req: Request): Promise<Response> => {
         </div>
         
         <div style="text-align: center; margin-top: 20px; color: #6b7280; font-size: 14px;">
-          <p>Need immediate assistance? Call us at ${storeConfig.store_phone || '(555) 123-4567'}</p>
+          <p>Need immediate assistance? Call us at ${storePhone}</p>
           <div style="margin-top: 10px;">
             <a href="https://www.instagram.com/neweraherbal/" style="color: #059669; margin: 0 8px; text-decoration: none;">Instagram</a>
             <a href="https://www.facebook.com/new.era.151908" style="color: #059669; margin: 0 8px; text-decoration: none;">Facebook</a>
@@ -161,22 +172,24 @@ const handler = async (req: Request): Promise<Response> => {
     // Send emails in parallel
     const [adminEmailResponse, customerEmailResponse] = await Promise.allSettled([
       resend.emails.send({
-        from: `${storeConfig.store_name || 'Store'} Contact Form <${storeConfig.from_email || 'onboarding@resend.dev'}>`,
-        to: [storeConfig.store_email || storeConfig.contact_email || 'contact@store.com'],
+        from: `${storeName} Contact Form <${fromEmail}>`,
+        to: [contactEmail],
         subject: `New Contact Form Submission from ${name}`,
         html: adminNotificationHtml,
       }),
       resend.emails.send({
-        from: `${storeConfig.store_name || 'Store'} <${storeConfig.from_email || 'onboarding@resend.dev'}>`,
+        from: `${storeName} <${fromEmail}>`,
         to: [email],
-        subject: `Thank you for contacting ${storeConfig.store_name || 'New Era Herbals'}!`,
+        subject: `Thank you for contacting ${storeName}!`,
         html: customerConfirmationHtml,
       })
     ]);
 
     console.log('Contact form emails sent:', {
       admin: adminEmailResponse.status,
-      customer: customerEmailResponse.status
+      customer: customerEmailResponse.status,
+      adminResult: adminEmailResponse.status === 'fulfilled' ? adminEmailResponse.value : adminEmailResponse.reason,
+      customerResult: customerEmailResponse.status === 'fulfilled' ? customerEmailResponse.value : customerEmailResponse.reason
     });
 
     return new Response(JSON.stringify({ 
