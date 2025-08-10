@@ -160,10 +160,10 @@ export default function AdminSettings() {
   return (
     <div className="space-y-8 animate-fade-in">
       {/* Header Section */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
         <div>
-          <h1 className="text-4xl font-bold text-foreground">Settings</h1>
-          <p className="text-muted-foreground mt-2 text-lg">
+          <h1 className="text-2xl lg:text-4xl font-bold text-foreground">Settings</h1>
+          <p className="text-muted-foreground mt-2 text-sm lg:text-lg">
             Manage your store configuration and system preferences
           </p>
         </div>
@@ -182,14 +182,14 @@ export default function AdminSettings() {
             </p>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
               <div className="space-y-2">
                 <Label htmlFor="storeName" className="text-sm font-medium">Store Name *</Label>
                 <Input
                   id="storeName"
                   value={localStoreSettings.storeName}
                   onChange={(e) => setLocalStoreSettings({ ...localStoreSettings, storeName: e.target.value })}
-                  className="h-11"
+                  className="h-10 lg:h-11"
                 />
               </div>
               <div className="space-y-2">
@@ -199,7 +199,7 @@ export default function AdminSettings() {
                   type="email"
                   value={localStoreSettings.storeEmail}
                   onChange={(e) => setLocalStoreSettings({ ...localStoreSettings, storeEmail: e.target.value })}
-                  className="h-11"
+                  className="h-10 lg:h-11"
                 />
               </div>
               <div className="space-y-2">
@@ -208,7 +208,7 @@ export default function AdminSettings() {
                   id="storePhone"
                   value={localStoreSettings.storePhone}
                   onChange={(e) => setLocalStoreSettings({ ...localStoreSettings, storePhone: e.target.value })}
-                  className="h-11"
+                  className="h-10 lg:h-11"
                 />
               </div>
               <div className="space-y-2">
@@ -217,7 +217,7 @@ export default function AdminSettings() {
                   id="currency"
                   value={localStoreSettings.currency}
                   onChange={(e) => setLocalStoreSettings({ ...localStoreSettings, currency: e.target.value })}
-                  className="h-11"
+                  className="h-10 lg:h-11"
                 />
               </div>
             </div>
@@ -245,7 +245,7 @@ export default function AdminSettings() {
 
             <Separator />
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
               <div className="space-y-2">
                 <Label htmlFor="taxRate" className="text-sm font-medium">Tax Rate (%)</Label>
                 <Input
@@ -254,7 +254,7 @@ export default function AdminSettings() {
                   step="0.1"
                   value={localStoreSettings.taxRate}
                   onChange={(e) => setLocalStoreSettings({ ...localStoreSettings, taxRate: e.target.value })}
-                  className="h-11"
+                  className="h-10 lg:h-11"
                 />
               </div>
               <div className="space-y-2">
@@ -265,7 +265,7 @@ export default function AdminSettings() {
                   step="0.01"
                   value={localStoreSettings.shippingRate}
                   onChange={(e) => setLocalStoreSettings({ ...localStoreSettings, shippingRate: e.target.value })}
-                  className="h-11"
+                  className="h-10 lg:h-11"
                 />
               </div>
               <div className="space-y-2">
@@ -276,7 +276,7 @@ export default function AdminSettings() {
                   step="0.01"
                   value={localStoreSettings.freeShippingThreshold}
                   onChange={(e) => setLocalStoreSettings({ ...localStoreSettings, freeShippingThreshold: e.target.value })}
-                  className="h-11"
+                  className="h-10 lg:h-11"
                 />
               </div>
             </div>

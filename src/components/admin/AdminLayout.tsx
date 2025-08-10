@@ -40,20 +40,23 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
       <AdminSidebar />
       <div className="flex-1 flex flex-col h-full">
         {/* Modern Admin Header */}
-        <header className="h-16 flex items-center justify-between px-6 bg-background border-b border-border/50 backdrop-blur-sm shrink-0">
-          <div className="flex items-center space-x-4">
-            <div className="hidden md:flex items-center space-x-2">
+        <header className="h-16 flex items-center justify-between px-4 lg:px-6 bg-background border-b border-border/50 backdrop-blur-sm shrink-0">
+          <div className="flex items-center space-x-2 lg:space-x-4">
+            <div className="hidden lg:flex items-center space-x-2">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                 <Input
                   placeholder="Search admin panel..."
-                  className="pl-10 w-64 bg-muted/50 border-border/50 focus:bg-background"
+                  className="pl-10 w-48 xl:w-64 bg-muted/50 border-border/50 focus:bg-background"
                 />
               </div>
             </div>
+            <div className="lg:hidden">
+              <h2 className="text-lg font-semibold text-foreground">Admin Panel</h2>
+            </div>
           </div>
           
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2 lg:space-x-4">
             <Popover>
               <PopoverTrigger asChild>
                 <Button variant="ghost" size="icon" className="relative hover:bg-muted">
@@ -65,7 +68,7 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
                   )}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-80 p-0" align="end">
+              <PopoverContent className="w-80 md:w-96 p-0" align="end">
                 <div className="flex items-center justify-between p-4 border-b">
                   <h4 className="font-semibold">Notifications</h4>
                   {unreadCount > 0 && (
@@ -74,7 +77,7 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
                     </Button>
                   )}
                 </div>
-                <ScrollArea className="h-96">
+                <ScrollArea className="h-80 md:h-96">
                   {notifications.length === 0 ? (
                     <div className="p-6 text-center text-muted-foreground">
                       <Bell className="h-8 w-8 mx-auto mb-2 opacity-50" />
@@ -107,12 +110,12 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
                             </div>
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center justify-between">
-                                <p className="text-sm font-medium">{notification.title}</p>
+                                <p className="text-sm font-medium truncate">{notification.title}</p>
                                 {!notification.read && (
-                                  <Badge variant="destructive" className="h-2 w-2 p-0 rounded-full" />
+                                  <Badge variant="destructive" className="h-2 w-2 p-0 rounded-full ml-2" />
                                 )}
                               </div>
-                              <p className="text-sm text-muted-foreground mt-1">
+                              <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
                                 {notification.message}
                               </p>
                               <p className="text-xs text-muted-foreground mt-1">
@@ -130,19 +133,20 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
             
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-9 w-9 rounded-full">
-                  <Avatar className="h-9 w-9">
-                    <AvatarFallback className="bg-primary text-primary-foreground">
+                <Button variant="ghost" className="relative h-8 w-8 lg:h-9 lg:w-9 rounded-full">
+                  <Avatar className="h-8 w-8 lg:h-9 lg:w-9">
+                    <AvatarFallback className="bg-primary text-primary-foreground text-sm">
                       {user.email?.charAt(0).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuContent align="end" className="w-48 z-50 bg-background border border-border">
                 <DropdownMenuItem>
                   <User className="h-4 w-4 mr-2" />
                   Profile
                 </DropdownMenuItem>
+                <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={signOut}>
                   Sign Out
                 </DropdownMenuItem>
@@ -152,7 +156,7 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
         </header>
         
         {/* Content Area */}
-        <main className="flex-1 p-8 overflow-auto bg-muted/30">
+        <main className="flex-1 p-4 lg:p-6 xl:p-8 overflow-auto bg-muted/30">
           {children}
         </main>
       </div>

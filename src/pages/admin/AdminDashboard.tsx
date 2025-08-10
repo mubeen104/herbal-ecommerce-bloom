@@ -177,20 +177,20 @@ export default function AdminDashboard() {
   return (
     <div className="space-y-8">
       {/* Header Section */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
-          <p className="text-muted-foreground mt-1">
+          <h1 className="text-2xl lg:text-3xl font-bold text-foreground">Dashboard</h1>
+          <p className="text-muted-foreground mt-1 text-sm lg:text-base">
             Welcome back! Here's what's happening with your store.
           </p>
         </div>
-        <div className="flex flex-col sm:flex-row gap-3">
+        <div className="flex flex-col sm:flex-row gap-2 lg:gap-3">
           <Select value={timeFilter} onValueChange={setTimeFilter}>
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger className="w-full sm:w-[180px]">
               <Calendar className="h-4 w-4 mr-2" />
               <SelectValue placeholder="Select time period" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="z-50 bg-background border border-border">
               <SelectItem value="hour">Last Hour</SelectItem>
               <SelectItem value="day">Last 24 Hours</SelectItem>
               <SelectItem value="week">Last 7 Days</SelectItem>
@@ -199,14 +199,14 @@ export default function AdminDashboard() {
               <SelectItem value="all">All Time</SelectItem>
             </SelectContent>
           </Select>
-          <div className="flex space-x-3">
-            <Button variant="outline" className="hover:bg-muted" asChild>
+          <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
+            <Button variant="outline" className="hover:bg-muted w-full sm:w-auto" asChild>
               <a href="/" target="_blank" rel="noopener noreferrer">
                 <Eye className="h-4 w-4 mr-2" />
                 View Store
               </a>
             </Button>
-            <Button onClick={() => navigate('/admin/products')} className="bg-primary hover:bg-primary-hover">
+            <Button onClick={() => navigate('/admin/products')} className="bg-primary hover:bg-primary-hover w-full sm:w-auto">
               <Plus className="h-4 w-4 mr-2" />
               Add Product
             </Button>
@@ -215,21 +215,21 @@ export default function AdminDashboard() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 lg:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         {statCards.map((stat, index) => (
           <Card key={index} className="border-border/50 hover:shadow-medium transition-all duration-200 hover:scale-[1.02]">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 p-4 lg:p-6">
+              <CardTitle className="text-xs lg:text-sm font-medium text-muted-foreground">
                 {stat.title}
               </CardTitle>
               <div className={`p-2 rounded-lg ${stat.bgColor}`}>
-                <stat.icon className={`h-5 w-5 ${stat.color}`} />
+                <stat.icon className={`h-4 w-4 lg:h-5 lg:w-5 ${stat.color}`} />
               </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-4 lg:p-6 pt-0">
               <div className="space-y-2">
-                <div className="text-3xl font-bold text-foreground">{stat.value}</div>
-                <div className="flex items-center space-x-2 text-sm">
+                <div className="text-xl lg:text-3xl font-bold text-foreground">{stat.value}</div>
+                <div className="flex items-center space-x-2 text-xs lg:text-sm">
                   <div className={`flex items-center ${stat.trendUp ? 'text-green-600' : 'text-red-600'}`}>
                     {stat.trendUp ? (
                       <TrendingUp className="h-3 w-3 mr-1" />
@@ -238,7 +238,7 @@ export default function AdminDashboard() {
                     )}
                     <span className="font-medium">{stat.trend}</span>
                   </div>
-                  <span className="text-muted-foreground">for {getTimeFilterLabel(timeFilter).toLowerCase()}</span>
+                  <span className="text-muted-foreground hidden lg:inline">for {getTimeFilterLabel(timeFilter).toLowerCase()}</span>
                 </div>
               </div>
             </CardContent>
@@ -247,45 +247,46 @@ export default function AdminDashboard() {
       </div>
 
       {/* Main Content Grid */}
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid gap-4 lg:gap-6 lg:grid-cols-3">
         {/* Recent Orders - Takes 2 columns */}
         <Card className="lg:col-span-2 border-border/50">
-          <CardHeader className="pb-4">
+          <CardHeader className="pb-4 p-4 lg:p-6">
             <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center text-lg">
-                <Clock className="h-5 w-5 mr-2 text-primary" />
-                Recent Orders ({getTimeFilterLabel(timeFilter)})
+              <CardTitle className="flex items-center text-base lg:text-lg">
+                <Clock className="h-4 w-4 lg:h-5 lg:w-5 mr-2 text-primary" />
+                <span className="hidden sm:inline">Recent Orders ({getTimeFilterLabel(timeFilter)})</span>
+                <span className="sm:hidden">Recent Orders</span>
               </CardTitle>
-              <Button variant="ghost" size="sm" onClick={() => navigate('/admin/orders')}>
-                View All
-                <ArrowUpRight className="h-4 w-4 ml-1" />
+              <Button variant="ghost" size="sm" onClick={() => navigate('/admin/orders')} className="text-xs lg:text-sm">
+                <span className="hidden sm:inline">View All</span>
+                <ArrowUpRight className="h-4 w-4 sm:ml-1" />
               </Button>
             </div>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
+          <CardContent className="p-4 lg:p-6">
+            <div className="space-y-3 lg:space-y-4">
               {stats?.recentOrders?.length === 0 ? (
-                <div className="text-center py-8">
-                  <Activity className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
-                  <p className="text-muted-foreground">No recent orders to display.</p>
+                <div className="text-center py-6 lg:py-8">
+                  <Activity className="h-8 w-8 lg:h-12 lg:w-12 text-muted-foreground mx-auto mb-3" />
+                  <p className="text-muted-foreground text-sm lg:text-base">No recent orders to display.</p>
                 </div>
               ) : (
                 stats?.recentOrders?.map((order: any) => (
-                  <div key={order.id} className="flex items-center justify-between p-4 border border-border/50 rounded-lg hover:bg-muted/20 transition-colors">
-                    <div className="space-y-1">
-                      <p className="font-semibold text-foreground">{order.order_number}</p>
-                      <p className="text-sm text-muted-foreground">
+                  <div key={order.id} className="flex items-center justify-between p-3 lg:p-4 border border-border/50 rounded-lg hover:bg-muted/20 transition-colors">
+                    <div className="space-y-1 min-w-0 flex-1">
+                      <p className="font-semibold text-foreground text-sm lg:text-base truncate">{order.order_number}</p>
+                      <p className="text-xs lg:text-sm text-muted-foreground truncate">
                         {order.profiles?.first_name} {order.profiles?.last_name}
                       </p>
                       <p className="text-xs text-muted-foreground">
                         {new Date(order.created_at).toLocaleDateString()}
                       </p>
                     </div>
-                    <div className="text-right space-y-2">
-                      <p className="font-bold text-lg text-foreground">
+                    <div className="text-right space-y-1 lg:space-y-2 ml-2">
+                      <p className="font-bold text-sm lg:text-lg text-foreground">
                         {currency} {Number(order.total_amount).toFixed(2)}
                       </p>
-                      <Badge className={getStatusColor(order.status)}>
+                      <Badge className={`${getStatusColor(order.status)} text-xs`}>
                         {order.status}
                       </Badge>
                     </div>
@@ -298,14 +299,14 @@ export default function AdminDashboard() {
 
         {/* Quick Actions */}
         <Card className="border-border/50">
-          <CardHeader>
-            <CardTitle className="flex items-center text-lg">
-              <Activity className="h-5 w-5 mr-2 text-primary" />
+          <CardHeader className="p-4 lg:p-6">
+            <CardTitle className="flex items-center text-base lg:text-lg">
+              <Activity className="h-4 w-4 lg:h-5 lg:w-5 mr-2 text-primary" />
               Quick Actions
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
+          <CardContent className="p-4 lg:p-6">
+            <div className="space-y-2 lg:space-y-3">
               {[
                 { label: 'Manage Products', icon: Package, path: '/admin/products' },
                 { label: 'View Orders', icon: ShoppingCart, path: '/admin/orders' },
@@ -315,12 +316,12 @@ export default function AdminDashboard() {
                 <Button 
                   key={index}
                   variant="outline" 
-                  className="w-full justify-start hover:bg-muted border-border/50" 
+                  className="w-full justify-start hover:bg-muted border-border/50 text-xs lg:text-sm h-9 lg:h-10" 
                   onClick={() => navigate(action.path)}
                 >
-                  <action.icon className="h-4 w-4 mr-3" />
-                  {action.label}
-                  <ArrowUpRight className="h-4 w-4 ml-auto" />
+                  <action.icon className="h-3 w-3 lg:h-4 lg:w-4 mr-2 lg:mr-3" />
+                  <span className="truncate">{action.label}</span>
+                  <ArrowUpRight className="h-3 w-3 lg:h-4 lg:w-4 ml-auto" />
                 </Button>
               ))}
             </div>
