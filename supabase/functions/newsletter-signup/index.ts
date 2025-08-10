@@ -47,9 +47,14 @@ const handler = async (req: Request): Promise<Response> => {
 
     const settings: Record<string, any> = {};
     allSettings?.forEach(setting => {
-      settings[setting.key] = typeof setting.value === 'string' 
-        ? JSON.parse(setting.value) 
-        : setting.value;
+      try {
+        settings[setting.key] = typeof setting.value === 'string' 
+          ? JSON.parse(setting.value) 
+          : setting.value;
+      } catch (e) {
+        // If JSON parsing fails, use the raw value
+        settings[setting.key] = setting.value;
+      }
     });
 
     console.log('Retrieved settings:', settings);
