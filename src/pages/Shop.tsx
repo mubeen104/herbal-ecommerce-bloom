@@ -118,50 +118,72 @@ export default function Shop() {
 
             {/* Collapsible Filter Pills */}
             <Collapsible open={isFiltersOpen} onOpenChange={setIsFiltersOpen}>
-              <Card className="border-2 shadow-xl bg-card/95 backdrop-blur-sm hover:shadow-2xl transition-all duration-300">
-                <CardContent className="p-4 sm:p-6">
-                  <div className="space-y-4">
+              <Card className="relative border-0 shadow-2xl bg-gradient-to-br from-card/95 via-card/90 to-muted/30 backdrop-blur-xl hover:shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25)] transition-all duration-500 rounded-2xl overflow-hidden">
+                {/* Gradient Border Effect */}
+                <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-accent/15 to-secondary/20 opacity-50 rounded-2xl" />
+                <div className="absolute inset-[1px] bg-gradient-to-br from-card/95 via-card/90 to-muted/30 backdrop-blur-xl rounded-2xl" />
+                
+                <CardContent className="relative p-6 sm:p-8">
+                  <div className="space-y-6">
                     {/* Filter Header with Toggle */}
                     <CollapsibleTrigger asChild>
                       <Button 
                         variant="ghost" 
                         className="w-full flex items-center justify-between p-0 h-auto hover:bg-transparent group"
                       >
-                        <div className="flex items-center gap-3">
-                          <Filter className="h-5 w-5 text-primary" />
-                          <span className="font-semibold text-foreground">Filters</span>
+                        <div className="flex items-center gap-4">
+                          <div className="p-2 bg-gradient-to-br from-primary/20 to-accent/20 rounded-xl transition-all duration-300 group-hover:from-primary/30 group-hover:to-accent/30 group-hover:scale-110">
+                            <Filter className="h-5 w-5 text-primary" />
+                          </div>
+                          <div className="text-left">
+                            <span className="block font-bold text-lg text-foreground">Filters</span>
+                            <span className="block text-sm text-muted-foreground">Refine your search</span>
+                          </div>
                           {(productType !== 'all' || selectedCategory !== 'all' || searchTerm) && (
-                            <Badge variant="secondary" className="ml-2 h-5 px-2 text-xs">
+                            <Badge 
+                              variant="secondary" 
+                              className="ml-2 h-6 px-3 text-sm font-medium bg-primary/10 text-primary border-primary/20 hover:bg-primary/20 transition-all duration-300"
+                            >
                               {[
                                 productType !== 'all' ? 1 : 0,
                                 selectedCategory !== 'all' ? 1 : 0,
                                 searchTerm ? 1 : 0
-                              ].reduce((a, b) => a + b, 0)}
+                              ].reduce((a, b) => a + b, 0)} active
                             </Badge>
                           )}
                         </div>
-                        <ChevronDown 
-                          className={`h-5 w-5 text-muted-foreground transition-transform duration-300 ${
-                            isFiltersOpen ? 'rotate-180' : ''
-                          }`} 
-                        />
+                        <div className="p-2 rounded-full bg-muted/50 group-hover:bg-primary/10 transition-all duration-300">
+                          <ChevronDown 
+                            className={`h-5 w-5 text-muted-foreground group-hover:text-primary transition-all duration-300 ${
+                              isFiltersOpen ? 'rotate-180' : ''
+                            }`} 
+                          />
+                        </div>
                       </Button>
                     </CollapsibleTrigger>
                     
-                    <CollapsibleContent className="space-y-4 animate-accordion-down data-[state=closed]:animate-accordion-up">
+                    <CollapsibleContent className="space-y-6 animate-accordion-down data-[state=closed]:animate-accordion-up">
+                      {/* Elegant Divider */}
+                      <div className="w-full h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+                      
                       {/* Filter Pills Layout */}
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                         {/* Product Type Filter */}
-                        <div className="space-y-2">
-                          <label className="text-sm font-medium text-foreground">Product Type</label>
+                        <div className="space-y-3 group">
+                          <label className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                            <div className="w-2 h-2 bg-gradient-to-r from-primary to-accent rounded-full" />
+                            Product Type
+                          </label>
                           <Select value={productType} onValueChange={setProductType}>
-                            <SelectTrigger className="h-11 border-2 rounded-xl hover:border-primary/50 transition-all duration-300 bg-background/50">
+                            <SelectTrigger className="h-12 border-2 border-border/50 rounded-xl hover:border-primary/50 hover:bg-primary/5 transition-all duration-300 bg-background/80 backdrop-blur-sm shadow-sm hover:shadow-md">
                               <div className="flex items-center">
-                                <ShoppingCart className="h-4 w-4 mr-2 text-primary" />
+                                <div className="p-1.5 bg-primary/10 rounded-lg mr-3">
+                                  <ShoppingCart className="h-4 w-4 text-primary" />
+                                </div>
                                 <SelectValue placeholder="Select type" />
                               </div>
                             </SelectTrigger>
-                            <SelectContent className="rounded-xl border-2">
+                            <SelectContent className="rounded-xl border-2 shadow-xl backdrop-blur-xl">
                               <SelectItem value="all">All Products</SelectItem>
                               <SelectItem value="single-items">Single Items</SelectItem>
                               <SelectItem value="kits-deals">Kits & Deals</SelectItem>
@@ -170,13 +192,16 @@ export default function Shop() {
                         </div>
 
                         {/* Category Filter */}
-                        <div className="space-y-2">
-                          <label className="text-sm font-medium text-foreground">Category</label>
+                        <div className="space-y-3 group">
+                          <label className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                            <div className="w-2 h-2 bg-gradient-to-r from-accent to-secondary rounded-full" />
+                            Category
+                          </label>
                           <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                            <SelectTrigger className="h-11 border-2 rounded-xl hover:border-primary/50 transition-all duration-300 bg-background/50">
+                            <SelectTrigger className="h-12 border-2 border-border/50 rounded-xl hover:border-accent/50 hover:bg-accent/5 transition-all duration-300 bg-background/80 backdrop-blur-sm shadow-sm hover:shadow-md">
                               <SelectValue placeholder="Select category" />
                             </SelectTrigger>
-                            <SelectContent className="rounded-xl border-2">
+                            <SelectContent className="rounded-xl border-2 shadow-xl backdrop-blur-xl">
                               <SelectItem value="all">All Categories</SelectItem>
                               {categories?.map(category => <SelectItem key={category.id} value={category.slug}>
                                   {category.name}
@@ -186,13 +211,16 @@ export default function Shop() {
                         </div>
 
                         {/* Sort Filter */}
-                        <div className="space-y-2">
-                          <label className="text-sm font-medium text-foreground">Sort By</label>
+                        <div className="space-y-3 group">
+                          <label className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                            <div className="w-2 h-2 bg-gradient-to-r from-secondary to-primary rounded-full" />
+                            Sort By
+                          </label>
                           <Select value={sortBy} onValueChange={setSortBy}>
-                            <SelectTrigger className="h-11 border-2 rounded-xl hover:border-primary/50 transition-all duration-300 bg-background/50">
+                            <SelectTrigger className="h-12 border-2 border-border/50 rounded-xl hover:border-secondary/50 hover:bg-secondary/5 transition-all duration-300 bg-background/80 backdrop-blur-sm shadow-sm hover:shadow-md">
                               <SelectValue placeholder="Sort options" />
                             </SelectTrigger>
-                            <SelectContent className="rounded-xl border-2">
+                            <SelectContent className="rounded-xl border-2 shadow-xl backdrop-blur-xl">
                               <SelectItem value="newest">Newest First</SelectItem>
                               <SelectItem value="name">Name A-Z</SelectItem>
                               <SelectItem value="price-low">Price: Low to High</SelectItem>
@@ -204,35 +232,42 @@ export default function Shop() {
 
                       {/* Active Filters Display */}
                       {(productType !== 'all' || selectedCategory !== 'all' || searchTerm) && (
-                        <div className="flex flex-wrap gap-2 pt-4 border-t border-border/50">
-                          <span className="text-sm text-muted-foreground">Active filters:</span>
-                          {productType !== 'all' && (
-                            <Badge 
-                              variant="secondary" 
-                              className="cursor-pointer hover:bg-destructive hover:text-destructive-foreground transition-colors duration-200" 
-                              onClick={() => setProductType('all')}
-                            >
-                              {productType === 'kits-deals' ? 'Kits & Deals' : 'Single Items'} ✕
-                            </Badge>
-                          )}
-                          {selectedCategory !== 'all' && (
-                            <Badge 
-                              variant="secondary" 
-                              className="cursor-pointer hover:bg-destructive hover:text-destructive-foreground transition-colors duration-200" 
-                              onClick={() => setSelectedCategory('all')}
-                            >
-                              {categories?.find(c => c.slug === selectedCategory)?.name} ✕
-                            </Badge>
-                          )}
-                          {searchTerm && (
-                            <Badge 
-                              variant="secondary" 
-                              className="cursor-pointer hover:bg-destructive hover:text-destructive-foreground transition-colors duration-200" 
-                              onClick={() => setSearchTerm('')}
-                            >
-                              "{searchTerm}" ✕
-                            </Badge>
-                          )}
+                        <div className="p-4 bg-gradient-to-r from-muted/30 to-muted/20 rounded-xl border border-border/30 backdrop-blur-sm">
+                          <div className="flex flex-wrap items-center gap-3">
+                            <span className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                              <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
+                              Active filters:
+                            </span>
+                            <div className="flex flex-wrap gap-2">
+                              {productType !== 'all' && (
+                                <Badge 
+                                  variant="secondary" 
+                                  className="cursor-pointer hover:bg-destructive hover:text-destructive-foreground transition-all duration-300 hover:scale-105 bg-primary/10 text-primary border-primary/20 px-3 py-1" 
+                                  onClick={() => setProductType('all')}
+                                >
+                                  {productType === 'kits-deals' ? 'Kits & Deals' : 'Single Items'} ✕
+                                </Badge>
+                              )}
+                              {selectedCategory !== 'all' && (
+                                <Badge 
+                                  variant="secondary" 
+                                  className="cursor-pointer hover:bg-destructive hover:text-destructive-foreground transition-all duration-300 hover:scale-105 bg-accent/10 text-accent border-accent/20 px-3 py-1" 
+                                  onClick={() => setSelectedCategory('all')}
+                                >
+                                  {categories?.find(c => c.slug === selectedCategory)?.name} ✕
+                                </Badge>
+                              )}
+                              {searchTerm && (
+                                <Badge 
+                                  variant="secondary" 
+                                  className="cursor-pointer hover:bg-destructive hover:text-destructive-foreground transition-all duration-300 hover:scale-105 bg-secondary/10 text-secondary border-secondary/20 px-3 py-1" 
+                                  onClick={() => setSearchTerm('')}
+                                >
+                                  "{searchTerm}" ✕
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
                         </div>
                       )}
                     </CollapsibleContent>
