@@ -85,7 +85,6 @@ export default function Shop() {
   const handleAddToCartRequest = (product: any) => {
     setAddToCartProduct(product);
   };
-
   const handleAddToCart = async (productId: string, quantity: number, variantId?: string) => {
     await addToCart(productId, quantity, variantId);
   };
@@ -127,10 +126,7 @@ export default function Shop() {
                   <div className="space-y-6">
                     {/* Filter Header with Toggle */}
                     <CollapsibleTrigger asChild>
-                      <Button 
-                        variant="ghost" 
-                        className="w-full flex items-center justify-between p-0 h-auto hover:bg-transparent group"
-                      >
+                      <Button variant="ghost" className="w-full flex items-center justify-between p-0 h-auto hover:bg-transparent group">
                         <div className="flex items-center gap-4">
                           <div className="p-2 bg-gradient-to-br from-primary/20 to-accent/20 rounded-xl transition-all duration-300 group-hover:from-primary/30 group-hover:to-accent/30 group-hover:scale-110">
                             <Filter className="h-5 w-5 text-primary" />
@@ -139,25 +135,12 @@ export default function Shop() {
                             <span className="block font-bold text-lg text-foreground">Filters</span>
                             <span className="block text-sm text-muted-foreground">Refine your search</span>
                           </div>
-                          {(productType !== 'all' || selectedCategory !== 'all' || searchTerm) && (
-                            <Badge 
-                              variant="secondary" 
-                              className="ml-2 h-6 px-3 text-sm font-medium bg-primary/10 text-primary border-primary/20 hover:bg-primary/20 transition-all duration-300"
-                            >
-                              {[
-                                productType !== 'all' ? 1 : 0,
-                                selectedCategory !== 'all' ? 1 : 0,
-                                searchTerm ? 1 : 0
-                              ].reduce((a, b) => a + b, 0)} active
-                            </Badge>
-                          )}
+                          {(productType !== 'all' || selectedCategory !== 'all' || searchTerm) && <Badge variant="secondary" className="ml-2 h-6 px-3 text-sm font-medium bg-primary/10 text-primary border-primary/20 hover:bg-primary/20 transition-all duration-300">
+                              {[productType !== 'all' ? 1 : 0, selectedCategory !== 'all' ? 1 : 0, searchTerm ? 1 : 0].reduce((a, b) => a + b, 0)} active
+                            </Badge>}
                         </div>
                         <div className="p-2 rounded-full bg-muted/50 group-hover:bg-primary/10 transition-all duration-300">
-                          <ChevronDown 
-                            className={`h-5 w-5 text-muted-foreground group-hover:text-primary transition-all duration-300 ${
-                              isFiltersOpen ? 'rotate-180' : ''
-                            }`} 
-                          />
+                          <ChevronDown className={`h-5 w-5 text-muted-foreground group-hover:text-primary transition-all duration-300 ${isFiltersOpen ? 'rotate-180' : ''}`} />
                         </div>
                       </Button>
                     </CollapsibleTrigger>
@@ -231,45 +214,25 @@ export default function Shop() {
                       </div>
 
                       {/* Active Filters Display */}
-                      {(productType !== 'all' || selectedCategory !== 'all' || searchTerm) && (
-                        <div className="p-4 bg-gradient-to-r from-muted/30 to-muted/20 rounded-xl border border-border/30 backdrop-blur-sm">
+                      {(productType !== 'all' || selectedCategory !== 'all' || searchTerm) && <div className="p-4 bg-gradient-to-r from-muted/30 to-muted/20 rounded-xl border border-border/30 backdrop-blur-sm">
                           <div className="flex flex-wrap items-center gap-3">
                             <span className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                               <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
                               Active filters:
                             </span>
                             <div className="flex flex-wrap gap-2">
-                              {productType !== 'all' && (
-                                <Badge 
-                                  variant="secondary" 
-                                  className="cursor-pointer hover:bg-destructive hover:text-destructive-foreground transition-all duration-300 hover:scale-105 bg-primary/10 text-primary border-primary/20 px-3 py-1" 
-                                  onClick={() => setProductType('all')}
-                                >
+                              {productType !== 'all' && <Badge variant="secondary" className="cursor-pointer hover:bg-destructive hover:text-destructive-foreground transition-all duration-300 hover:scale-105 bg-primary/10 text-primary border-primary/20 px-3 py-1" onClick={() => setProductType('all')}>
                                   {productType === 'kits-deals' ? 'Kits & Deals' : 'Single Items'} ✕
-                                </Badge>
-                              )}
-                              {selectedCategory !== 'all' && (
-                                <Badge 
-                                  variant="secondary" 
-                                  className="cursor-pointer hover:bg-destructive hover:text-destructive-foreground transition-all duration-300 hover:scale-105 bg-accent/10 text-accent border-accent/20 px-3 py-1" 
-                                  onClick={() => setSelectedCategory('all')}
-                                >
+                                </Badge>}
+                              {selectedCategory !== 'all' && <Badge variant="secondary" className="cursor-pointer hover:bg-destructive hover:text-destructive-foreground transition-all duration-300 hover:scale-105 bg-accent/10 text-accent border-accent/20 px-3 py-1" onClick={() => setSelectedCategory('all')}>
                                   {categories?.find(c => c.slug === selectedCategory)?.name} ✕
-                                </Badge>
-                              )}
-                              {searchTerm && (
-                                <Badge 
-                                  variant="secondary" 
-                                  className="cursor-pointer hover:bg-destructive hover:text-destructive-foreground transition-all duration-300 hover:scale-105 bg-secondary/10 text-secondary border-secondary/20 px-3 py-1" 
-                                  onClick={() => setSearchTerm('')}
-                                >
+                                </Badge>}
+                              {searchTerm && <Badge variant="secondary" className="cursor-pointer hover:bg-destructive hover:text-destructive-foreground transition-all duration-300 hover:scale-105 bg-secondary/10 text-secondary border-secondary/20 px-3 py-1" onClick={() => setSearchTerm('')}>
                                   "{searchTerm}" ✕
-                                </Badge>
-                              )}
+                                </Badge>}
                             </div>
                           </div>
-                        </div>
-                      )}
+                        </div>}
                     </CollapsibleContent>
                   </div>
                 </CardContent>
@@ -327,13 +290,11 @@ export default function Shop() {
                            <img src={getMainImage(product)} alt={product.name} className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-700" />
                           
                            {/* Sale Badge Only */}
-                           {product.compare_price && product.compare_price > product.price && (
-                             <div className="absolute top-3 left-3">
+                           {product.compare_price && product.compare_price > product.price && <div className="absolute top-3 left-3">
                                <Badge className="bg-red-500/90 backdrop-blur-sm text-white shadow-lg border-0 rounded-full px-3 py-1 text-xs font-medium">
                                  Sale
                                </Badge>
-                             </div>
-                           )}
+                             </div>}
 
                           {/* Out of Stock Overlay */}
                           {product.inventory_quantity === 0 && <div className="absolute inset-0 bg-background/95 backdrop-blur-sm flex items-center justify-center rounded-t-3xl">
@@ -374,10 +335,7 @@ export default function Shop() {
                                                  {currency} {selectedProduct.compare_price.toFixed(2)}
                                                </span>}
                                           </div>
-                                          <div className="flex items-center text-sm text-muted-foreground mb-4">
-                                            <Star className="h-4 w-4 fill-current text-yellow-400 mr-1" />
-                                            4.5 (23 reviews)
-                                          </div>
+                                          
                                         </div>
 
                                         <div>
@@ -470,14 +428,6 @@ export default function Shop() {
       <Footer />
 
       {/* Add to Cart Modal */}
-      {addToCartProduct && (
-        <AddToCartModal
-          product={addToCartProduct}
-          isOpen={!!addToCartProduct}
-          onClose={() => setAddToCartProduct(null)}
-          onAddToCart={handleAddToCart}
-          isLoading={cartLoading}
-        />
-      )}
+      {addToCartProduct && <AddToCartModal product={addToCartProduct} isOpen={!!addToCartProduct} onClose={() => setAddToCartProduct(null)} onAddToCart={handleAddToCart} isLoading={cartLoading} />}
     </div>;
 }
