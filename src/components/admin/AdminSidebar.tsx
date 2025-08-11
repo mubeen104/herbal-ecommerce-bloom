@@ -10,7 +10,7 @@ const adminMenuItems = [{
   title: 'Products',
   url: '/admin/products',
   icon: Package,
-  badge: 'New'
+  badge: null
 }, {
   title: 'Categories',
   url: '/admin/categories',
@@ -20,7 +20,7 @@ const adminMenuItems = [{
   title: 'Orders',
   url: '/admin/orders',
   icon: ShoppingCart,
-  badge: '5'
+  badge: null
 }, {
   title: 'Coupons',
   url: '/admin/coupons',
