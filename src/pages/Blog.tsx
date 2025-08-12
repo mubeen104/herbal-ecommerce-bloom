@@ -12,8 +12,15 @@ import { format } from 'date-fns';
 const Blog = () => {
   const { data: blogPosts, isLoading, error } = useBlogPosts(true);
 
-  const getExcerpt = (content: string, maxLength = 150) => {
-    const textContent = content.replace(/<[^>]*>/g, '');
+  const getExcerpt = (post: any, maxLength = 150) => {
+    // Use short_description if available, otherwise extract from content
+    if (post.short_description) {
+      return post.short_description.length > maxLength 
+        ? post.short_description.substring(0, maxLength) + '...'
+        : post.short_description;
+    }
+    
+    const textContent = post.content.replace(/<[^>]*>/g, '');
     return textContent.length > maxLength 
       ? textContent.substring(0, maxLength) + '...'
       : textContent;
@@ -78,7 +85,7 @@ const Blog = () => {
                     </div>
                     <CardTitle className="line-clamp-2">{post.title}</CardTitle>
                     <CardDescription className="line-clamp-3">
-                      {getExcerpt(post.content)}
+                      {getExcerpt(post)}
                     </CardDescription>
                   </CardHeader>
                   <CardContent>

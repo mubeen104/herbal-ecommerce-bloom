@@ -11,6 +11,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Plus, Edit, Trash2, Eye, Calendar } from 'lucide-react';
 import { useBlogPosts, useCreateBlogPost, useUpdateBlogPost, useDeleteBlogPost, BlogPost } from '@/hooks/useBlogPosts';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 import { format } from 'date-fns';
 
 const AdminBlogs = () => {
@@ -19,26 +20,31 @@ const AdminBlogs = () => {
   const updateBlogPost = useUpdateBlogPost();
   const deleteBlogPost = useDeleteBlogPost();
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [editingPost, setEditingPost] = useState<BlogPost | null>(null);
   const [formData, setFormData] = useState({
     title: '',
     content: '',
+    short_description: '',
     meta_title: '',
     meta_description: '',
     slug: '',
     is_published: false,
+    is_featured: false,
   });
 
   const resetForm = () => {
     setFormData({
       title: '',
       content: '',
+      short_description: '',
       meta_title: '',
       meta_description: '',
       slug: '',
       is_published: false,
+      is_featured: false,
     });
   };
 
@@ -61,7 +67,10 @@ const AdminBlogs = () => {
 
   const handleCreate = async () => {
     try {
-      await createBlogPost.mutateAsync(formData);
+      await createBlogPost.mutateAsync({
+        ...formData,
+        author_id: user?.id || ''
+      });
       toast({
         title: "Success",
         description: "Blog post created successfully",
@@ -121,10 +130,12 @@ const AdminBlogs = () => {
     setFormData({
       title: post.title,
       content: post.content,
+      short_description: post.short_description || '',
       meta_title: post.meta_title || '',
       meta_description: post.meta_description || '',
       slug: post.slug,
       is_published: post.is_published,
+      is_featured: post.is_featured,
     });
   };
 
@@ -178,6 +189,17 @@ const AdminBlogs = () => {
               </div>
 
               <div className="grid gap-2">
+                <Label htmlFor="short_description">Short Description</Label>
+                <Textarea
+                  id="short_description"
+                  value={formData.short_description}
+                  onChange={(e) => setFormData(prev => ({ ...prev, short_description: e.target.value }))}
+                  placeholder="Brief description for blog post listing"
+                  className="min-h-[80px]"
+                />
+              </div>
+
+              <div className="grid gap-2">
                 <Label htmlFor="content">Content *</Label>
                 <Textarea
                   id="content"
@@ -211,13 +233,24 @@ const AdminBlogs = () => {
                 />
               </div>
 
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="is_published"
-                  checked={formData.is_published}
-                  onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_published: checked }))}
-                />
-                <Label htmlFor="is_published">Publish immediately</Label>
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="is_published"
+                    checked={formData.is_published}
+                    onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_published: checked }))}
+                  />
+                  <Label htmlFor="is_published">Publish immediately</Label>
+                </div>
+                
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="is_featured"
+                    checked={formData.is_featured}
+                    onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_featured: checked }))}
+                  />
+                  <Label htmlFor="is_featured">Featured post</Label>
+                </div>
               </div>
             </div>
             <div className="flex justify-end gap-2">
@@ -298,6 +331,17 @@ const AdminBlogs = () => {
                           </div>
 
                           <div className="grid gap-2">
+                            <Label htmlFor="edit_short_description">Short Description</Label>
+                            <Textarea
+                              id="edit_short_description"
+                              value={formData.short_description}
+                              onChange={(e) => setFormData(prev => ({ ...prev, short_description: e.target.value }))}
+                              placeholder="Brief description for blog post listing"
+                              className="min-h-[80px]"
+                            />
+                          </div>
+
+                          <div className="grid gap-2">
                             <Label htmlFor="edit_content">Content *</Label>
                             <Textarea
                               id="edit_content"
@@ -331,13 +375,24 @@ const AdminBlogs = () => {
                             />
                           </div>
 
-                          <div className="flex items-center space-x-2">
-                            <Switch
-                              id="edit_is_published"
-                              checked={formData.is_published}
-                              onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_published: checked }))}
-                            />
-                            <Label htmlFor="edit_is_published">Published</Label>
+                          <div className="flex items-center space-x-4">
+                            <div className="flex items-center space-x-2">
+                              <Switch
+                                id="edit_is_published"
+                                checked={formData.is_published}
+                                onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_published: checked }))}
+                              />
+                              <Label htmlFor="edit_is_published">Published</Label>
+                            </div>
+                            
+                            <div className="flex items-center space-x-2">
+                              <Switch
+                                id="edit_is_featured"
+                                checked={formData.is_featured}
+                                onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_featured: checked }))}
+                              />
+                              <Label htmlFor="edit_is_featured">Featured post</Label>
+                            </div>
                           </div>
                         </div>
                         <div className="flex justify-end gap-2">
@@ -378,9 +433,9 @@ const AdminBlogs = () => {
                   </div>
                 </div>
               </CardHeader>
-              {post.meta_description && (
+              {(post.short_description || post.meta_description) && (
                 <CardContent>
-                  <p className="text-sm text-muted-foreground">{post.meta_description}</p>
+                  <p className="text-sm text-muted-foreground">{post.short_description || post.meta_description}</p>
                 </CardContent>
               )}
             </Card>
