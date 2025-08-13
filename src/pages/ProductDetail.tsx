@@ -347,7 +347,7 @@ const ProductDetail = () => {
                     <div className="text-sm text-muted-foreground space-y-2">
                       <p>• Free standard shipping on orders over {currency} {freeShippingThreshold.toFixed(0)}</p>
                       <p>• Express shipping available at checkout</p>
-                      <p>• 30-day return policy</p>
+                      <p>• 7-Day return policy</p>
                       <p>• Returns must be in original condition</p>
                     </div>
                   </div>
