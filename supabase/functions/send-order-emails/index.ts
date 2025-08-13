@@ -81,10 +81,21 @@ const handler = async (req: Request): Promise<Response> => {
           *,
           products (
             name,
-            images:product_images(image_url)
+            slug,
+            product_images(
+              image_url,
+              alt_text,
+              sort_order
+            )
           ),
           product_variants (
-            name
+            name,
+            description,
+            product_variant_images(
+              image_url,
+              alt_text,
+              sort_order
+            )
           )
         )
       `)

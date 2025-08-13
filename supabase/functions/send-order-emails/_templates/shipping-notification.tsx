@@ -11,6 +11,7 @@ import {
   Row,
   Column,
   Hr,
+  Img,
 } from 'npm:@react-email/components@0.0.22';
 import * as React from 'npm:react@18.3.1';
 
@@ -34,7 +35,7 @@ export const ShippingNotificationEmail = ({
 
   const formatAddress = (address: any) => {
     if (!address) return 'N/A';
-    return `${address.firstName} ${address.lastName}\n${address.addressLine1}\n${address.addressLine2 ? address.addressLine2 + '\n' : ''}${address.city}, ${address.state} ${address.postalCode}\n${address.country}`;
+    return `${address.first_name} ${address.last_name}\n${address.address_line_1}\n${address.address_line_2 ? address.address_line_2 + '\n' : ''}${address.city}, ${address.state} ${address.postal_code || ''}\n${address.country}`;
   };
 
   const estimatedDelivery = new Date();
@@ -81,19 +82,37 @@ export const ShippingNotificationEmail = ({
           <Section>
             <Heading style={h3}>Items in This Shipment</Heading>
             <Hr style={hr} />
-            {order.order_items?.map((item: any, index: number) => (
-              <Row key={index} style={itemRow}>
-                <Column style={itemColumn}>
-                  <Text style={itemName}>
-                    {item.products?.name || 'Product'}
-                    {item.product_variants?.name && (
-                      <span style={variantName}> - {item.product_variants.name}</span>
+            {order.order_items?.map((item: any, index: number) => {
+              // Get the best image - prefer variant image, fallback to product image
+              const variantImages = item.product_variants?.product_variant_images || [];
+              const productImages = item.products?.product_images || [];
+              const sortedVariantImages = variantImages.sort((a: any, b: any) => (a.sort_order || 0) - (b.sort_order || 0));
+              const sortedProductImages = productImages.sort((a: any, b: any) => (a.sort_order || 0) - (b.sort_order || 0));
+              const bestImage = sortedVariantImages[0]?.image_url || sortedProductImages[0]?.image_url;
+              
+              return (
+                <Row key={index} style={itemRow}>
+                  <Column style={imageColumn}>
+                    {bestImage && (
+                      <Img
+                        src={bestImage}
+                        alt={item.products?.name || 'Product'}
+                        style={productImage}
+                      />
                     )}
-                  </Text>
-                  <Text style={itemDetails}>Quantity: {item.quantity}</Text>
-                </Column>
-              </Row>
-            ))}
+                  </Column>
+                  <Column style={itemColumn}>
+                    <Text style={itemName}>
+                      {item.products?.name || 'Product'}
+                      {item.product_variants?.name && (
+                        <span style={variantName}> - {item.product_variants.name}</span>
+                      )}
+                    </Text>
+                    <Text style={itemDetails}>Quantity: {item.quantity}</Text>
+                  </Column>
+                </Row>
+              );
+            })}
             <Hr style={hr} />
           </Section>
 
@@ -229,8 +248,22 @@ const itemRow = {
   borderBottom: '1px solid #f1f5f9',
 };
 
+const imageColumn = {
+  verticalAlign: 'top' as const,
+  width: '80px',
+  paddingRight: '12px',
+};
+
 const itemColumn = {
   verticalAlign: 'top' as const,
+};
+
+const productImage = {
+  width: '60px',
+  height: '60px',
+  objectFit: 'cover' as const,
+  borderRadius: '8px',
+  border: '1px solid #e2e8f0',
 };
 
 const itemName = {
