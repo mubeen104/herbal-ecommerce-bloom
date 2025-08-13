@@ -1,30 +1,11 @@
-import { Helmet } from 'react-helmet-async';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Calendar, Clock, User } from 'lucide-react';
 import { useBlogPosts } from '@/hooks/useBlogPosts';
-import { Link } from 'react-router-dom';
-import { format } from 'date-fns';
+import BlogCardPreview from '@/components/blog/BlogCardPreview';
+import BlogSEO from '@/components/blog/BlogSEO';
 
 const Blog = () => {
   const { data: blogPosts, isLoading, error } = useBlogPosts(true);
-
-  const getExcerpt = (post: any, maxLength = 150) => {
-    // Use short_description if available, otherwise extract from content
-    if (post.short_description) {
-      return post.short_description.length > maxLength 
-        ? post.short_description.substring(0, maxLength) + '...'
-        : post.short_description;
-    }
-    
-    const textContent = post.content.replace(/<[^>]*>/g, '');
-    return textContent.length > maxLength 
-      ? textContent.substring(0, maxLength) + '...'
-      : textContent;
-  };
 
   if (isLoading) {
     return (
@@ -52,12 +33,7 @@ const Blog = () => {
 
   return (
     <>
-      <Helmet>
-        <title>Health & Wellness Blog - Natural Herbal Tips</title>
-        <meta name="description" content="Discover natural health tips, herbal remedies, and wellness advice from our experts. Learn about organic living and natural healing methods." />
-        <meta name="keywords" content="herbal blog, natural health, wellness tips, organic living, herbal remedies" />
-        <link rel="canonical" href="/blog" />
-      </Helmet>
+      <BlogSEO isListPage={true} />
       
       <div className="min-h-screen bg-background">
         <Header />
@@ -77,25 +53,7 @@ const Blog = () => {
           {blogPosts && blogPosts.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {blogPosts.map((post) => (
-                <Card key={post.id} className="hover:shadow-lg transition-shadow duration-300">
-                  <CardHeader>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-                      <Calendar className="h-4 w-4" />
-                      {format(new Date(post.created_at), 'MMM dd, yyyy')}
-                    </div>
-                    <CardTitle className="line-clamp-2">{post.title}</CardTitle>
-                    <CardDescription className="line-clamp-3">
-                      {getExcerpt(post)}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <Link to={`/blog/${post.slug}`}>
-                      <Button variant="outline" className="w-full">
-                        Read More
-                      </Button>
-                    </Link>
-                  </CardContent>
-                </Card>
+                <BlogCardPreview key={post.id} post={post} />
               ))}
             </div>
           ) : (

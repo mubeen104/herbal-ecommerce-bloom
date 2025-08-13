@@ -13,6 +13,7 @@ import { useBlogPosts, useCreateBlogPost, useUpdateBlogPost, useDeleteBlogPost, 
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { format } from 'date-fns';
+import RichTextEditor from '@/components/blog/RichTextEditor';
 
 const AdminBlogs = () => {
   const { data: blogPosts, isLoading } = useBlogPosts(false);
@@ -201,12 +202,11 @@ const AdminBlogs = () => {
 
               <div className="grid gap-2">
                 <Label htmlFor="content">Content *</Label>
-                <Textarea
-                  id="content"
+                <RichTextEditor
                   value={formData.content}
-                  onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
+                  onChange={(content) => setFormData(prev => ({ ...prev, content }))}
                   placeholder="Write your blog post content here..."
-                  className="min-h-[200px]"
+                  className="min-h-[300px]"
                 />
               </div>
 
@@ -343,12 +343,11 @@ const AdminBlogs = () => {
 
                           <div className="grid gap-2">
                             <Label htmlFor="edit_content">Content *</Label>
-                            <Textarea
-                              id="edit_content"
+                            <RichTextEditor
                               value={formData.content}
-                              onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
+                              onChange={(content) => setFormData(prev => ({ ...prev, content }))}
                               placeholder="Write your blog post content here..."
-                              className="min-h-[200px]"
+                              className="min-h-[300px]"
                             />
                           </div>
 

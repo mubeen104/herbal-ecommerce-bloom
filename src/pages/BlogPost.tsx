@@ -1,4 +1,3 @@
-import { Helmet } from 'react-helmet-async';
 import { useParams, Link } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -6,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, Calendar, Clock } from 'lucide-react';
 import { useBlogPost } from '@/hooks/useBlogPosts';
 import { format } from 'date-fns';
+import parse from 'html-react-parser';
+import BlogSEO from '@/components/blog/BlogSEO';
 
 const BlogPost = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -43,11 +44,7 @@ const BlogPost = () => {
 
   return (
     <>
-      <Helmet>
-        <title>{post.meta_title || post.title}</title>
-        <meta name="description" content={post.meta_description || post.title} />
-        <link rel="canonical" href={`/blog/${post.slug}`} />
-      </Helmet>
+      <BlogSEO post={post} />
       
       <div className="min-h-screen bg-background">
         <Header />
@@ -75,11 +72,8 @@ const BlogPost = () => {
             </header>
 
             {/* Article Content */}
-            <article className="prose prose-lg max-w-none">
-              <div 
-                dangerouslySetInnerHTML={{ __html: post.content }}
-                className="text-foreground"
-              />
+            <article className="prose prose-lg max-w-none prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground prose-blockquote:text-muted-foreground prose-blockquote:border-l-primary prose-code:text-foreground prose-pre:bg-muted prose-pre:text-foreground">
+              {parse(post.content)}
             </article>
           </div>
         </main>

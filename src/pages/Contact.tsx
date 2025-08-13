@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -90,8 +91,15 @@ const Contact = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
+    <>
+      <Helmet>
+        <title>Contact Us | New Era Herbals</title>
+        <meta name="description" content="Get in touch with New Era Herbals. Contact us for questions about our natural herbal products and wellness solutions." />
+        <link rel="canonical" href="/contact" />
+      </Helmet>
+      
+      <div className="min-h-screen bg-background">
+        <Header />
       
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-muted/20 border-b">
@@ -302,8 +310,9 @@ const Contact = () => {
         </div>
       </main>
 
-      <Footer />
-    </div>
+        <Footer />
+      </div>
+    </>
   );
 };
 

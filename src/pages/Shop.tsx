@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Card, CardContent } from '@/components/ui/card';
@@ -94,8 +95,17 @@ export default function Shop() {
     }
     return '/placeholder.svg';
   };
-  return <div className="min-h-screen flex flex-col bg-background">
-      <Header />
+  return (
+    <>
+      <Helmet>
+        <title>Shop Natural Herbal Products | New Era Herbals</title>
+        <meta name="description" content="Browse our collection of premium natural herbal products, organic supplements, and wellness solutions. Shop certified organic herbs and natural remedies." />
+        <meta name="keywords" content="herbal products, natural supplements, organic health, wellness products, herbal shop" />
+        <link rel="canonical" href="/shop" />
+      </Helmet>
+      
+      <div className="min-h-screen flex flex-col bg-background">
+        <Header />
       
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-muted/20 border-b">
@@ -425,9 +435,11 @@ export default function Shop() {
         </div>
       </main>
 
-      <Footer />
+        <Footer />
 
-      {/* Add to Cart Modal */}
-      {addToCartProduct && <AddToCartModal product={addToCartProduct} isOpen={!!addToCartProduct} onClose={() => setAddToCartProduct(null)} onAddToCart={handleAddToCart} isLoading={cartLoading} />}
-    </div>;
+        {/* Add to Cart Modal */}
+        {addToCartProduct && <AddToCartModal product={addToCartProduct} isOpen={!!addToCartProduct} onClose={() => setAddToCartProduct(null)} onAddToCart={handleAddToCart} isLoading={cartLoading} />}
+      </div>
+    </>
+  );
 }
