@@ -92,63 +92,63 @@ export const AddToCartModal: React.FC<AddToCartModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl rounded-2xl">
-        <DialogHeader>
-          <DialogTitle className="text-xl font-semibold">Add to Cart</DialogTitle>
-        </DialogHeader>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Product Image */}
-          <div className="space-y-4">
-            <div className="aspect-square rounded-xl overflow-hidden bg-muted">
-              <img
-                src={getMainImage()}
-                alt={product.name}
-                className="w-full h-full object-contain"
-              />
-            </div>
-          </div>
-
-          {/* Product Details */}
-          <div className="space-y-6">
-            <div>
-              <h3 className="text-lg font-semibold text-foreground mb-2">
-                {product.name}
-              </h3>
-              {selectedVariant && (
-                <p className="text-sm text-muted-foreground">
-                  Variant: {selectedVariant.name}
-                </p>
-              )}
-            </div>
-
-            {/* Price */}
-            <div className="flex items-center gap-3">
-              <span className="text-2xl font-bold text-primary">
-                {currency} {getCurrentPrice().toFixed(2)}
-              </span>
-              {getCurrentComparePrice() && getCurrentComparePrice() > getCurrentPrice() && (
-                <span className="text-lg text-muted-foreground line-through">
-                  {currency} {getCurrentComparePrice().toFixed(2)}
-                </span>
-              )}
+      <DialogContent className="max-w-lg rounded-2xl p-0 overflow-hidden">
+        <div className="relative">
+          <DialogHeader className="p-6 pb-0">
+            <DialogTitle className="text-xl font-semibold text-center">Quick Add</DialogTitle>
+          </DialogHeader>
+          
+          <div className="p-6 space-y-6">
+            {/* Product Image & Basic Info */}
+            <div className="flex gap-4">
+              <div className="w-20 h-20 rounded-lg overflow-hidden bg-muted flex-shrink-0">
+                <img
+                  src={getMainImage()}
+                  alt={product.name}
+                  className="w-full h-full object-contain"
+                />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="font-semibold text-foreground text-lg leading-tight mb-1 truncate">
+                  {product.name}
+                </h3>
+                {selectedVariant && (
+                  <p className="text-sm text-muted-foreground mb-2 truncate">
+                    {selectedVariant.name}
+                  </p>
+                )}
+                <div className="flex items-center gap-2">
+                  <span className="text-xl font-bold text-primary">
+                    {currency} {getCurrentPrice().toFixed(2)}
+                  </span>
+                  {getCurrentComparePrice() && getCurrentComparePrice() > getCurrentPrice() && (
+                    <span className="text-sm text-muted-foreground line-through">
+                      {currency} {getCurrentComparePrice().toFixed(2)}
+                    </span>
+                  )}
+                </div>
+              </div>
             </div>
 
-            {/* Variant Selector */}
-            {variants && variants.length > 0 && (
-              <ProductVariantSelector
-                variants={variants}
-                selectedVariant={selectedVariant}
-                onVariantChange={setSelectedVariant}
-              />
-            )}
-
-            {/* Inventory Status */}
-            <div className="flex items-center gap-2">
-              <Badge variant={isOutOfStock ? "destructive" : "default"}>
+            {/* Stock Status */}
+            <div className="flex justify-center">
+              <Badge variant={isOutOfStock ? "destructive" : "default"} className="text-xs">
                 {isOutOfStock ? "Out of Stock" : `${maxQuantity} in stock`}
               </Badge>
             </div>
+            {/* Variant Selector */}
+            {variants && variants.length > 0 && (
+              <div className="space-y-3">
+                <label className="text-sm font-medium text-foreground">
+                  Select Variant:
+                </label>
+                <ProductVariantSelector
+                  variants={variants}
+                  selectedVariant={selectedVariant}
+                  onVariantChange={setSelectedVariant}
+                />
+              </div>
+            )}
 
             {/* Quantity Selector */}
             {!isOutOfStock && (
@@ -156,17 +156,18 @@ export const AddToCartModal: React.FC<AddToCartModalProps> = ({
                 <label className="text-sm font-medium text-foreground">
                   Quantity:
                 </label>
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center border border-border rounded-lg">
+                <div className="flex items-center justify-center gap-3">
+                  <div className="flex items-center border border-border rounded-lg bg-background">
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => setQuantity(Math.max(1, quantity - 1))}
                       disabled={quantity <= 1}
+                      className="h-9 w-9 p-0"
                     >
                       <Minus className="h-4 w-4" />
                     </Button>
-                    <span className="px-4 py-2 text-foreground font-medium min-w-[60px] text-center">
+                    <span className="px-4 py-2 text-foreground font-medium min-w-[50px] text-center">
                       {quantity}
                     </span>
                     <Button
@@ -174,23 +175,26 @@ export const AddToCartModal: React.FC<AddToCartModalProps> = ({
                       size="sm"
                       onClick={() => setQuantity(Math.min(maxQuantity, quantity + 1))}
                       disabled={quantity >= maxQuantity}
+                      className="h-9 w-9 p-0"
                     >
                       <Plus className="h-4 w-4" />
                     </Button>
                   </div>
-                  <span className="text-sm text-muted-foreground">
-                    of {maxQuantity} available
+                </div>
+                <div className="text-center">
+                  <span className="text-xs text-muted-foreground">
+                    {maxQuantity} available
                   </span>
                 </div>
               </div>
             )}
 
             {/* Add to Cart Button */}
-            <div className="pt-4">
+            <div className="pt-2">
               <Button
                 onClick={handleAddToCart}
                 disabled={isLoading || isOutOfStock || (variants && variants.length > 0 && !selectedVariant)}
-                className="w-full rounded-full py-6 text-base font-medium"
+                className="w-full rounded-full h-12 text-base font-medium shadow-lg hover:shadow-xl transition-all duration-200"
                 size="lg"
               >
                 <ShoppingCart className="h-5 w-5 mr-2" />

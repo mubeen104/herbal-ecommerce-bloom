@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useCart } from '@/hooks/useCart';
+import { useGuestCart } from '@/hooks/useGuestCart';
 import { useStoreSettings } from '@/hooks/useStoreSettings';
 import { useToast } from '@/hooks/use-toast';
 import { Product } from '@/hooks/useProducts';
@@ -69,7 +69,7 @@ const ProductDetail = () => {
   } = useToast();
   const {
     addToCart
-  } = useCart();
+  } = useGuestCart();
   const {
     currency,
     freeShippingThreshold
@@ -121,34 +121,33 @@ const ProductDetail = () => {
         <Footer />
       </div>;
   }
-  const handleAddToCart = () => {
-    const productToAdd = {
-      productId: product.id,
-      variantId: selectedVariant?.id || null,
-      quantity
-    };
-    addToCart.mutate(productToAdd, {
-      onSuccess: () => {
-        const displayName = selectedVariant ? `${product.name} - ${selectedVariant.name}` : product.name;
-        toast({
-          title: "Added to cart",
-          description: `${quantity} x ${displayName} added to your cart.`
-        });
-      }
-    });
+  const handleAddToCart = async () => {
+    try {
+      await addToCart(product.id, quantity, selectedVariant?.id);
+      const displayName = selectedVariant ? `${product.name} - ${selectedVariant.name}` : product.name;
+      toast({
+        title: "Added to cart",
+        description: `${quantity} x ${displayName} added to your cart.`
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to add item to cart. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
-  const handleBuyNow = () => {
-    // Add to cart and redirect to checkout
-    const productToAdd = {
-      productId: product.id,
-      variantId: selectedVariant?.id || null,
-      quantity
-    };
-    addToCart.mutate(productToAdd, {
-      onSuccess: () => {
-        navigate('/cart');
-      }
-    });
+  const handleBuyNow = async () => {
+    try {
+      await addToCart(product.id, quantity, selectedVariant?.id);
+      navigate('/cart');
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to add item to cart. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
   const getMainImage = () => {
     // Use variant images if variant is selected and has images
@@ -247,10 +246,10 @@ const ProductDetail = () => {
               </div>
 
               <div className="flex space-x-4">
-                <Button onClick={handleAddToCart} disabled={addToCart.isPending || (getCurrentInventory() || 0) <= 0} className="flex-1" variant="outline">
+                <Button onClick={handleAddToCart} disabled={(getCurrentInventory() || 0) <= 0} className="flex-1" variant="outline">
                   {(getCurrentInventory() || 0) > 0 ? 'Add to Cart' : 'Out of Stock'}
                 </Button>
-                <Button onClick={handleBuyNow} disabled={addToCart.isPending || (getCurrentInventory() || 0) <= 0} className="flex-1">
+                <Button onClick={handleBuyNow} disabled={(getCurrentInventory() || 0) <= 0} className="flex-1">
                   Buy Now
                 </Button>
               </div>
