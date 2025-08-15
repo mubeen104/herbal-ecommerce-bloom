@@ -140,7 +140,7 @@ const ProductDetail = () => {
   const handleBuyNow = async () => {
     try {
       await addToCart(product.id, quantity, selectedVariant?.id);
-      navigate('/cart');
+      navigate('/checkout');
     } catch (error) {
       toast({
         title: "Error",
