@@ -8,6 +8,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import ScrollToTop from "@/components/ScrollToTop";
+import { PixelTracker } from "@/components/PixelTracker";
 import Index from "./pages/Index";
 import Shop from "./pages/Shop";
 import Contact from "./pages/Contact";
@@ -27,6 +28,7 @@ import AdminAnalytics from "./pages/admin/AdminAnalytics";
 import AdminReviews from "./pages/admin/AdminReviews";
 import AdminCoupons from "./pages/admin/AdminCoupons";
 import AdminHeroSlides from "./pages/admin/AdminHeroSlides";
+import AdminPixels from "./pages/admin/AdminPixels";
 import AdminSettings from "./pages/admin/AdminSettings";
 import AdminBlogs from "./pages/admin/AdminBlogs";
 import Cart from "./pages/Cart";
@@ -49,6 +51,7 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <ScrollToTop />
+            <PixelTracker />
           <WhatsAppButton />
           <Routes>
             <Route path="/" element={<Index />} />
@@ -77,6 +80,7 @@ const App = () => (
             <Route path="/admin/reviews" element={<AdminLayout><AdminReviews /></AdminLayout>} />
             <Route path="/admin/coupons" element={<AdminLayout><AdminCoupons /></AdminLayout>} />
             <Route path="/admin/hero-slides" element={<AdminLayout><AdminHeroSlides /></AdminLayout>} />
+            <Route path="/admin/pixels" element={<AdminLayout><AdminPixels /></AdminLayout>} />
             <Route path="/admin/blog" element={<AdminLayout><AdminBlogs /></AdminLayout>} />
             <Route path="/admin/settings" element={<AdminLayout><AdminSettings /></AdminLayout>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

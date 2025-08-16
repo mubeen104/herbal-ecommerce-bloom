@@ -18,6 +18,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { trackEvent } from "@/components/PixelTracker";
 
 interface Address {
   firstName: string;
@@ -212,6 +213,19 @@ const Checkout = () => {
       };
 
       const order = await createOrder.mutateAsync(orderData);
+      
+      // Track conversion event for advertising pixels
+      trackEvent('Purchase', {
+        value: totalAmount,
+        currency: currency === 'Rs' ? 'PKR' : 'USD',
+        transaction_id: order.order_number,
+        items: cartItems.map(item => ({
+          item_id: item.product_id,
+          item_name: item.products?.name || item.product?.name || 'Unknown Product',
+          quantity: item.quantity,
+          price: (item.products?.price || item.product?.price || 0)
+        }))
+      });
       
       // Clear cart after successful order
       await clearCart();

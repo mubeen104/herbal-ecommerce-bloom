@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Package, FolderTree, ShoppingCart, Users, BarChart3, Settings, Leaf, ChevronRight, Star, Percent, Image, FileText } from 'lucide-react';
+import { LayoutDashboard, Package, FolderTree, ShoppingCart, Users, BarChart3, Settings, Leaf, ChevronRight, Star, Percent, Image, FileText, Target } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 const adminMenuItems = [{
   title: 'Dashboard',
@@ -50,6 +50,11 @@ const adminMenuItems = [{
   title: 'Hero Slides',
   url: '/admin/hero-slides',
   icon: Image,
+  badge: null
+}, {
+  title: 'Advertising Pixels',
+  url: '/admin/pixels',
+  icon: Target,
   badge: null
 }, {
   title: 'Settings',
