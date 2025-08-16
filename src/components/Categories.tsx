@@ -129,7 +129,7 @@ const Categories = () => {
                 }
               };
               
-              const interval = setInterval(autoScroll, 4000); // Unified 4s interval
+              const interval = setInterval(autoScroll, carouselScrollSpeed); // Use admin settings
               
               // Clean up interval when component unmounts or API changes
               return () => clearInterval(interval);
@@ -141,7 +141,7 @@ const Categories = () => {
               <CarouselItem key={category.id} className="pl-2 md:pl-4 basis-1/2 sm:basis-1/2 lg:basis-1/3">
                 <Card className="group cursor-pointer border border-border/50 bg-card/80 backdrop-blur-sm shadow-lg hover:shadow-2xl hover:-translate-y-2 hover:rotate-1 overflow-hidden animate-fade-in" style={{
                   animationDelay: `${index * 0.1}s`,
-                  transition: `all 600ms cubic-bezier(0.4, 0, 0.2, 1)`
+                  transition: `all ${animationDuration}ms cubic-bezier(0.4, 0, 0.2, 1)`
                 }}>
                   <CardContent className="p-0">
                     {/* Enhanced Category Image */}

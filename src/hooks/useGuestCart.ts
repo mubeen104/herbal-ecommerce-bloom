@@ -201,10 +201,7 @@ export const useGuestCart = () => {
   }, [user, guestCartItems, authCart.addToCart, clearGuestCart]);
 
   // Return appropriate cart based on auth state
-  console.log('useGuestCart - Auth state:', { user: !!user, isLoading });
-  
   if (user) {
-    console.log('useGuestCart - Using authenticated cart');
     return {
       cartItems: authCart.cartItems || [],
       cartCount: authCart.cartCount,
@@ -221,16 +218,12 @@ export const useGuestCart = () => {
     };
   }
 
-  // Guest cart
-  console.log('useGuestCart - Using guest cart, items:', guestCartItems.length);
-  
+  // Guest cart - calculate totals
   const guestCartCount = guestCartItems.reduce((total, item) => total + item.quantity, 0);
   const guestCartTotal = guestCartItems.reduce((total, item) => {
     const price = item.product?.price || 0;
     return total + (price * item.quantity);
   }, 0);
-
-  console.log('useGuestCart - Guest cart totals:', { guestCartCount, guestCartTotal });
 
   return {
     cartItems: guestCartItems,

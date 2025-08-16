@@ -7,6 +7,7 @@ import { ProductVariantSelector } from '@/components/ProductVariantSelector';
 import { useProductVariants, ProductVariant } from '@/hooks/useProductVariants';
 import { useStoreSettings } from '@/hooks/useStoreSettings';
 import { useToast } from '@/hooks/use-toast';
+import { trackAddToCart } from './PixelTracker';
 
 interface Product {
   id: string;
@@ -70,6 +71,15 @@ export const AddToCartModal: React.FC<AddToCartModalProps> = ({
   const handleAddToCart = async () => {
     try {
       await onAddToCart(product.id, quantity, selectedVariant?.id);
+      
+      // Track add to cart event
+      trackAddToCart({
+        product_id: product.id,
+        product_name: product.name,
+        value: getCurrentPrice() * quantity,
+        currency: currency
+      });
+      
       const displayName = selectedVariant ? 
         `${product.name} - ${selectedVariant.name}` : 
         product.name;

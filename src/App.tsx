@@ -2,13 +2,14 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import ScrollToTop from "@/components/ScrollToTop";
-import { PixelTracker } from "@/components/PixelTracker";
+import { PixelTracker, trackPageView } from "@/components/PixelTracker";
+import { useEffect } from "react";
 import Index from "./pages/Index";
 import Shop from "./pages/Shop";
 import Contact from "./pages/Contact";
@@ -52,6 +53,7 @@ const App = () => (
           <BrowserRouter>
             <ScrollToTop />
             <PixelTracker />
+            <PageViewTracker />
           <WhatsAppButton />
           <Routes>
             <Route path="/" element={<Index />} />
@@ -92,5 +94,18 @@ const App = () => (
     </HelmetProvider>
   </QueryClientProvider>
 );
+
+// Component to track page views on route changes
+const PageViewTracker = () => {
+  const location = useLocation();
+  
+  useEffect(() => {
+    trackPageView({
+      page_path: location.pathname
+    });
+  }, [location]);
+  
+  return null;
+};
 
 export default App;

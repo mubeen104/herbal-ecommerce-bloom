@@ -158,7 +158,7 @@ const KitsDeals = () => {
               api.scrollTo(0);
             }
           };
-          const interval = setInterval(autoScroll, 4000); // Unified 4s interval
+          const interval = setInterval(autoScroll, carouselScrollSpeed); // Use admin settings
 
           // Clean up interval when component unmounts or API changes
           return () => clearInterval(interval);
@@ -169,7 +169,7 @@ const KitsDeals = () => {
               <CarouselItem key={product.id} className="pl-2 md:pl-4 basis-1/2 sm:basis-1/2 lg:basis-1/3">
                 <div className="group relative animate-fade-in hover-scale" style={{
               animationDelay: `${index * 0.1}s`,
-              transition: `transform 600ms cubic-bezier(0.4, 0, 0.2, 1)`
+              transition: `transform ${animationDuration}ms cubic-bezier(0.4, 0, 0.2, 1)`
             }}>
                   {/* Floating Card Container */}
                   <div className="relative bg-card/40 backdrop-blur-xl border border-border/20 rounded-3xl p-1 shadow-lg group-hover:shadow-2xl group-hover:border-primary/30" style={{ transition: `all 600ms cubic-bezier(0.4, 0, 0.2, 1)` }}>

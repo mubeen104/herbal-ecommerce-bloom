@@ -16,9 +16,9 @@ import CouponInput from "@/components/CouponInput";
 import AddressSelector from "@/components/AddressSelector";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import { trackInitiateCheckout, trackPurchase, trackEvent } from "@/components/PixelTracker";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { trackEvent } from "@/components/PixelTracker";
 
 interface Address {
   firstName: string;

@@ -99,18 +99,89 @@ const loadTikTokPixel = (pixelId: string) => {
 export const trackEvent = (eventName: string, data?: any) => {
   if (typeof window === 'undefined') return;
 
-  // Google Ads
+  console.info(`Tracking pixel event: ${eventName}`, data);
+
+  // Google Ads - Convert event names to standard Google events
   if (window.gtag) {
-    window.gtag('event', eventName, data);
+    const googleEventMap: { [key: string]: string } = {
+      'AddToCart': 'add_to_cart',
+      'Purchase': 'purchase',
+      'ViewContent': 'page_view',
+      'InitiateCheckout': 'begin_checkout',
+      'PageView': 'page_view'
+    };
+    const googleEvent = googleEventMap[eventName] || eventName.toLowerCase();
+    window.gtag('event', googleEvent, data);
   }
 
-  // Meta Pixel
+  // Meta Pixel - Use standard Facebook events
   if (window.fbq) {
-    window.fbq('track', eventName, data);
+    const metaEventMap: { [key: string]: string } = {
+      'PageView': 'PageView',
+      'ViewContent': 'ViewContent',
+      'AddToCart': 'AddToCart',
+      'InitiateCheckout': 'InitiateCheckout',
+      'Purchase': 'Purchase'
+    };
+    const metaEvent = metaEventMap[eventName] || eventName;
+    window.fbq('track', metaEvent, data);
   }
 
   // TikTok Pixel
   if (window.ttq) {
-    window.ttq.track(eventName, data);
+    const tiktokEventMap: { [key: string]: string } = {
+      'PageView': 'Browse',
+      'ViewContent': 'ViewContent',
+      'AddToCart': 'AddToCart',
+      'InitiateCheckout': 'InitiateCheckout',
+      'Purchase': 'PlaceAnOrder'
+    };
+    const tiktokEvent = tiktokEventMap[eventName] || eventName;
+    window.ttq.track(tiktokEvent, data);
   }
+};
+
+// Track page views
+export const trackPageView = (pageData?: any) => {
+  trackEvent('PageView', {
+    page_title: document.title,
+    page_location: window.location.href,
+    ...pageData
+  });
+};
+
+// Track add to cart
+export const trackAddToCart = (productData: { product_id: string; value: number; currency: string; product_name?: string }) => {
+  trackEvent('AddToCart', {
+    currency: productData.currency,
+    value: productData.value,
+    content_ids: [productData.product_id],
+    content_name: productData.product_name,
+    content_type: 'product'
+  });
+};
+
+// Track purchase
+export const trackPurchase = (orderData: { order_id: string; value: number; currency: string; items?: any[] }) => {
+  trackEvent('Purchase', {
+    currency: orderData.currency,
+    value: orderData.value,
+    transaction_id: orderData.order_id,
+    content_ids: orderData.items?.map(item => item.product_id) || [],
+    contents: orderData.items?.map(item => ({
+      id: item.product_id,
+      quantity: item.quantity,
+      item_price: item.price
+    })) || []
+  });
+};
+
+// Track checkout initiation
+export const trackInitiateCheckout = (checkoutData: { value: number; currency: string; items?: any[] }) => {
+  trackEvent('InitiateCheckout', {
+    currency: checkoutData.currency,
+    value: checkoutData.value,
+    content_ids: checkoutData.items?.map(item => item.product_id) || [],
+    num_items: checkoutData.items?.length || 0
+  });
 };
