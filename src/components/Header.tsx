@@ -48,7 +48,7 @@ const Header = () => {
             <div className="relative transform transition-all duration-300 hover:scale-105">
               <div className="bg-primary/5 rounded-xl p-3 shadow-md transition-all duration-300 group-hover:shadow-xl group-hover:bg-primary/10">
                 <img 
-                  src="/lovable-uploads/22303e3e-d2dd-4bad-a05f-9245ad435b33.png" 
+                  src="/logo.png" 
                   alt={`${storeName} Logo`} 
                   className="h-10 w-auto transition-transform duration-300 group-hover:rotate-12"
                 />
