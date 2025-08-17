@@ -102,120 +102,157 @@ export const AddToCartModal: React.FC<AddToCartModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-[calc(100vw-2rem)] sm:max-w-lg rounded-2xl p-0 overflow-hidden mx-4 my-8 max-h-[90vh]">
-        <div className="relative">
-          <DialogHeader className="p-6 pb-0">
-            <DialogTitle className="text-xl font-semibold text-center">Quick Add</DialogTitle>
-          </DialogHeader>
+      <DialogContent className="max-w-[calc(100vw-1rem)] sm:max-w-md rounded-3xl p-0 overflow-hidden mx-2 border-0 shadow-2xl bg-background/95 backdrop-blur-xl">
+        {/* Modern Gradient Header */}
+        <div className="relative bg-gradient-to-br from-primary/10 via-primary-glow/5 to-accent/10 p-6 pb-4">
+          <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg%20width%3D%2260%22%20height%3D%2260%22%20viewBox%3D%220%200%2060%2060%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Cg%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3Cg%20fill%3D%22%23059669%22%20fill-opacity%3D%220.03%22%3E%3Ccircle%20cx%3D%2230%22%20cy%3D%2230%22%20r%3D%222%22/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-50"></div>
           
-          <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 overflow-y-auto">
-            {/* Product Image & Basic Info */}
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden bg-muted flex-shrink-0 mx-auto sm:mx-0">
-                <img
-                  src={getMainImage()}
-                  alt={product.name}
-                  className="w-full h-full object-contain"
-                />
-              </div>
-              <div className="flex-1 min-w-0 text-center sm:text-left">
-                <h3 className="font-semibold text-foreground text-base sm:text-lg leading-tight mb-1 truncate">
-                  {product.name}
-                </h3>
-                {selectedVariant && (
-                  <p className="text-sm text-muted-foreground mb-2 truncate">
-                    {selectedVariant.name}
-                  </p>
-                )}
-                <div className="flex items-center justify-center sm:justify-start gap-2">
-                  <span className="text-lg sm:text-xl font-bold text-primary">
-                    {currency} {getCurrentPrice().toFixed(2)}
-                  </span>
-                  {getCurrentComparePrice() && getCurrentComparePrice() > getCurrentPrice() && (
-                    <span className="text-sm text-muted-foreground line-through">
-                      {currency} {getCurrentComparePrice().toFixed(2)}
-                    </span>
-                  )}
+          <DialogHeader className="relative">
+            <div className="flex items-center justify-center mb-3">
+              <div className="relative">
+                <div className="absolute inset-0 bg-primary/20 rounded-full blur-lg animate-pulse"></div>
+                <div className="relative w-12 h-12 bg-gradient-to-br from-primary to-primary-glow rounded-full flex items-center justify-center shadow-lg">
+                  <ShoppingCart className="w-6 h-6 text-white" />
                 </div>
               </div>
             </div>
-
-            {/* Stock Status */}
-            <div className="flex justify-center">
-              <Badge variant={isOutOfStock ? "destructive" : "default"} className="text-xs">
-                {isOutOfStock ? "Out of Stock" : `${maxQuantity} in stock`}
-              </Badge>
+            <DialogTitle className="text-xl font-bold text-center bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent">
+              Add to Cart
+            </DialogTitle>
+          </DialogHeader>
+        </div>
+        
+        <div className="p-6 pt-2 space-y-6">
+          {/* Modern Product Display */}
+          <div className="flex items-center gap-4 p-4 bg-muted/30 rounded-2xl border border-border/30">
+            <div className="relative w-16 h-16 rounded-xl overflow-hidden bg-background shadow-inner">
+              <img
+                src={getMainImage()}
+                alt={product.name}
+                className="w-full h-full object-contain"
+              />
             </div>
-            {/* Variant Selector */}
-            {variants && variants.length > 0 && (
-              <div className="space-y-3">
-                <label className="text-sm font-medium text-foreground">
-                  Select Variant:
-                </label>
+            <div className="flex-1 min-w-0">
+              <h3 className="font-semibold text-foreground leading-tight mb-1 truncate">
+                {product.name}
+              </h3>
+              {selectedVariant && (
+                <p className="text-sm text-muted-foreground mb-2 truncate">
+                  {selectedVariant.name}
+                </p>
+              )}
+              <div className="flex items-center gap-2">
+                <span className="text-lg font-bold text-primary">
+                  {currency} {getCurrentPrice().toFixed(2)}
+                </span>
+                {getCurrentComparePrice() && getCurrentComparePrice() > getCurrentPrice() && (
+                  <span className="text-sm text-muted-foreground line-through">
+                    {currency} {getCurrentComparePrice().toFixed(2)}
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Enhanced Stock Status */}
+          <div className="flex justify-center">
+            <div className={`px-4 py-2 rounded-full text-sm font-medium ${
+              isOutOfStock 
+                ? 'bg-destructive/10 text-destructive border border-destructive/20' 
+                : 'bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800'
+            }`}>
+              {isOutOfStock ? "❌ Out of Stock" : `✅ ${maxQuantity} Available`}
+            </div>
+          </div>
+
+          {/* Modern Variant Selector */}
+          {variants && variants.length > 0 && (
+            <div className="space-y-3">
+              <label className="text-sm font-semibold text-foreground flex items-center gap-2">
+                <div className="w-2 h-2 bg-primary rounded-full"></div>
+                Select Variant
+              </label>
+              <div className="bg-muted/20 rounded-2xl p-3 border border-border/30">
                 <ProductVariantSelector
                   variants={variants}
                   selectedVariant={selectedVariant}
                   onVariantChange={setSelectedVariant}
                 />
               </div>
-            )}
+            </div>
+          )}
 
-            {/* Quantity Selector */}
-            {!isOutOfStock && (
-              <div className="space-y-3">
-                <label className="text-sm font-medium text-foreground">
-                  Quantity:
-                </label>
-                <div className="flex items-center justify-center gap-3">
-                  <div className="flex items-center border border-border rounded-lg bg-background">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                      disabled={quantity <= 1}
-                      className="h-9 w-9 p-0"
-                    >
-                      <Minus className="h-4 w-4" />
-                    </Button>
-                    <span className="px-4 py-2 text-foreground font-medium min-w-[50px] text-center">
-                      {quantity}
-                    </span>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setQuantity(Math.min(maxQuantity, quantity + 1))}
-                      disabled={quantity >= maxQuantity}
-                      className="h-9 w-9 p-0"
-                    >
-                      <Plus className="h-4 w-4" />
-                    </Button>
+          {/* Sleek Quantity Selector */}
+          {!isOutOfStock && (
+            <div className="space-y-3">
+              <label className="text-sm font-semibold text-foreground flex items-center gap-2">
+                <div className="w-2 h-2 bg-primary rounded-full"></div>
+                Quantity
+              </label>
+              <div className="flex items-center justify-center">
+                <div className="flex items-center bg-muted/30 rounded-2xl border border-border/30 overflow-hidden">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                    disabled={quantity <= 1}
+                    className="h-12 w-12 rounded-none hover:bg-primary/10 transition-colors"
+                  >
+                    <Minus className="h-4 w-4" />
+                  </Button>
+                  <div className="px-6 py-3 bg-background/50 text-foreground font-bold text-lg min-w-[60px] text-center">
+                    {quantity}
                   </div>
-                </div>
-                <div className="text-center">
-                  <span className="text-xs text-muted-foreground">
-                    {maxQuantity} available
-                  </span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setQuantity(Math.min(maxQuantity, quantity + 1))}
+                    disabled={quantity >= maxQuantity}
+                    className="h-12 w-12 rounded-none hover:bg-primary/10 transition-colors"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
                 </div>
               </div>
-            )}
-
-            {/* Add to Cart Button */}
-            <div className="pt-2">
-              <Button
-                onClick={handleAddToCart}
-                disabled={isLoading || isOutOfStock || (variants && variants.length > 0 && !selectedVariant)}
-                className="w-full rounded-full h-12 text-base font-medium shadow-lg hover:shadow-xl transition-all duration-200"
-                size="lg"
-              >
-                <ShoppingCart className="h-5 w-5 mr-2" />
-                {isOutOfStock 
-                  ? "Out of Stock" 
-                  : variants && variants.length > 0 && !selectedVariant
-                  ? "Select a Variant"
-                  : `Add ${quantity} to Cart`
-                }
-              </Button>
+              <div className="text-center text-xs text-muted-foreground">
+                Maximum {maxQuantity} items
+              </div>
             </div>
+          )}
+
+          {/* Modern Action Button */}
+          <div className="pt-2 space-y-3">
+            <Button
+              onClick={handleAddToCart}
+              disabled={isLoading || isOutOfStock || (variants && variants.length > 0 && !selectedVariant)}
+              className="w-full h-14 rounded-2xl text-base font-semibold shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-r from-primary to-primary-glow hover:from-primary-glow hover:to-primary transform hover:scale-[1.02] disabled:transform-none disabled:hover:scale-100"
+              size="lg"
+            >
+              {isLoading ? (
+                <div className="flex items-center gap-2">
+                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                  Adding...
+                </div>
+              ) : (
+                <div className="flex items-center gap-3">
+                  <ShoppingCart className="h-5 w-5" />
+                  {isOutOfStock 
+                    ? "Out of Stock" 
+                    : variants && variants.length > 0 && !selectedVariant
+                    ? "Select a Variant"
+                    : `Add ${quantity} to Cart • ${currency} ${(getCurrentPrice() * quantity).toFixed(2)}`
+                  }
+                </div>
+              )}
+            </Button>
+            
+            <Button
+              variant="ghost"
+              onClick={onClose}
+              className="w-full h-12 rounded-xl text-sm font-medium hover:bg-muted/50 transition-colors"
+            >
+              Continue Shopping
+            </Button>
           </div>
         </div>
       </DialogContent>
