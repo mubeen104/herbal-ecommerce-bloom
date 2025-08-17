@@ -102,24 +102,24 @@ export const AddToCartModal: React.FC<AddToCartModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-lg rounded-2xl p-0 overflow-hidden">
+      <DialogContent className="max-w-[calc(100vw-2rem)] sm:max-w-lg rounded-2xl p-0 overflow-hidden mx-4 my-8 max-h-[90vh]">
         <div className="relative">
           <DialogHeader className="p-6 pb-0">
             <DialogTitle className="text-xl font-semibold text-center">Quick Add</DialogTitle>
           </DialogHeader>
           
-          <div className="p-6 space-y-6">
+          <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 overflow-y-auto">
             {/* Product Image & Basic Info */}
-            <div className="flex gap-4">
-              <div className="w-20 h-20 rounded-lg overflow-hidden bg-muted flex-shrink-0">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden bg-muted flex-shrink-0 mx-auto sm:mx-0">
                 <img
                   src={getMainImage()}
                   alt={product.name}
                   className="w-full h-full object-contain"
                 />
               </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="font-semibold text-foreground text-lg leading-tight mb-1 truncate">
+              <div className="flex-1 min-w-0 text-center sm:text-left">
+                <h3 className="font-semibold text-foreground text-base sm:text-lg leading-tight mb-1 truncate">
                   {product.name}
                 </h3>
                 {selectedVariant && (
@@ -127,8 +127,8 @@ export const AddToCartModal: React.FC<AddToCartModalProps> = ({
                     {selectedVariant.name}
                   </p>
                 )}
-                <div className="flex items-center gap-2">
-                  <span className="text-xl font-bold text-primary">
+                <div className="flex items-center justify-center sm:justify-start gap-2">
+                  <span className="text-lg sm:text-xl font-bold text-primary">
                     {currency} {getCurrentPrice().toFixed(2)}
                   </span>
                   {getCurrentComparePrice() && getCurrentComparePrice() > getCurrentPrice() && (
