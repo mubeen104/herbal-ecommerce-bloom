@@ -102,30 +102,21 @@ export const AddToCartModal: React.FC<AddToCartModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-[calc(100vw-1rem)] sm:max-w-md rounded-3xl p-0 overflow-hidden mx-2 border-0 shadow-2xl bg-background/95 backdrop-blur-xl">
-        {/* Modern Gradient Header */}
-        <div className="relative bg-gradient-to-br from-primary/10 via-primary-glow/5 to-accent/10 p-6 pb-4">
-          <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg%20width%3D%2260%22%20height%3D%2260%22%20viewBox%3D%220%200%2060%2060%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Cg%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3Cg%20fill%3D%22%23059669%22%20fill-opacity%3D%220.03%22%3E%3Ccircle%20cx%3D%2230%22%20cy%3D%2230%22%20r%3D%222%22/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-50"></div>
-          
+      <DialogContent className="max-w-[calc(100vw-1rem)] sm:max-w-sm rounded-2xl p-0 overflow-hidden mx-2 border-0 shadow-xl bg-background">
+        {/* Compact Header */}
+        <div className="relative bg-gradient-to-r from-primary/5 to-primary-glow/5 px-4 py-3 border-b border-border/20">
           <DialogHeader className="relative">
-            <div className="flex items-center justify-center mb-3">
-              <div className="relative">
-                <div className="absolute inset-0 bg-primary/20 rounded-full blur-lg animate-pulse"></div>
-                <div className="relative w-12 h-12 bg-gradient-to-br from-primary to-primary-glow rounded-full flex items-center justify-center shadow-lg">
-                  <ShoppingCart className="w-6 h-6 text-white" />
-                </div>
-              </div>
-            </div>
-            <DialogTitle className="text-xl font-bold text-center bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent">
+            <DialogTitle className="text-lg font-semibold text-center flex items-center justify-center gap-2">
+              <ShoppingCart className="w-5 h-5 text-primary" />
               Add to Cart
             </DialogTitle>
           </DialogHeader>
         </div>
         
-        <div className="p-6 pt-2 space-y-6">
-          {/* Modern Product Display */}
-          <div className="flex items-center gap-4 p-4 bg-muted/30 rounded-2xl border border-border/30">
-            <div className="relative w-16 h-16 rounded-xl overflow-hidden bg-background shadow-inner">
+        <div className="p-4 space-y-4">
+          {/* Compact Product Display */}
+          <div className="flex items-center gap-3 p-3 bg-muted/20 rounded-xl border border-border/20">
+            <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-background">
               <img
                 src={getMainImage()}
                 alt={product.name}
@@ -133,20 +124,20 @@ export const AddToCartModal: React.FC<AddToCartModalProps> = ({
               />
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="font-semibold text-foreground leading-tight mb-1 truncate">
+              <h3 className="font-medium text-foreground leading-tight mb-1 truncate">
                 {product.name}
               </h3>
               {selectedVariant && (
-                <p className="text-sm text-muted-foreground mb-2 truncate">
+                <p className="text-xs text-muted-foreground mb-1 truncate">
                   {selectedVariant.name}
                 </p>
               )}
               <div className="flex items-center gap-2">
-                <span className="text-lg font-bold text-primary">
+                <span className="text-base font-bold text-primary">
                   {currency} {getCurrentPrice().toFixed(2)}
                 </span>
                 {getCurrentComparePrice() && getCurrentComparePrice() > getCurrentPrice() && (
-                  <span className="text-sm text-muted-foreground line-through">
+                  <span className="text-xs text-muted-foreground line-through">
                     {currency} {getCurrentComparePrice().toFixed(2)}
                   </span>
                 )}
@@ -154,25 +145,24 @@ export const AddToCartModal: React.FC<AddToCartModalProps> = ({
             </div>
           </div>
 
-          {/* Enhanced Stock Status */}
+          {/* Compact Stock Status */}
           <div className="flex justify-center">
-            <div className={`px-4 py-2 rounded-full text-sm font-medium ${
+            <div className={`px-3 py-1 rounded-full text-xs font-medium ${
               isOutOfStock 
-                ? 'bg-destructive/10 text-destructive border border-destructive/20' 
-                : 'bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800'
+                ? 'bg-destructive/10 text-destructive' 
+                : 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400'
             }`}>
-              {isOutOfStock ? "❌ Out of Stock" : `✅ ${maxQuantity} Available`}
+              {isOutOfStock ? "Out of Stock" : `${maxQuantity} Available`}
             </div>
           </div>
 
-          {/* Modern Variant Selector */}
+          {/* Compact Variant Selector */}
           {variants && variants.length > 0 && (
-            <div className="space-y-3">
-              <label className="text-sm font-semibold text-foreground flex items-center gap-2">
-                <div className="w-2 h-2 bg-primary rounded-full"></div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">
                 Select Variant
               </label>
-              <div className="bg-muted/20 rounded-2xl p-3 border border-border/30">
+              <div className="bg-muted/10 rounded-xl p-2">
                 <ProductVariantSelector
                   variants={variants}
                   selectedVariant={selectedVariant}
@@ -182,25 +172,24 @@ export const AddToCartModal: React.FC<AddToCartModalProps> = ({
             </div>
           )}
 
-          {/* Sleek Quantity Selector */}
+          {/* Compact Quantity Selector */}
           {!isOutOfStock && (
-            <div className="space-y-3">
-              <label className="text-sm font-semibold text-foreground flex items-center gap-2">
-                <div className="w-2 h-2 bg-primary rounded-full"></div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">
                 Quantity
               </label>
               <div className="flex items-center justify-center">
-                <div className="flex items-center bg-muted/30 rounded-2xl border border-border/30 overflow-hidden">
+                <div className="flex items-center bg-muted/20 rounded-xl border border-border/20 overflow-hidden">
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
                     disabled={quantity <= 1}
-                    className="h-12 w-12 rounded-none hover:bg-primary/10 transition-colors"
+                    className="h-10 w-10 rounded-none hover:bg-primary/10"
                   >
-                    <Minus className="h-4 w-4" />
+                    <Minus className="h-3 w-3" />
                   </Button>
-                  <div className="px-6 py-3 bg-background/50 text-foreground font-bold text-lg min-w-[60px] text-center">
+                  <div className="px-4 py-2 bg-background/50 text-foreground font-semibold text-base min-w-[50px] text-center">
                     {quantity}
                   </div>
                   <Button
@@ -208,39 +197,38 @@ export const AddToCartModal: React.FC<AddToCartModalProps> = ({
                     size="sm"
                     onClick={() => setQuantity(Math.min(maxQuantity, quantity + 1))}
                     disabled={quantity >= maxQuantity}
-                    className="h-12 w-12 rounded-none hover:bg-primary/10 transition-colors"
+                    className="h-10 w-10 rounded-none hover:bg-primary/10"
                   >
-                    <Plus className="h-4 w-4" />
+                    <Plus className="h-3 w-3" />
                   </Button>
                 </div>
               </div>
               <div className="text-center text-xs text-muted-foreground">
-                Maximum {maxQuantity} items
+                Max {maxQuantity} items
               </div>
             </div>
           )}
 
-          {/* Modern Action Button */}
-          <div className="pt-2 space-y-3">
+          {/* Compact Action Buttons */}
+          <div className="pt-1 space-y-2">
             <Button
               onClick={handleAddToCart}
               disabled={isLoading || isOutOfStock || (variants && variants.length > 0 && !selectedVariant)}
-              className="w-full h-14 rounded-2xl text-base font-semibold shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-r from-primary to-primary-glow hover:from-primary-glow hover:to-primary transform hover:scale-[1.02] disabled:transform-none disabled:hover:scale-100"
-              size="lg"
+              className="w-full h-11 rounded-xl text-sm font-semibold bg-gradient-to-r from-primary to-primary-glow hover:from-primary-glow hover:to-primary"
             >
               {isLoading ? (
                 <div className="flex items-center gap-2">
-                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                   Adding...
                 </div>
               ) : (
-                <div className="flex items-center gap-3">
-                  <ShoppingCart className="h-5 w-5" />
+                <div className="flex items-center gap-2">
+                  <ShoppingCart className="h-4 w-4" />
                   {isOutOfStock 
                     ? "Out of Stock" 
                     : variants && variants.length > 0 && !selectedVariant
                     ? "Select a Variant"
-                    : `Add ${quantity} to Cart • ${currency} ${(getCurrentPrice() * quantity).toFixed(2)}`
+                    : `Add ${quantity} • ${currency} ${(getCurrentPrice() * quantity).toFixed(2)}`
                   }
                 </div>
               )}
@@ -249,7 +237,7 @@ export const AddToCartModal: React.FC<AddToCartModalProps> = ({
             <Button
               variant="ghost"
               onClick={onClose}
-              className="w-full h-12 rounded-xl text-sm font-medium hover:bg-muted/50 transition-colors"
+              className="w-full h-9 rounded-lg text-xs font-medium hover:bg-muted/30"
             >
               Continue Shopping
             </Button>
