@@ -4,7 +4,6 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Heart, ShoppingBag, Star, Eye, ShoppingCart } from "lucide-react";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
-import { useEffect } from "react";
 import { useFeaturedProducts } from "@/hooks/useProducts";
 import { useGuestCart } from "@/hooks/useGuestCart";
 import { useAuth } from "@/contexts/AuthContext";
@@ -15,6 +14,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { AddToCartModal } from "@/components/AddToCartModal";
+import { useCarouselAutoScroll } from "@/hooks/useCarouselAutoScroll";
 const FeaturedProducts = () => {
   const {
     data: featuredProducts = [],
@@ -40,10 +40,14 @@ const FeaturedProducts = () => {
   } = useUISettings();
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [addToCartProduct, setAddToCartProduct] = useState<any>(null);
+  const [carouselApi, setCarouselApi] = useState<any>(null);
   const navigate = useNavigate();
   const {
     toast
   } = useToast();
+
+  // Use centralized auto-scroll hook
+  useCarouselAutoScroll(carouselApi);
   const handleAddToCartRequest = (product: any) => {
     setAddToCartProduct(product);
   };
@@ -127,28 +131,17 @@ const FeaturedProducts = () => {
         </div>
 
         {/* Modern Products Carousel */}
-        <Carousel opts={{
-        align: "start",
-        loop: true,
-        duration: enableSmoothScrolling ? 600 : 0,
-        skipSnaps: false,
-        dragFree: true
-      }} className="w-full max-w-7xl mx-auto" setApi={api => {
-        if (api) {
-          // Auto-scroll functionality with unified timing
-          const autoScroll = () => {
-            if (api.canScrollNext()) {
-              api.scrollNext();
-            } else {
-              api.scrollTo(0);
-            }
-          };
-          const interval = setInterval(autoScroll, carouselScrollSpeed); // Use admin settings
-
-          // Clean up interval when component unmounts or API changes
-          return () => clearInterval(interval);
-        }
-      }}>
+        <Carousel 
+          opts={{
+            align: "start",
+            loop: true,
+            duration: enableSmoothScrolling ? 600 : 0,
+            skipSnaps: false,
+            dragFree: true
+          }} 
+          className="w-full max-w-7xl mx-auto" 
+          setApi={setCarouselApi}
+        >
           <CarouselContent className="-ml-2 md:-ml-4">
             {products.map((product, index) => <CarouselItem key={product.id} className="pl-2 md:pl-4 basis-1/2 sm:basis-1/2 lg:basis-1/3 xl:basis-1/4">
                 <div className="group relative animate-fade-in hover-scale" style={{

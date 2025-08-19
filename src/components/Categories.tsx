@@ -5,6 +5,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Leaf, Coffee, Sparkles, Droplets, Zap } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useUISettings } from "@/hooks/useStoreSettings";
+import { useState } from "react";
+import { useCarouselAutoScroll } from "@/hooks/useCarouselAutoScroll";
 import {
   Carousel,
   CarouselContent,
@@ -17,6 +19,10 @@ const Categories = () => {
   const { data: categories = [], isLoading } = useCategories();
   const navigate = useNavigate();
   const { carouselScrollSpeed, animationDuration, enableSmoothScrolling } = useUISettings();
+  const [carouselApi, setCarouselApi] = useState<any>(null);
+
+  // Use centralized auto-scroll hook
+  useCarouselAutoScroll(carouselApi);
   const getIconForCategory = (slug: string) => {
     const iconMap: {
       [key: string]: JSX.Element;
@@ -118,23 +124,7 @@ const Categories = () => {
             dragFree: true
           }}
           className="w-full max-w-7xl mx-auto"
-          setApi={(api) => {
-            if (api) {
-              // Auto-scroll functionality with unified timing
-              const autoScroll = () => {
-                if (api.canScrollNext()) {
-                  api.scrollNext();
-                } else {
-                  api.scrollTo(0);
-                }
-              };
-              
-              const interval = setInterval(autoScroll, carouselScrollSpeed); // Use admin settings
-              
-              // Clean up interval when component unmounts or API changes
-              return () => clearInterval(interval);
-            }
-          }}
+          setApi={setCarouselApi}
         >
           <CarouselContent className="-ml-2 md:-ml-4">
             {categories.map((category, index) => (

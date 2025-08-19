@@ -11,6 +11,7 @@ import { Eye, ShoppingCart, Star } from "lucide-react";
 import { useGuestCart } from "@/hooks/useGuestCart";
 import { useToast } from "@/hooks/use-toast";
 import { AddToCartModal } from "@/components/AddToCartModal";
+import { useCarouselAutoScroll } from "@/hooks/useCarouselAutoScroll";
 import {
   Carousel,
   CarouselContent,
@@ -31,6 +32,10 @@ const KitsDeals = () => {
   const navigate = useNavigate();
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [addToCartProduct, setAddToCartProduct] = useState<any>(null);
+  const [carouselApi, setCarouselApi] = useState<any>(null);
+
+  // Use centralized auto-scroll hook
+  useCarouselAutoScroll(carouselApi);
 
   const handleAddToCartRequest = (product: any) => {
     setAddToCartProduct(product);
@@ -142,28 +147,17 @@ const KitsDeals = () => {
         </div>
         
         {/* Modern Products Carousel */}
-        <Carousel opts={{
-        align: "start",
-        loop: true,
-        duration: enableSmoothScrolling ? 600 : 0,
-        skipSnaps: false,
-        dragFree: true
-      }} className="w-full max-w-7xl mx-auto" setApi={api => {
-        if (api) {
-          // Auto-scroll functionality with unified timing
-          const autoScroll = () => {
-            if (api.canScrollNext()) {
-              api.scrollNext();
-            } else {
-              api.scrollTo(0);
-            }
-          };
-          const interval = setInterval(autoScroll, carouselScrollSpeed); // Use admin settings
-
-          // Clean up interval when component unmounts or API changes
-          return () => clearInterval(interval);
-        }
-      }}>
+        <Carousel 
+          opts={{
+            align: "start",
+            loop: true,
+            duration: enableSmoothScrolling ? 600 : 0,
+            skipSnaps: false,
+            dragFree: true
+          }} 
+          className="w-full max-w-7xl mx-auto" 
+          setApi={setCarouselApi}
+        >
           <CarouselContent className="-ml-2 md:-ml-4">
             {kitsDealsProducts.map((product, index) => (
               <CarouselItem key={product.id} className="pl-2 md:pl-4 basis-1/2 sm:basis-1/2 lg:basis-1/3">
