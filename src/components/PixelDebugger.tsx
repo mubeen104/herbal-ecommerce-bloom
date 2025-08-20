@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ChevronDown, ChevronRight, Bug, CheckCircle, XCircle } from 'lucide-react';
 import { useEnabledPixels } from '@/hooks/useAdvertisingPixels';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface PixelStatus {
   platform: string;
@@ -19,6 +20,7 @@ interface PixelStatus {
 
 export const PixelDebugger = () => {
   const { data: pixels = [] } = useEnabledPixels();
+  const { isAdmin } = useAuth();
   const [pixelStatuses, setPixelStatuses] = useState<PixelStatus[]>([]);
   const [isOpen, setIsOpen] = useState(false);
 
@@ -113,7 +115,7 @@ export const PixelDebugger = () => {
     }
   };
 
-  if (pixels.length === 0) {
+  if (!isAdmin || pixels.length === 0) {
     return null;
   }
 
