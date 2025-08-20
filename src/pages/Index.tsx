@@ -20,17 +20,19 @@ const Index = () => {
       <div className="min-h-screen bg-background">
         <Header />
         <div className="space-y-16">
-          <Hero />
-          <div className="animate-fade-in">
+          <div className="animate-slide-down">
+            <Hero />
+          </div>
+          <div className="animate-fade-in hover-lift" style={{ animationDelay: '0.2s' }}>
             <FeaturedProducts />
           </div>
-          <div className="animate-fade-in" style={{ animationDelay: '0.2s' }}>
+          <div className="animate-slide-up hover-lift" style={{ animationDelay: '0.4s' }}>
             <KitsDeals />
           </div>
-          <div className="animate-fade-in" style={{ animationDelay: '0.4s' }}>
+          <div className="animate-fade-in hover-lift" style={{ animationDelay: '0.6s' }}>
             <Categories />
           </div>
-          <div className="animate-fade-in" style={{ animationDelay: '0.6s' }}>
+          <div className="animate-bounce-in hover-lift" style={{ animationDelay: '0.8s' }}>
             <FeaturedBlogPosts />
           </div>
         </div>
