@@ -740,6 +740,7 @@ export type Database = {
           is_active: boolean | null
           is_featured: boolean | null
           is_kits_deals: boolean | null
+          keywords: string[] | null
           meta_description: string | null
           meta_title: string | null
           name: string
@@ -767,6 +768,7 @@ export type Database = {
           is_active?: boolean | null
           is_featured?: boolean | null
           is_kits_deals?: boolean | null
+          keywords?: string[] | null
           meta_description?: string | null
           meta_title?: string | null
           name: string
@@ -794,6 +796,7 @@ export type Database = {
           is_active?: boolean | null
           is_featured?: boolean | null
           is_kits_deals?: boolean | null
+          keywords?: string[] | null
           meta_description?: string | null
           meta_title?: string | null
           name?: string

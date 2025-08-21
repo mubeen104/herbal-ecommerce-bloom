@@ -31,6 +31,7 @@ interface Product {
   is_featured: boolean;
   is_kits_deals?: boolean;
   sku: string;
+  keywords: string[];
   features: string;
   ingredients: string;
   usage_instructions: string;
@@ -81,6 +82,7 @@ export default function AdminProducts() {
     usage_instructions: '',
     inventory_quantity: '',
     sku: '',
+    keywords: '',
     is_active: true,
     is_featured: false,
     is_kits_deals: false
@@ -300,6 +302,7 @@ export default function AdminProducts() {
       usage_instructions: '',
       inventory_quantity: '',
       sku: '',
+      keywords: '',
       is_active: true,
       is_featured: false,
       is_kits_deals: false
@@ -503,6 +506,7 @@ export default function AdminProducts() {
       usage_instructions: product.usage_instructions || '',
       inventory_quantity: product.inventory_quantity?.toString() || '0',
       sku: product.sku || '',
+      keywords: product.keywords?.join(', ') || '',
       is_active: product.is_active,
       is_featured: product.is_featured,
       is_kits_deals: Boolean(product.is_kits_deals)
@@ -549,6 +553,13 @@ export default function AdminProducts() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Process keywords - split by comma, trim, filter empty, limit to 30
+    const keywordsArray = formData.keywords
+      .split(',')
+      .map(keyword => keyword.trim())
+      .filter(keyword => keyword.length > 0)
+      .slice(0, 30);
+    
     const productData = {
       name: formData.name,
       price: parseFloat(formData.price),
@@ -558,6 +569,7 @@ export default function AdminProducts() {
       usage_instructions: formData.usage_instructions,
       inventory_quantity: parseInt(formData.inventory_quantity),
       sku: formData.sku,
+      keywords: keywordsArray,
       is_active: formData.is_active,
       is_featured: formData.is_featured,
       is_kits_deals: formData.is_kits_deals
@@ -973,6 +985,20 @@ export default function AdminProducts() {
                         rows={3}
                         placeholder="How to use this product..."
                       />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="keywords">SEO Keywords</Label>
+                      <Textarea
+                        id="keywords"
+                        value={formData.keywords}
+                        onChange={(e) => setFormData({ ...formData, keywords: e.target.value })}
+                        rows={2}
+                        placeholder="Enter SEO keywords separated by commas (max 30 keywords)..."
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Enter keywords separated by commas. These help improve search rankings but won't be shown to customers.
+                      </p>
                     </div>
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

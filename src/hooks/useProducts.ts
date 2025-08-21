@@ -14,6 +14,7 @@ export interface Product {
   is_featured: boolean;
   is_kits_deals?: boolean;
   tags: string[];
+  keywords: string[];
   features: string;
   ingredients: string;
   usage_instructions: string;
