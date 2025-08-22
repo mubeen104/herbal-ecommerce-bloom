@@ -46,8 +46,10 @@ export const OrderConfirmationEmail = ({
         <Container style={container}>
           {/* Header */}
           <Section style={header}>
+            <div style={headerPattern}></div>
+            <div style={brandLogo}>🌿</div>
             <Heading style={h1}>{storeName}</Heading>
-            <Text style={headerText}>Thank you for your order!</Text>
+            <Text style={headerText}>Thank you for your order! 🎉</Text>
           </Section>
 
           {/* Order Summary */}
@@ -166,57 +168,101 @@ export const OrderConfirmationEmail = ({
 };
 
 const main = {
-  backgroundColor: '#f6f9fc',
+  backgroundColor: 'hsl(45, 15%, 97%)', /* Warm cream background */
   fontFamily: '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Ubuntu,sans-serif',
+  minHeight: '100vh',
+  backgroundImage: 'linear-gradient(135deg, hsl(120, 30%, 95%) 0%, hsl(45, 15%, 97%) 100%)',
 };
 
 const container = {
   backgroundColor: '#ffffff',
   margin: '0 auto',
-  padding: '20px 0 48px',
-  marginBottom: '64px',
+  padding: '0',
+  marginBottom: '32px',
   maxWidth: '600px',
+  borderRadius: '16px',
+  overflow: 'hidden',
+  boxShadow: '0 20px 40px rgba(0, 0, 0, 0.1)',
 };
 
 const header = {
-  padding: '32px 40px',
-  backgroundColor: '#f8fafc',
+  padding: '40px 40px 32px',
+  background: 'linear-gradient(135deg, hsl(150, 45%, 30%) 0%, hsl(120, 40%, 35%) 30%, hsl(85, 55%, 55%) 70%, hsl(45, 50%, 70%) 100%)',
   textAlign: 'center' as const,
+  position: 'relative' as const,
+};
+
+const headerPattern = {
+  position: 'absolute' as const,
+  top: '0',
+  left: '0',
+  right: '0',
+  bottom: '0',
+  backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Ccircle cx='30' cy='30' r='4'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+  opacity: 0.3,
+};
+
+const brandLogo = {
+  width: '60px',
+  height: '60px',
+  backgroundColor: 'rgba(255, 255, 255, 0.2)',
+  borderRadius: '50%',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  margin: '0 auto 16px',
+  border: '2px solid rgba(255, 255, 255, 0.3)',
+  fontSize: '24px',
+  color: '#ffffff',
+  fontWeight: 'bold',
 };
 
 const h1 = {
-  color: '#1a202c',
+  color: '#ffffff',
   fontSize: '32px',
   fontWeight: 'bold',
   margin: '0 0 8px',
+  textShadow: '0 2px 4px rgba(0, 0, 0, 0.3)',
+  position: 'relative' as const,
+  zIndex: 2,
 };
 
 const headerText = {
-  color: '#718096',
+  color: 'rgba(255, 255, 255, 0.95)',
   fontSize: '18px',
   margin: '0',
+  fontWeight: '500',
+  position: 'relative' as const,
+  zIndex: 2,
 };
 
 const orderSummary = {
-  padding: '24px 40px',
-  backgroundColor: '#f7fafc',
-  border: '1px solid #e2e8f0',
-  borderRadius: '8px',
-  margin: '24px 40px',
+  padding: '32px 40px',
+  background: 'linear-gradient(135deg, hsl(120, 30%, 95%) 0%, hsl(120, 25%, 92%) 100%)',
+  border: '1px solid hsl(120, 15%, 88%)',
+  borderRadius: '12px',
+  margin: '32px 40px',
+  position: 'relative' as const,
+  overflow: 'hidden' as const,
 };
 
 const h2 = {
-  color: '#2d3748',
+  color: 'hsl(150, 25%, 15%)',
   fontSize: '24px',
   fontWeight: 'bold',
-  margin: '0 0 16px',
+  margin: '0 0 20px',
+  position: 'relative' as const,
 };
 
 const h3 = {
-  color: '#2d3748',
+  color: 'hsl(150, 25%, 15%)',
   fontSize: '20px',
   fontWeight: 'bold',
-  margin: '32px 40px 16px',
+  margin: '40px 40px 20px',
+  position: 'relative' as const,
+  paddingBottom: '8px',
+  borderBottom: '2px solid hsl(120, 30%, 85%)',
+  display: 'inline-block',
 };
 
 const orderNumber = {
@@ -232,8 +278,13 @@ const orderDate = {
 };
 
 const itemRow = {
-  padding: '12px 40px',
-  borderBottom: '1px solid #f1f5f9',
+  padding: '16px 40px',
+  borderBottom: '1px solid hsl(120, 15%, 92%)',
+  backgroundColor: 'rgba(255, 255, 255, 0.5)',
+  margin: '0 20px',
+  borderRadius: '8px',
+  marginBottom: '8px',
+  transition: 'all 0.2s ease',
 };
 
 const imageColumn = {
@@ -254,11 +305,12 @@ const priceColumn = {
 };
 
 const productImage = {
-  width: '60px',
-  height: '60px',
+  width: '80px',
+  height: '80px',
   objectFit: 'cover' as const,
-  borderRadius: '8px',
-  border: '1px solid #e2e8f0',
+  borderRadius: '12px',
+  border: '2px solid hsl(120, 30%, 85%)',
+  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
 };
 
 const itemName = {
@@ -336,8 +388,10 @@ const shippingNote = {
 };
 
 const footer = {
-  padding: '32px 40px',
+  padding: '40px 40px',
   textAlign: 'center' as const,
+  background: 'linear-gradient(135deg, hsl(120, 25%, 95%) 0%, hsl(45, 15%, 97%) 100%)',
+  borderTop: '1px solid hsl(120, 15%, 88%)',
 };
 
 const footerText = {
@@ -358,8 +412,11 @@ const link = {
 };
 
 const hr = {
-  borderColor: '#e2e8f0',
-  margin: '20px 0',
+  borderColor: 'hsl(120, 15%, 88%)',
+  margin: '24px 0',
+  borderWidth: '1px',
+  borderStyle: 'solid',
+  background: 'linear-gradient(90deg, transparent, hsl(120, 15%, 88%), transparent)',
 };
 
 export default OrderConfirmationEmail;
