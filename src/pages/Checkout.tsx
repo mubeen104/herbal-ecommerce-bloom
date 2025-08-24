@@ -19,6 +19,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useEnhancedTracking } from "@/hooks/useEnhancedTracking";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Address {
   firstName: string;
@@ -50,7 +52,73 @@ const Checkout = () => {
   const { user } = useAuth();
   const { trackPurchase } = useEnhancedTracking();
   
-  const isGuestCheckout = searchParams.get('guest') === 'true' || isGuest;
+  // Check for direct product checkout
+  const isDirectCheckout = searchParams.get('directProduct') === 'true';
+  const directProductId = searchParams.get('productId');
+  const directQuantity = parseInt(searchParams.get('quantity') || '1');
+  const directPrice = parseFloat(searchParams.get('price') || '0');
+  const directVariantId = searchParams.get('variantId');
+  
+  const isGuestCheckout = searchParams.get('guest') === 'true' || isGuest || isDirectCheckout;
+
+  // Fetch direct product details if in direct checkout mode
+  const { data: directProduct } = useQuery({
+    queryKey: ['direct-product', directProductId],
+    queryFn: async () => {
+      if (!isDirectCheckout || !directProductId) return null;
+      
+      const { data, error } = await supabase
+        .from('products')
+        .select(`
+          *,
+          product_images (
+            id,
+            image_url,
+            alt_text,
+            sort_order
+          )
+        `)
+        .eq('id', directProductId)
+        .eq('is_active', true)
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    enabled: isDirectCheckout && !!directProductId,
+  });
+
+  // Fetch direct variant details if variant is specified
+  const { data: directVariant } = useQuery({
+    queryKey: ['direct-variant', directVariantId],
+    queryFn: async () => {
+      if (!isDirectCheckout || !directVariantId) return null;
+      
+      const { data, error } = await supabase
+        .from('product_variants')
+        .select('*')
+        .eq('id', directVariantId)
+        .eq('is_active', true)
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    enabled: isDirectCheckout && !!directVariantId,
+  });
+
+  // Create virtual cart items for direct checkout
+  const effectiveCartItems = isDirectCheckout && directProduct ? [{
+    id: 'direct-item',
+    product_id: directProductId!,
+    variant_id: directVariantId || null,
+    quantity: directQuantity,
+    products: directProduct,
+    product: directProduct,
+  }] : cartItems;
+
+  const effectiveCartTotal = isDirectCheckout ? directPrice * directQuantity : cartTotal;
+  const effectiveCartCount = isDirectCheckout ? directQuantity : cartCount;
 
   const [guestInfo, setGuestInfo] = useState<GuestInfo>({
     email: "",
@@ -96,13 +164,13 @@ const Checkout = () => {
   let discountAmount = 0;
   if (appliedCoupon) {
     if (appliedCoupon.type === 'percentage') {
-      discountAmount = (cartTotal * appliedCoupon.value) / 100;
+      discountAmount = (effectiveCartTotal * appliedCoupon.value) / 100;
     } else {
-      discountAmount = Math.min(appliedCoupon.value, cartTotal);
+      discountAmount = Math.min(appliedCoupon.value, effectiveCartTotal);
     }
   }
 
-  const discountedSubtotal = cartTotal - discountAmount;
+  const discountedSubtotal = effectiveCartTotal - discountAmount;
   const shippingCost = discountedSubtotal >= freeShippingThreshold ? 0 : shippingRate;
   const tax = discountedSubtotal * (taxRate / 100);
   const totalAmount = discountedSubtotal + shippingCost + tax;
@@ -176,7 +244,7 @@ const Checkout = () => {
     }
 
     // Validate cart
-    if (!cartItems || cartItems.length === 0) {
+    if (!effectiveCartItems || effectiveCartItems.length === 0) {
       toast({
         title: "Empty cart",
         description: "Please add items to your cart before placing an order.",
@@ -187,7 +255,7 @@ const Checkout = () => {
 
     try {
       const orderData = {
-        subtotal: cartTotal,
+        subtotal: effectiveCartTotal,
         shippingAmount: shippingCost,
         taxAmount: tax,
         totalAmount,
@@ -204,12 +272,12 @@ const Checkout = () => {
         notes,
         couponId: appliedCoupon?.id,
         couponCode: appliedCoupon?.code,
-        cartItems: cartItems.map(item => ({
+        cartItems: effectiveCartItems.map(item => ({
           productId: item.product_id,
           variantId: item.variant_id,
           quantity: item.quantity,
-          price: (item.products?.price || item.product?.price || 0),
-          total: (item.products?.price || item.product?.price || 0) * item.quantity,
+          price: isDirectCheckout ? directPrice : (item.products?.price || item.product?.price || 0),
+          total: isDirectCheckout ? directPrice * item.quantity : (item.products?.price || item.product?.price || 0) * item.quantity,
         })),
       };
 
@@ -220,17 +288,19 @@ const Checkout = () => {
         order_id: order.order_number,
         value: totalAmount,
         currency: currency === 'Rs' ? 'PKR' : 'USD',
-        items: cartItems.map(item => ({
+        items: effectiveCartItems.map(item => ({
           product_id: item.product_id,
           product_name: item.products?.name || item.product?.name || 'Unknown Product',
           quantity: item.quantity,
-          price: (item.products?.price || item.product?.price || 0),
+          price: isDirectCheckout ? directPrice : (item.products?.price || item.product?.price || 0),
           currency: currency === 'Rs' ? 'PKR' : 'USD'
         }))
       });
       
-      // Clear cart after successful order
-      await clearCart();
+      // Clear cart after successful order (only if not direct checkout)
+      if (!isDirectCheckout) {
+        await clearCart();
+      }
       
       toast({
         title: "Order placed successfully!",
@@ -256,7 +326,7 @@ const Checkout = () => {
     return "/logo.png";
   };
 
-  if (!cartItems || cartItems.length === 0) {
+  if (!effectiveCartItems || effectiveCartItems.length === 0) {
     return (
       <>
         <Header />
@@ -286,7 +356,7 @@ const Checkout = () => {
           {/* Header */}
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center space-x-4">
-              <Button variant="ghost" size="icon" onClick={() => navigate("/cart")}>
+              <Button variant="ghost" size="icon" onClick={() => navigate(isDirectCheckout ? `/product/${directProductId}` : "/cart")}>
                 <ArrowLeft className="h-5 w-5" />
               </Button>
               <div>
@@ -646,7 +716,7 @@ const Checkout = () => {
                 <CardContent className="space-y-4">
                   {/* Cart Items */}
                   <div className="space-y-3">
-                    {cartItems?.map((item) => (
+                    {effectiveCartItems?.map((item) => (
                       <div key={item.id} className="flex items-center space-x-3">
                         <img
                           src={getMainImage(item)}
@@ -656,13 +726,14 @@ const Checkout = () => {
                         <div className="flex-1 min-w-0">
                           <h4 className="font-medium text-sm truncate">
                             {item.products?.name || item.product?.name || "Unknown Product"}
+                            {isDirectCheckout && directVariant && ` - ${directVariant.name}`}
                           </h4>
                           <p className="text-sm text-muted-foreground">
                             Qty: {item.quantity}
                           </p>
                         </div>
                         <div className="text-sm font-medium">
-                          {currency} {((item.products?.price || item.product?.price || 0) * item.quantity).toFixed(2)}
+                          {currency} {(isDirectCheckout ? directPrice * item.quantity : (item.products?.price || item.product?.price || 0) * item.quantity).toFixed(2)}
                         </div>
                       </div>
                     ))}
@@ -677,7 +748,7 @@ const Checkout = () => {
                       onCouponApply={setAppliedCoupon}
                       onCouponRemove={() => setAppliedCoupon(null)}
                       appliedCoupon={appliedCoupon}
-                      subtotal={cartTotal}
+                      subtotal={effectiveCartTotal}
                     />
                   </div>
 
@@ -686,8 +757,8 @@ const Checkout = () => {
                   {/* Order Totals */}
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm">
-                      <span>Subtotal ({cartCount} items)</span>
-                      <span>{currency} {cartTotal.toFixed(2)}</span>
+                      <span>Subtotal ({effectiveCartCount} {effectiveCartCount === 1 ? 'item' : 'items'})</span>
+                      <span>{currency} {effectiveCartTotal.toFixed(2)}</span>
                     </div>
                     
                     {appliedCoupon && (

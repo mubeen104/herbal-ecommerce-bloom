@@ -137,17 +137,18 @@ const ProductDetail = () => {
       });
     }
   };
-  const handleBuyNow = async () => {
-    try {
-      await addToCart(product.id, quantity, selectedVariant?.id);
-      navigate('/checkout');
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to add item to cart. Please try again.",
-        variant: "destructive",
-      });
-    }
+  const handleBuyNow = () => {
+    // Create direct checkout URL with product parameters
+    const currentPrice = selectedVariant?.price || product.price;
+    const searchParams = new URLSearchParams({
+      directProduct: 'true',
+      productId: product.id,
+      quantity: quantity.toString(),
+      price: currentPrice.toString(),
+      ...(selectedVariant && { variantId: selectedVariant.id })
+    });
+    
+    navigate(`/checkout?${searchParams.toString()}`);
   };
   const getMainImage = () => {
     // Use variant images if variant is selected and has images
