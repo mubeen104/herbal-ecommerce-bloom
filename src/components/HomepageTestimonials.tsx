@@ -3,12 +3,13 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Star } from 'lucide-react';
 
-interface Review {
+interface Testimonial {
   id: string;
+  customer_name: string;
   rating: number;
-  title: string | null;
-  content: string | null;
-  user_id: string;
+  content: string;
+  is_active: boolean;
+  display_order: number;
   created_at: string;
 }
 
@@ -17,11 +18,10 @@ const useHomepageTestimonials = () => {
     queryKey: ['homepage-testimonials'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('reviews')
+        .from('testimonials')
         .select('*')
-        .eq('is_approved', true)
-        .eq('is_homepage_featured', true)
-        .order('created_at', { ascending: false })
+        .eq('is_active', true)
+        .order('display_order', { ascending: true })
         .limit(6);
 
       if (error) throw error;
@@ -56,10 +56,8 @@ const HomepageTestimonials = () => {
     return null;
   }
 
-  const getUserName = (review: Review) => {
-    // Since we don't have access to user profiles, we'll use anonymous names
-    // This could be enhanced later to include actual user names
-    return 'Satisfied Customer';
+  const getUserName = (testimonial: Testimonial) => {
+    return testimonial.customer_name;
   };
 
   return (
@@ -70,15 +68,15 @@ const HomepageTestimonials = () => {
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
-          {testimonials.slice(0, 3).map((review) => (
-            <Card key={review.id} className="bg-background border-border hover:shadow-lg transition-shadow duration-300">
+          {testimonials.slice(0, 3).map((testimonial) => (
+            <Card key={testimonial.id} className="bg-background border-border hover:shadow-lg transition-shadow duration-300">
               <CardContent className="p-6 text-center">
                 <div className="flex justify-center mb-4">
                   {[...Array(5)].map((_, i) => (
                     <Star
                       key={i}
                       className={`w-5 h-5 ${
-                        i < review.rating
+                        i < testimonial.rating
                           ? 'text-yellow-400 fill-yellow-400'
                           : 'text-muted-foreground'
                       }`}
@@ -86,15 +84,13 @@ const HomepageTestimonials = () => {
                   ))}
                 </div>
                 
-                {review.content && (
-                  <p className="text-muted-foreground mb-6 text-sm leading-relaxed">
-                    {review.content}
-                  </p>
-                )}
+                <p className="text-muted-foreground mb-6 text-sm leading-relaxed">
+                  {testimonial.content}
+                </p>
                 
                 <div className="mt-auto">
                   <h4 className="font-semibold text-foreground">
-                    {getUserName(review)}
+                    {getUserName(testimonial)}
                   </h4>
                 </div>
               </CardContent>

@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { Star, Check, X, Search, Eye, Home } from 'lucide-react';
+import { Star, Check, X, Search, Eye } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,7 +27,6 @@ interface Review {
   content: string | null;
   is_approved: boolean;
   is_verified: boolean;
-  is_homepage_featured: boolean;
   created_at: string;
   user_id: string;
   product_id: string;
@@ -116,32 +115,6 @@ const AdminReviews = () => {
       toast({
         title: 'Error',
         description: 'Failed to update review status. Please try again.',
-        variant: 'destructive',
-      });
-    },
-  });
-
-  const toggleHomepageFeatured = useMutation({
-    mutationFn: async ({ reviewId, isHomepageFeatured }: { reviewId: string; isHomepageFeatured: boolean }) => {
-      const { error } = await supabase
-        .from('reviews')
-        .update({ is_homepage_featured: isHomepageFeatured })
-        .eq('id', reviewId);
-
-      if (error) throw error;
-    },
-    onSuccess: (_, { isHomepageFeatured }) => {
-      toast({
-        title: isHomepageFeatured ? 'Added to homepage' : 'Removed from homepage',
-        description: isHomepageFeatured ? 'This review will now appear on the homepage.' : 'This review was removed from the homepage.',
-      });
-      queryClient.invalidateQueries({ queryKey: ['admin-reviews'] });
-      queryClient.invalidateQueries({ queryKey: ['homepage-testimonials'] });
-    },
-    onError: () => {
-      toast({
-        title: 'Error',
-        description: 'Failed to update homepage status. Please try again.',
         variant: 'destructive',
       });
     },
@@ -242,11 +215,6 @@ const AdminReviews = () => {
                         <Badge variant={review.is_approved ? 'default' : 'secondary'}>
                           {review.is_approved ? 'Approved' : 'Pending'}
                         </Badge>
-                        {review.is_homepage_featured && (
-                          <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                            Featured
-                          </Badge>
-                        )}
                       </div>
                       <div className="flex items-center space-x-4 text-sm text-muted-foreground">
                         <span>By: {getUserName()}</span>
@@ -310,21 +278,6 @@ const AdminReviews = () => {
                         <Eye className="w-4 h-4 mr-2" />
                         View Product
                       </Button>
-
-                      {review.is_approved && (
-                        <Button
-                          size="sm"
-                          variant={review.is_homepage_featured ? "default" : "outline"}
-                          onClick={() => toggleHomepageFeatured.mutate({ 
-                            reviewId: review.id, 
-                            isHomepageFeatured: !review.is_homepage_featured 
-                          })}
-                          disabled={toggleHomepageFeatured.isPending}
-                        >
-                          <Home className="w-4 h-4 mr-2" />
-                          {review.is_homepage_featured ? 'Remove from Homepage' : 'Feature on Homepage'}
-                        </Button>
-                      )}
 
                       <AlertDialog>
                         <AlertDialogTrigger asChild>

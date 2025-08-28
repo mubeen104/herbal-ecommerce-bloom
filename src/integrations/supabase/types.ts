@@ -855,7 +855,6 @@ export type Database = {
           created_at: string
           id: string
           is_approved: boolean | null
-          is_homepage_featured: boolean | null
           is_verified: boolean | null
           product_id: string
           rating: number
@@ -868,7 +867,6 @@ export type Database = {
           created_at?: string
           id?: string
           is_approved?: boolean | null
-          is_homepage_featured?: boolean | null
           is_verified?: boolean | null
           product_id: string
           rating: number
@@ -881,7 +879,6 @@ export type Database = {
           created_at?: string
           id?: string
           is_approved?: boolean | null
-          is_homepage_featured?: boolean | null
           is_verified?: boolean | null
           product_id?: string
           rating?: number
@@ -926,6 +923,39 @@ export type Database = {
           key?: string
           updated_at?: string
           value?: Json
+        }
+        Relationships: []
+      }
+      testimonials: {
+        Row: {
+          content: string
+          created_at: string
+          customer_name: string
+          display_order: number
+          id: string
+          is_active: boolean
+          rating: number
+          updated_at: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          customer_name: string
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          rating: number
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          customer_name?: string
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          rating?: number
+          updated_at?: string
         }
         Relationships: []
       }
