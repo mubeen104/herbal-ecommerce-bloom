@@ -855,6 +855,7 @@ export type Database = {
           created_at: string
           id: string
           is_approved: boolean | null
+          is_homepage_featured: boolean | null
           is_verified: boolean | null
           product_id: string
           rating: number
@@ -867,6 +868,7 @@ export type Database = {
           created_at?: string
           id?: string
           is_approved?: boolean | null
+          is_homepage_featured?: boolean | null
           is_verified?: boolean | null
           product_id: string
           rating: number
@@ -879,6 +881,7 @@ export type Database = {
           created_at?: string
           id?: string
           is_approved?: boolean | null
+          is_homepage_featured?: boolean | null
           is_verified?: boolean | null
           product_id?: string
           rating?: number

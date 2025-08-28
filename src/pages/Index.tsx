@@ -5,6 +5,7 @@ import FeaturedProducts from "@/components/FeaturedProducts";
 import KitsDeals from "@/components/KitsDeals";
 import Categories from "@/components/Categories";
 import FeaturedBlogPosts from "@/components/blog/FeaturedBlogPosts";
+import HomepageTestimonials from "@/components/HomepageTestimonials";
 import Footer from "@/components/Footer";
 
 const Index = () => {
@@ -32,6 +33,9 @@ const Index = () => {
           </div>
           <div className="animate-fade-in" style={{ animationDelay: '0.6s' }}>
             <FeaturedBlogPosts />
+          </div>
+          <div className="animate-fade-in" style={{ animationDelay: '0.8s' }}>
+            <HomepageTestimonials />
           </div>
         </div>
         <Footer />
