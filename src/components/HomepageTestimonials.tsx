@@ -72,7 +72,7 @@ const HomepageTestimonials = () => {
         <div className="text-center mb-12">
           <div className="inline-flex items-center gap-2 mb-4">
             <Quote className="w-6 h-6 text-primary" />
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground">Client Testimonials</h2>
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground">Client's Feedback</h2>
             <Quote className="w-6 h-6 text-primary rotate-180" />
           </div>
           <p className="text-muted-foreground max-w-2xl mx-auto">
