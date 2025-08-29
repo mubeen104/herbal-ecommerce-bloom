@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Package, FolderTree, ShoppingCart, Users, BarChart3, Settings, Leaf, ChevronRight, Star, Percent, Image, FileText, Target } from 'lucide-react';
+import { LayoutDashboard, Package, FolderTree, ShoppingCart, Users, BarChart3, Settings, Leaf, ChevronRight, Star, Percent, Image, FileText, Target, MessageSquare } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 const adminMenuItems = [{
   title: 'Dashboard',
@@ -40,6 +40,11 @@ const adminMenuItems = [{
   title: 'Reviews',
   url: '/admin/reviews',
   icon: Star,
+  badge: null
+}, {
+  title: 'Testimonials',
+  url: '/admin/testimonials',
+  icon: MessageSquare,
   badge: null
 }, {
   title: 'Blog',

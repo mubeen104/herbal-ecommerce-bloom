@@ -30,6 +30,7 @@ import AdminOrders from "./pages/admin/AdminOrders";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminAnalytics from "./pages/admin/AdminAnalytics";
 import AdminReviews from "./pages/admin/AdminReviews";
+import AdminTestimonials from "./pages/admin/AdminTestimonials";
 import AdminCoupons from "./pages/admin/AdminCoupons";
 import AdminHeroSlides from "./pages/admin/AdminHeroSlides";
 import AdminPixels from "./pages/admin/AdminPixels";
@@ -92,6 +93,7 @@ const App = () => (
             <Route path="/admin/users" element={<AdminLayout><AdminUsers /></AdminLayout>} />
             <Route path="/admin/analytics" element={<AdminLayout><AdminAnalytics /></AdminLayout>} />
             <Route path="/admin/reviews" element={<AdminLayout><AdminReviews /></AdminLayout>} />
+            <Route path="/admin/testimonials" element={<AdminLayout><AdminTestimonials /></AdminLayout>} />
             <Route path="/admin/coupons" element={<AdminLayout><AdminCoupons /></AdminLayout>} />
             <Route path="/admin/hero-slides" element={<AdminLayout><AdminHeroSlides /></AdminLayout>} />
             <Route path="/admin/pixels" element={<AdminLayout><AdminPixels /></AdminLayout>} />
