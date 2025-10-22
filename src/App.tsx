@@ -11,6 +11,7 @@ import ScrollToTop from "@/components/ScrollToTop";
 import { EnhancedPixelTracker } from "@/components/EnhancedPixelTracker";
 import { PixelDebugger } from "@/components/PixelDebugger";
 import { MetadataManager } from "@/components/MetadataManager";
+import { CatalogSync } from "@/components/CatalogSync";
 import { useEnhancedTracking } from "@/hooks/useEnhancedTracking";
 import { useEffect } from "react";
 import Index from "./pages/Index";
@@ -34,6 +35,7 @@ import AdminTestimonials from "./pages/admin/AdminTestimonials";
 import AdminCoupons from "./pages/admin/AdminCoupons";
 import AdminHeroSlides from "./pages/admin/AdminHeroSlides";
 import AdminPixels from "./pages/admin/AdminPixels";
+import AdminCatalog from "./pages/admin/AdminCatalog";
 import AdminSettings from "./pages/admin/AdminSettings";
 import AdminBlogs from "./pages/admin/AdminBlogs";
 import Cart from "./pages/Cart";
@@ -57,6 +59,7 @@ const App = () => (
           <BrowserRouter>
             <ScrollToTop />
             <EnhancedPixelTracker />
+            <CatalogSync />
             <MetadataManager 
               siteInfo={{
                 name: 'New Era Herbals',
@@ -97,6 +100,7 @@ const App = () => (
             <Route path="/admin/coupons" element={<AdminLayout><AdminCoupons /></AdminLayout>} />
             <Route path="/admin/hero-slides" element={<AdminLayout><AdminHeroSlides /></AdminLayout>} />
             <Route path="/admin/pixels" element={<AdminLayout><AdminPixels /></AdminLayout>} />
+            <Route path="/admin/catalog" element={<AdminLayout><AdminCatalog /></AdminLayout>} />
             <Route path="/admin/blog" element={<AdminLayout><AdminBlogs /></AdminLayout>} />
             <Route path="/admin/settings" element={<AdminLayout><AdminSettings /></AdminLayout>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
