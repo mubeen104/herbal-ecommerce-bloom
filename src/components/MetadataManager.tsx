@@ -96,13 +96,17 @@ export const MetadataManager = ({ products = [], categories = [], siteInfo }: Me
   useEffect(() => {
     if (typeof window === 'undefined' || !window.fbq || products.length === 0) return;
 
-    // Send catalog data to Meta
+    // Send catalog data to Meta with all required fields
     const catalogData = {
-      content_type: 'product_group',
+      content_type: 'product',
       contents: products.map(product => ({
         id: product.id,
         quantity: 1,
-        item_price: product.price
+        item_price: product.price,
+        availability: product.availability || 'in stock',
+        title: product.name,
+        description: product.description || '',
+        brand: siteInfo?.name || 'New Era Herbals'
       })),
       currency: siteInfo?.currency || 'PKR',
       value: products.reduce((sum, p) => sum + p.price, 0)
