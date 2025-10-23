@@ -6,6 +6,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { ChevronDown, ChevronRight, Bug, CheckCircle, XCircle } from 'lucide-react';
 import { useEnabledPixels } from '@/hooks/useAdvertisingPixels';
 import { useAuth } from '@/contexts/AuthContext';
+import { toast } from '@/hooks/use-toast';
 
 interface PixelStatus {
   platform: string;
@@ -90,28 +91,105 @@ export const PixelDebugger = () => {
       content_name: 'Test Product'
     };
 
-    // Track a test event
-    if (typeof window !== 'undefined') {
-      console.log(`Testing ${platform} pixel with data:`, testData);
-      
+    console.log(`🧪 Testing ${platform} pixel with data:`, testData);
+    
+    try {
       switch (platform) {
         case 'google_ads':
           if ((window as any).gtag) {
             (window as any).gtag('event', 'test_event', testData);
+            console.log('✅ Google Ads test event sent');
+          } else {
+            console.error('❌ Google Ads gtag not loaded');
           }
           break;
         case 'meta_pixel':
           if ((window as any).fbq) {
             (window as any).fbq('track', 'ViewContent', testData);
+            console.log('✅ Meta Pixel test event sent');
+          } else {
+            console.error('❌ Meta Pixel fbq not loaded');
           }
           break;
         case 'tiktok_pixel':
           if ((window as any).ttq) {
             (window as any).ttq.track('ViewContent', testData);
+            console.log('✅ TikTok Pixel test event sent');
+          } else {
+            console.error('❌ TikTok Pixel ttq not loaded');
           }
           break;
-        // Add other platforms as needed
+        case 'linkedin_insight':
+          if ((window as any).lintrk) {
+            (window as any).lintrk('track', { conversion_id: 'test' });
+            console.log('✅ LinkedIn Insight test event sent');
+          } else {
+            console.error('❌ LinkedIn Insight lintrk not loaded');
+          }
+          break;
+        case 'twitter_pixel':
+          if ((window as any).twq) {
+            (window as any).twq('event', 'tw-test-event', testData);
+            console.log('✅ Twitter Pixel test event sent');
+          } else {
+            console.error('❌ Twitter Pixel twq not loaded');
+          }
+          break;
+        case 'pinterest_tag':
+          if ((window as any).pintrk) {
+            (window as any).pintrk('track', 'pagevisit', testData);
+            console.log('✅ Pinterest Tag test event sent');
+          } else {
+            console.error('❌ Pinterest Tag pintrk not loaded');
+          }
+          break;
+        case 'snapchat_pixel':
+          if ((window as any).snaptr) {
+            (window as any).snaptr('track', 'PAGE_VIEW', testData);
+            console.log('✅ Snapchat Pixel test event sent');
+          } else {
+            console.error('❌ Snapchat Pixel snaptr not loaded');
+          }
+          break;
+        case 'microsoft_advertising':
+          if ((window as any).uetq) {
+            (window as any).uetq.push('event', 'test_event', testData);
+            console.log('✅ Microsoft Advertising test event sent');
+          } else {
+            console.error('❌ Microsoft Advertising uetq not loaded');
+          }
+          break;
+        case 'reddit_pixel':
+          if ((window as any).rdt) {
+            (window as any).rdt('track', 'PageVisit');
+            console.log('✅ Reddit Pixel test event sent');
+          } else {
+            console.error('❌ Reddit Pixel rdt not loaded');
+          }
+          break;
+        case 'quora_pixel':
+          if ((window as any).qp) {
+            (window as any).qp('track', 'Generic');
+            console.log('✅ Quora Pixel test event sent');
+          } else {
+            console.error('❌ Quora Pixel qp not loaded');
+          }
+          break;
+        default:
+          console.warn(`⚠️ Unknown platform: ${platform}`);
       }
+      
+      toast({
+        title: "Test Event Sent",
+        description: `Sent test event to ${platform.replace('_', ' ')}. Check console for details.`,
+      });
+    } catch (error) {
+      console.error(`❌ Error testing ${platform}:`, error);
+      toast({
+        title: "Test Failed",
+        description: `Failed to send test event to ${platform.replace('_', ' ')}.`,
+        variant: "destructive",
+      });
     }
   };
 
