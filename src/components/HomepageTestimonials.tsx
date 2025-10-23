@@ -41,16 +41,42 @@ const HomepageTestimonials = () => {
 
   if (isLoading) {
     return (
-      <section className="py-16 bg-muted/30">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-foreground mb-4">OUR POSITIVE CLIENT'S FEEDBACK</h2>
+      <section className="py-24 bg-gradient-to-br from-background via-muted/5 to-accent/5 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5" />
+        
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16 animate-fade-in">
+            <div className="flex items-center justify-center mb-6">
+              <div className="h-px bg-gradient-to-r from-transparent via-accent to-transparent w-32" />
+              <span className="mx-4 text-sm font-semibold text-accent uppercase tracking-wider">Testimonials</span>
+              <div className="h-px bg-gradient-to-r from-transparent via-accent to-transparent w-32" />
+            </div>
+            <div className="h-10 bg-muted/40 rounded-lg w-96 mx-auto mb-4 animate-pulse" />
+            <div className="h-6 bg-muted/30 rounded-lg w-[600px] mx-auto animate-pulse" style={{ animationDelay: '0.1s' }} />
           </div>
+          
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {[...Array(3)].map((_, i) => (
-              <div key={i} className="animate-pulse">
-                <Card className="h-48 bg-muted"></Card>
-              </div>
+            {Array.from({ length: 3 }).map((_, index) => (
+              <Card key={index} className="group relative bg-card/80 backdrop-blur-sm border border-border/50 shadow-lg overflow-hidden animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary via-accent to-secondary opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                <div className="p-8 space-y-4">
+                  <div className="flex gap-1 mb-4">
+                    {[...Array(5)].map((_, i) => (
+                      <div key={i} className="h-5 w-5 bg-muted/40 rounded animate-pulse" style={{ animationDelay: `${i * 0.05}s` }} />
+                    ))}
+                  </div>
+                  <div className="h-4 bg-muted/40 rounded w-full animate-pulse" />
+                  <div className="h-4 bg-muted/30 rounded w-5/6 animate-pulse" style={{ animationDelay: '0.1s' }} />
+                  <div className="h-4 bg-muted/30 rounded w-4/6 animate-pulse" style={{ animationDelay: '0.2s' }} />
+                  <div className="pt-6 flex items-center gap-4">
+                    <div className="h-12 w-12 bg-muted/40 rounded-full animate-pulse" />
+                    <div className="flex-1 space-y-2">
+                      <div className="h-4 bg-muted/40 rounded w-32 animate-pulse" />
+                      <div className="h-3 bg-muted/30 rounded w-24 animate-pulse" style={{ animationDelay: '0.1s' }} />
+                    </div>
+                  </div>
+                </div>
+              </Card>
             ))}
           </div>
         </div>
