@@ -14,6 +14,18 @@ const HeroSlider = () => {
   const { data: slides, isLoading } = useHeroSlides();
   const [api, setApi] = useState<CarouselApi>();
   const [current, setCurrent] = useState(0);
+  const [imagesLoaded, setImagesLoaded] = useState<Set<number>>(new Set());
+  
+  // Preload first image immediately
+  useEffect(() => {
+    if (slides && slides.length > 0) {
+      const img = new Image();
+      img.src = slides[0].image_url;
+      img.onload = () => {
+        setImagesLoaded(prev => new Set(prev).add(0));
+      };
+    }
+  }, [slides]);
   
 
   // Use slide-specific speed or default
@@ -40,49 +52,24 @@ const HeroSlider = () => {
     return () => clearInterval(interval);
   }, [api, autoScrollSpeed]);
 
-  if (isLoading) {
+  // Show instant preview while loading
+  if (isLoading || !slides || slides.length === 0) {
     return (
       <section className="relative w-full overflow-hidden">
         <div className="w-full aspect-[16/9] sm:aspect-[16/10] md:aspect-[16/9] lg:aspect-[21/9] max-w-full">
-          <div className="relative h-full w-full bg-gradient-to-br from-muted/20 to-background animate-pulse">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-accent/10" />
+          <div className="relative h-full w-full bg-gradient-to-br from-primary/10 via-background to-accent/10">
+            {/* Animated gradient background for instant visual feedback */}
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 animate-pulse" />
             
-            {/* Skeleton content */}
-            <div className="flex items-center justify-center h-full">
-              <div className="text-center space-y-4 animate-fade-in">
-                <div className="w-20 h-20 mx-auto">
-                  <div className="w-full h-full border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
+            {/* Skeleton content that appears instantly */}
+            <div className="flex items-center justify-center h-full px-4">
+              <div className="text-center space-y-6 max-w-4xl animate-fade-in">
+                <div className="space-y-4">
+                  <div className="h-12 sm:h-16 md:h-20 bg-gradient-to-r from-muted/60 via-muted/40 to-muted/60 rounded-lg w-full max-w-2xl mx-auto animate-pulse" />
+                  <div className="h-6 sm:h-8 bg-gradient-to-r from-muted/50 via-muted/30 to-muted/50 rounded-lg w-3/4 mx-auto animate-pulse" style={{ animationDelay: '0.1s' }} />
                 </div>
-                <div className="space-y-2">
-                  <div className="h-4 bg-muted/40 rounded-full w-32 mx-auto animate-pulse" />
-                  <div className="h-3 bg-muted/30 rounded-full w-24 mx-auto animate-pulse" style={{ animationDelay: '0.2s' }} />
-                </div>
+                <div className="h-12 sm:h-14 bg-gradient-to-r from-primary/30 via-accent/30 to-primary/30 rounded-full w-48 mx-auto animate-pulse" style={{ animationDelay: '0.2s' }} />
               </div>
-            </div>
-            
-            {/* Skeleton slide indicators */}
-            <div className="absolute bottom-4 sm:bottom-6 md:bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-2 sm:space-x-3">
-              {[...Array(3)].map((_, index) => (
-                <div
-                  key={index}
-                  className="w-6 sm:w-8 h-1.5 sm:h-2 bg-white/20 rounded-full animate-pulse"
-                  style={{ animationDelay: `${index * 0.1}s` }}
-                />
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-    );
-  }
-
-  if (!slides || slides.length === 0) {
-    return (
-      <section className="relative w-full overflow-hidden">
-        <div className="w-full aspect-[16/9] sm:aspect-[16/10] md:aspect-[16/9] lg:aspect-[21/9] max-w-full">
-          <div className="relative h-full w-full bg-gradient-to-br from-muted/20 to-background flex items-center justify-center">
-            <div className="text-center animate-fade-in">
-              <p className="text-muted-foreground text-lg">No slides available</p>
             </div>
           </div>
         </div>
@@ -104,28 +91,36 @@ const HeroSlider = () => {
           }}
         >
           <CarouselContent className="h-full">
-            {slides.map((slide, index) => (
-              <CarouselItem key={slide.id} className="h-full">
-                <div className="relative h-full w-full group animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
-                  {/* Responsive image with proper object-fit and loading optimization */}
-                  <img 
-                    src={slide.image_url} 
-                    alt={slide.title}
-                    loading={index === 0 ? "eager" : "lazy"}
-                    decoding="async"
-                    className="w-full h-full object-cover sm:object-contain md:object-cover bg-gradient-to-br from-muted/20 to-background group-hover:scale-[1.02]"
-                      style={{
-                        transition: `transform 500ms cubic-bezier(0.4, 0, 0.2, 1), opacity 0.5s ease-in-out`
+            {slides.map((slide, index) => {
+              const isFirstSlide = index === 0;
+              const isLoaded = imagesLoaded.has(index);
+              
+              return (
+                <CarouselItem key={slide.id} className="h-full">
+                  <div className="relative h-full w-full group animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
+                    {/* Show instant gradient background while image loads */}
+                    {!isLoaded && (
+                      <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-background to-accent/20 animate-pulse" />
+                    )}
+                    
+                    {/* Optimized image with instant loading for first slide */}
+                    <img 
+                      src={slide.image_url} 
+                      alt={slide.title}
+                      loading={isFirstSlide ? "eager" : "lazy"}
+                      fetchPriority={isFirstSlide ? "high" : "auto"}
+                      decoding="async"
+                      className={`w-full h-full object-cover sm:object-contain md:object-cover bg-gradient-to-br from-muted/20 to-background group-hover:scale-[1.02] transition-all duration-500 ${
+                        isLoaded ? 'opacity-100' : 'opacity-0'
+                      }`}
+                      onLoad={(e) => {
+                        setImagesLoaded(prev => new Set(prev).add(index));
+                        e.currentTarget.style.opacity = '1';
                       }}
-                    onLoad={(e) => {
-                      // Add smooth transition when image loads
-                      e.currentTarget.style.opacity = '1';
-                    }}
-                    onError={(e) => {
-                      // Fallback for broken images
-                      e.currentTarget.style.background = 'linear-gradient(135deg, hsl(var(--muted)), hsl(var(--background)))';
-                    }}
-                  />
+                      onError={(e) => {
+                        e.currentTarget.style.background = 'linear-gradient(135deg, hsl(var(--muted)), hsl(var(--background)))';
+                      }}
+                    />
                 
                 {/* Subtle gradient overlay for better contrast on indicators */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
@@ -164,9 +159,10 @@ const HeroSlider = () => {
                     </div>
                   </div>
                 )}
-              </div>
-            </CarouselItem>
-          ))}
+                  </div>
+                </CarouselItem>
+              );
+            })}
         </CarouselContent>
 
 
