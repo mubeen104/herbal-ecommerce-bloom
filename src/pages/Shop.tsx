@@ -101,10 +101,42 @@ export default function Shop() {
         <title>Shop Premium Natural Herbal Products & Organic Supplements | New Era Herbals</title>
         <meta name="description" content="Browse our collection of premium natural herbal products, organic supplements, ayurvedic herbs, and wellness solutions. Shop certified organic herbs, herbal teas, natural remedies, and holistic health products." />
         <meta name="keywords" content="herbal products, natural supplements, organic health, wellness products, herbal shop, ayurvedic products, herbal medicine, natural remedies shop, organic supplements online, herbal wellness, natural health store" />
-        <link rel="canonical" href="/shop" />
+        <link rel="canonical" content="https://www.neweraherbals.com/shop" />
+        
+        {/* Open Graph */}
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://www.neweraherbals.com/shop" />
         <meta property="og:title" content="Shop Premium Natural Herbal Products & Organic Supplements" />
         <meta property="og:description" content="Browse our collection of premium natural herbal products and organic wellness solutions." />
-        <meta property="og:type" content="website" />
+        <meta property="og:image" content="https://www.neweraherbals.com/logo.png" />
+        
+        {/* Twitter */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Shop Premium Natural Herbal Products" />
+        <meta name="twitter:description" content="Browse our collection of premium natural herbal products and organic wellness solutions." />
+        <meta name="twitter:image" content="https://www.neweraherbals.com/logo.png" />
+        
+        {/* Breadcrumb Schema */}
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+              {
+                "@type": "ListItem",
+                "position": 1,
+                "name": "Home",
+                "item": "https://www.neweraherbals.com"
+              },
+              {
+                "@type": "ListItem",
+                "position": 2,
+                "name": "Shop",
+                "item": "https://www.neweraherbals.com/shop"
+              }
+            ]
+          })}
+        </script>
       </Helmet>
       
       <div className="min-h-screen flex flex-col bg-background">

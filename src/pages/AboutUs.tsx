@@ -11,10 +11,41 @@ export default function AboutUs() {
         <title>About New Era Herbals | Premium Organic Herbal Products & Natural Wellness Experts</title>
         <meta name="description" content="Learn about New Era Herbals' commitment to premium organic herbal products, natural remedies, and holistic wellness solutions. Discover our mission to provide certified organic supplements and ayurvedic herbs." />
         <meta name="keywords" content="about herbal company, organic supplement provider, natural wellness experts, herbal product specialists, ayurvedic herbs, certified organic, holistic health company" />
-        <link rel="canonical" href="/about" />
+        <link rel="canonical" content="https://www.neweraherbals.com/about" />
+        
+        {/* Open Graph */}
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://www.neweraherbals.com/about" />
         <meta property="og:title" content="About New Era Herbals | Premium Organic Herbal Products" />
         <meta property="og:description" content="Premium organic herbal products and natural wellness solutions from trusted experts." />
-        <meta property="og:type" content="website" />
+        <meta property="og:image" content="https://www.neweraherbals.com/logo.png" />
+        
+        {/* Twitter */}
+        <meta name="twitter:card" content="summary" />
+        <meta name="twitter:title" content="About New Era Herbals" />
+        <meta name="twitter:description" content="Premium organic herbal products and natural wellness solutions from trusted experts." />
+        
+        {/* Breadcrumb Schema */}
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+              {
+                "@type": "ListItem",
+                "position": 1,
+                "name": "Home",
+                "item": "https://www.neweraherbals.com"
+              },
+              {
+                "@type": "ListItem",
+                "position": 2,
+                "name": "About Us",
+                "item": "https://www.neweraherbals.com/about"
+              }
+            ]
+          })}
+        </script>
       </Helmet>
       
       <div className="min-h-screen bg-background">

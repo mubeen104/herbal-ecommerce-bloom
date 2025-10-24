@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useProductVariants, ProductVariant } from '@/hooks/useProductVariants';
 import { ProductVariantSelector } from '@/components/ProductVariantSelector';
+import { ProductSchema } from '@/components/ProductSchema';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
@@ -174,22 +175,12 @@ const ProductDetail = () => {
   const getCurrentComparePrice = () => selectedVariant?.compare_price || product.compare_price;
   const getCurrentInventory = () => selectedVariant?.inventory_quantity || product.inventory_quantity;
   const averageRating = reviews && reviews.length > 0 ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length : 0;
-  return <div className="min-h-screen bg-background">
-      <Header />
+  return (
+    <>
+      <ProductSchema product={product} reviews={reviews} selectedVariant={selectedVariant} />
       
-      {/* SEO Keywords - Hidden from users but visible in HTML for search engines */}
-      {product.keywords && product.keywords.length > 0 && (
-        <div className="hidden" aria-hidden="true">
-          <meta name="keywords" content={product.keywords.join(', ')} />
-          <div data-seo-keywords={product.keywords.join(', ')}>
-            {product.keywords.map((keyword, index) => (
-              <span key={index} className="seo-keyword">
-                {keyword}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
+      <div className="min-h-screen bg-background">
+        <Header />
       
       <main className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
@@ -408,7 +399,9 @@ const ProductDetail = () => {
         </div>
       </main>
 
-      <Footer />
-    </div>;
+        <Footer />
+      </div>
+    </>
+  );
 };
 export default ProductDetail;

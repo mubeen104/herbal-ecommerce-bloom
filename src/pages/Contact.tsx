@@ -93,13 +93,55 @@ const Contact = () => {
   return (
     <>
       <Helmet>
-        <title>Contact New Era Herbals | Natural Health Product Inquiries & Support</title>
-        <meta name="description" content="Get in touch with New Era Herbals for questions about our organic herbal products, natural remedies, wellness solutions, and holistic health supplements. Expert support available." />
-        <meta name="keywords" content="contact herbalist, herbal product support, natural health inquiries, organic supplement questions, wellness consultation, herbal medicine support" />
-        <link rel="canonical" href="/contact" />
-        <meta property="og:title" content="Contact New Era Herbals | Natural Health Support" />
-        <meta property="og:description" content="Expert support for your natural wellness journey. Contact us about organic herbal products and holistic health solutions." />
+        <title>Contact New Era Herbals | Customer Support for Organic Herbal Products & Natural Wellness</title>
+        <meta name="description" content="Get in touch with New Era Herbals for questions about our premium organic herbal products, natural supplements, and wellness solutions. Expert customer support for all your herbal health needs." />
+        <meta name="keywords" content="herbal products contact, natural supplements support, organic health customer service, wellness products inquiry, herbal medicine questions, ayurvedic support, natural remedies help" />
+        <link rel="canonical" content="https://www.neweraherbals.com/contact" />
+        
+        {/* Open Graph */}
         <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://www.neweraherbals.com/contact" />
+        <meta property="og:title" content="Contact New Era Herbals | Customer Support" />
+        <meta property="og:description" content="Get in touch with our expert team for questions about organic herbal products and natural wellness solutions." />
+        <meta property="og:image" content="https://www.neweraherbals.com/logo.png" />
+        
+        {/* Twitter */}
+        <meta name="twitter:card" content="summary" />
+        <meta name="twitter:title" content="Contact New Era Herbals" />
+        <meta name="twitter:description" content="Expert support for your natural wellness journey." />
+        
+        {/* Breadcrumb Schema */}
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+              {
+                "@type": "ListItem",
+                "position": 1,
+                "name": "Home",
+                "item": "https://www.neweraherbals.com"
+              },
+              {
+                "@type": "ListItem",
+                "position": 2,
+                "name": "Contact",
+                "item": "https://www.neweraherbals.com/contact"
+              }
+            ]
+          })}
+        </script>
+        
+        {/* ContactPage Schema */}
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "ContactPage",
+            "name": "Contact New Era Herbals",
+            "description": "Get in touch with New Era Herbals for expert support on organic herbal products",
+            "url": "https://www.neweraherbals.com/contact"
+          })}
+        </script>
       </Helmet>
       
       <div className="min-h-screen bg-background">
