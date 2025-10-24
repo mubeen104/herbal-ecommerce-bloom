@@ -181,18 +181,23 @@ export const useCatalogExport = (selectedCategoryIds?: string[]) => {
 // Platform-specific formatters
 function formatForMeta(data: CatalogProduct[]) {
   return data.map(product => ({
-    id: product.id,
-    title: product.title,
-    description: product.description,
-    availability: product.availability,
-    condition: product.condition,
+    id: product.sku || product.id, // Use SKU if available, fallback to ID
+    title: product.title.substring(0, 150), // Max 150 characters
+    description: product.description.substring(0, 5000), // Max 5000 characters
+    availability: product.availability === 'in stock' ? 'in stock' : 'out of stock',
+    condition: 'new',
     price: `${product.price} ${product.currency}`,
     link: product.product_url,
     image_link: product.image_url,
-    additional_image_link: product.additional_images.join(','),
+    additional_image_link: product.additional_images.slice(0, 10).join(','),
     brand: product.brand,
+    // Meta requires at least one of: brand, mpn, or gtin
+    mpn: product.sku || '',
     google_product_category: product.category,
     product_type: product.category,
+    // Add inventory count for Facebook Shops
+    inventory: product.inventory || 0,
+    // Custom labels for campaign organization
     custom_label_0: product.tags?.[0] || '',
     custom_label_1: product.tags?.[1] || '',
     custom_label_2: product.tags?.[2] || '',
