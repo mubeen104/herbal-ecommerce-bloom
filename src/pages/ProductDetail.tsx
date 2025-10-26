@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -17,6 +17,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Product } from '@/hooks/useProducts';
 import { ReviewForm } from '@/components/reviews/ReviewForm';
 import { ProductImageZoom } from '@/components/ProductImageZoom';
+import { usePixelTracking } from '@/hooks/usePixelTracking';
 import { Minus, Plus, Star, Truck, Shield, RotateCcw } from 'lucide-react';
 const useProduct = (productId: string) => {
   return useQuery({
@@ -75,6 +76,7 @@ const ProductDetail = () => {
     currency,
     freeShippingThreshold
   } = useStoreSettings();
+  const { trackViewContent, trackAddToCart } = usePixelTracking();
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
@@ -89,6 +91,24 @@ const ProductDetail = () => {
   const {
     data: variants
   } = useProductVariants(id!);
+
+  // Track product view when product loads
+  useEffect(() => {
+    if (product) {
+      const mainImage = product.product_images?.[0]?.image_url || '/logo.png';
+      const categoryName = product.product_categories?.[0]?.categories?.name || '';
+      trackViewContent({
+        id: product.id,
+        name: product.name,
+        price: selectedVariant?.price || product.price,
+        currency: currency === 'Rs' ? 'PKR' : 'USD',
+        category: categoryName,
+        brand: 'New Era Herbals',
+        availability: (selectedVariant?.inventory_quantity || product.inventory_quantity || 0) > 0 ? 'in stock' : 'out of stock',
+        imageUrl: mainImage
+      });
+    }
+  }, [product, selectedVariant, currency, trackViewContent]);
   if (isLoading) {
     return <div className="min-h-screen bg-background">
         <Header />
@@ -126,6 +146,19 @@ const ProductDetail = () => {
     try {
       await addToCart(product.id, quantity, selectedVariant?.id);
       const displayName = selectedVariant ? `${product.name} - ${selectedVariant.name}` : product.name;
+      const categoryName = product.product_categories?.[0]?.categories?.name || '';
+      
+      // Track add to cart event
+      trackAddToCart({
+        id: product.id,
+        name: product.name,
+        price: selectedVariant?.price || product.price,
+        currency: currency === 'Rs' ? 'PKR' : 'USD',
+        quantity,
+        category: categoryName,
+        brand: 'New Era Herbals'
+      });
+      
       toast({
         title: "Added to cart",
         description: `${quantity} x ${displayName} added to your cart.`
