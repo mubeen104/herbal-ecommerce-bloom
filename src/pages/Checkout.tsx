@@ -115,6 +115,7 @@ const Checkout = () => {
     quantity: directQuantity,
     products: directProduct,
     product: directProduct,
+    product_variants: directVariant || undefined,
   }] : cartItems;
 
   // Use variant price if available in direct checkout
@@ -256,6 +257,16 @@ const Checkout = () => {
     }
 
     try {
+      // Debug logging for pricing verification
+      console.log('Order Cart Items Debug:', effectiveCartItems.map(item => ({
+        product_name: item.products?.name || item.product?.name,
+        variant_id: item.variant_id,
+        variant_name: item.product_variants?.name,
+        variant_price: item.product_variants?.price,
+        base_price: item.products?.price || item.product?.price,
+        price_being_used: isDirectCheckout ? effectiveDirectPrice : (item.product_variants?.price || item.products?.price || item.product?.price || 0)
+      })));
+
       const orderData = {
         subtotal: effectiveCartTotal,
         shippingAmount: shippingCost,
