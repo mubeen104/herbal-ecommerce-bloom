@@ -6,13 +6,25 @@ import { supabase } from '@/integrations/supabase/client';
 export interface GuestCartItem {
   id: string;
   product_id: string;
-  variant_id?: string;
+  variant_id?: string | null;
   quantity: number;
   product?: {
     id: string;
     name: string;
     price: number;
     product_images: Array<{
+      id: string;
+      image_url: string;
+      alt_text: string;
+      sort_order: number;
+    }>;
+  };
+  product_variants?: {
+    id: string;
+    name: string;
+    price: number;
+    inventory_quantity: number;
+    product_variant_images: Array<{
       id: string;
       image_url: string;
       alt_text: string;
@@ -53,7 +65,10 @@ export const useGuestCart = () => {
     setIsLoading(true);
     try {
       const productIds = items.map(item => item.product_id);
-      const { data: products, error } = await supabase
+      const variantIds = items.map(item => item.variant_id).filter(Boolean) as string[];
+
+      // Fetch products
+      const { data: products, error: productsError } = await supabase
         .from('products')
         .select(`
           id,
@@ -68,11 +83,36 @@ export const useGuestCart = () => {
         `)
         .in('id', productIds);
 
-      if (error) throw error;
+      if (productsError) throw productsError;
 
+      // Fetch variants if there are variant IDs
+      let variants: any[] = [];
+      if (variantIds.length > 0) {
+        const { data: variantsData, error: variantsError } = await supabase
+          .from('product_variants')
+          .select(`
+            id,
+            name,
+            price,
+            inventory_quantity,
+            product_variant_images (
+              id,
+              image_url,
+              alt_text,
+              sort_order
+            )
+          `)
+          .in('id', variantIds);
+
+        if (variantsError) throw variantsError;
+        variants = variantsData || [];
+      }
+
+      // Combine products and variants with cart items
       const updatedItems = items.map(item => ({
         ...item,
-        product: products?.find(p => p.id === item.product_id)
+        product: products?.find(p => p.id === item.product_id),
+        product_variants: item.variant_id ? variants.find(v => v.id === item.variant_id) : undefined
       }));
 
       setGuestCartItems(updatedItems);
@@ -94,7 +134,7 @@ export const useGuestCart = () => {
       console.log('Adding to guest cart:', { productId, quantity, variantId, user });
       
       // Fetch product details
-      const { data: product, error } = await supabase
+      const { data: product, error: productError } = await supabase
         .from('products')
         .select(`
           id,
@@ -110,12 +150,40 @@ export const useGuestCart = () => {
         .eq('id', productId)
         .single();
 
-      if (error) {
-        console.error('Error fetching product:', error);
-        throw error;
+      if (productError) {
+        console.error('Error fetching product:', productError);
+        throw productError;
       }
       
       console.log('Product fetched successfully:', product);
+
+      // Fetch variant details if variantId is provided
+      let variant = undefined;
+      if (variantId) {
+        const { data: variantData, error: variantError } = await supabase
+          .from('product_variants')
+          .select(`
+            id,
+            name,
+            price,
+            inventory_quantity,
+            product_variant_images (
+              id,
+              image_url,
+              alt_text,
+              sort_order
+            )
+          `)
+          .eq('id', variantId)
+          .single();
+
+        if (variantError) {
+          console.error('Error fetching variant:', variantError);
+        } else {
+          variant = variantData;
+          console.log('Variant fetched successfully:', variant);
+        }
+      }
 
       setGuestCartItems(prevItems => {
         const existingItemIndex = prevItems.findIndex(item => 
@@ -135,9 +203,10 @@ export const useGuestCart = () => {
           const newItem: GuestCartItem = {
             id: `guest_${Date.now()}_${productId}_${variantId || 'default'}`,
             product_id: productId,
-            variant_id: variantId,
+            variant_id: variantId || null,
             quantity,
-            product
+            product,
+            product_variants: variant
           };
           newItems = [...prevItems, newItem];
         }
@@ -221,7 +290,8 @@ export const useGuestCart = () => {
   // Guest cart - calculate totals
   const guestCartCount = guestCartItems.reduce((total, item) => total + item.quantity, 0);
   const guestCartTotal = guestCartItems.reduce((total, item) => {
-    const price = item.product?.price || 0;
+    // Use variant price if available, otherwise use product price
+    const price = item.product_variants?.price || item.product?.price || 0;
     return total + (price * item.quantity);
   }, 0);
 
