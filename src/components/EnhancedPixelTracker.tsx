@@ -1,5 +1,7 @@
 import { useEffect, useCallback, useRef } from 'react';
 import { useEnabledPixels } from '@/hooks/useAdvertisingPixels';
+import { trackPixelEvent } from '@/hooks/usePixelPerformance';
+import { useAuth } from '@/contexts/AuthContext';
 
 declare global {
   interface Window {
@@ -33,6 +35,7 @@ interface PixelLoadState {
 
 export const EnhancedPixelTracker = () => {
   const { data: pixels = [], isLoading } = useEnabledPixels();
+  const { user } = useAuth();
   const loadedPixels = useRef<PixelLoadState>({});
   const initializationComplete = useRef(false);
 
@@ -146,7 +149,7 @@ export const EnhancedPixelTracker = () => {
 
       // Send initial page view after all pixels are loaded
       setTimeout(() => {
-        sendEnhancedPageView();
+        sendEnhancedPageView(pixels, user?.id);
       }, 1000);
     };
 
@@ -477,7 +480,7 @@ const loadQuoraPixel = (pixelId: string, onSuccess: () => void, onError: (error:
 };
 
 // Enhanced page view function with rich metadata
-const sendEnhancedPageView = () => {
+const sendEnhancedPageView = (pixels: any[], userId?: string) => {
   const pageData = {
     page_title: document.title,
     page_location: window.location.href,
@@ -503,6 +506,21 @@ const sendEnhancedPageView = () => {
       ...pageData
     });
   }
+
+  // Track page view to database for all enabled pixels
+  const sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  
+  pixels?.forEach(pixel => {
+    trackPixelEvent({
+      pixelId: pixel.id,
+      eventType: 'page_view',
+      eventValue: 0,
+      currency: 'PKR',
+      userId: userId || null,
+      sessionId: sessionId,
+      metadata: pageData
+    }).catch(err => console.error('Error tracking page view:', err));
+  });
 
   console.info('📊 Enhanced page view sent:', pageData);
 };
