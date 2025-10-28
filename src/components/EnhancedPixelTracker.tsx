@@ -218,8 +218,17 @@ const loadMetaPixel = (pixelId: string, onSuccess: () => void, onError: (error: 
     setTimeout(() => {
       if (window.fbq) {
         window.fbq('init', pixelId, {
-          em: 'auto', // Enhanced matching
-          external_id: 'auto'
+          em: 'auto', // Auto-capture email
+          ph: 'auto', // Auto-capture phone
+          fn: 'auto', // Auto-capture first name
+          ln: 'auto', // Auto-capture last name
+          ct: 'auto', // Auto-capture city
+          st: 'auto', // Auto-capture state
+          zp: 'auto', // Auto-capture zip
+          country: 'auto', // Auto-capture country
+          external_id: 'auto', // Auto-capture external ID
+          fbp: 'auto', // Auto-capture Facebook browser ID
+          fbc: 'auto' // Auto-capture Facebook click ID
         });
         window.fbq('track', 'PageView');
         window._fbq_loaded = true;

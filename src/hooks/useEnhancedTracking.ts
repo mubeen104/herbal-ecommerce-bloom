@@ -1,4 +1,7 @@
 import { useCallback } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import { createEnhancedMatchingParams } from '@/utils/pixelUtils';
+import { supabase } from '@/integrations/supabase/client';
 
 interface TrackingData {
   [key: string]: any;
@@ -24,9 +27,28 @@ interface PurchaseTrackingData {
 }
 
 export const useEnhancedTracking = () => {
+  const { user } = useAuth();
+  
+  // Get user profile data for enhanced matching
+  const getUserData = useCallback(async () => {
+    if (!user) return null;
+    
+    try {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('email, phone, first_name, last_name')
+        .eq('user_id', user.id)
+        .single();
+      
+      return profile;
+    } catch (error) {
+      console.warn('Failed to fetch user profile:', error);
+      return null;
+    }
+  }, [user]);
   
   // Enhanced event tracking with error handling and retry
-  const trackEvent = useCallback((eventName: string, data?: TrackingData, options?: { retry?: boolean }) => {
+  const trackEvent = useCallback(async (eventName: string, data?: TrackingData, options?: { retry?: boolean }) => {
     if (typeof window === 'undefined') return;
 
     const enhancedData = {
@@ -49,7 +71,7 @@ export const useEnhancedTracking = () => {
     }
 
     // Track with retry mechanism
-    const executeTracking = () => {
+    const executeTracking = async () => {
       try {
         // Google Ads
         if (window.gtag) {
@@ -65,7 +87,7 @@ export const useEnhancedTracking = () => {
           window.gtag('event', googleEvent, enhancedData);
         }
 
-        // Meta Pixel
+        // Meta Pixel with enhanced matching
         if (window.fbq) {
           const metaEventMap: { [key: string]: string } = {
             'ViewContent': 'ViewContent',
@@ -76,7 +98,26 @@ export const useEnhancedTracking = () => {
             'ViewCategory': 'ViewContent'
           };
           const metaEvent = metaEventMap[eventName] || eventName;
-          window.fbq('track', metaEvent, enhancedData);
+          
+          // Get user data and create enhanced matching params
+          const profile = await getUserData();
+          const enhancedParams = await createEnhancedMatchingParams(
+            profile ? {
+              email: profile.email,
+              phone: profile.phone,
+              firstName: profile.first_name,
+              lastName: profile.last_name,
+              userId: user?.id
+            } : undefined
+          );
+          
+          // Merge enhanced matching with event data
+          const metaData = {
+            ...enhancedData,
+            ...enhancedParams
+          };
+          
+          window.fbq('track', metaEvent, metaData, { eventID: `${eventName}-${Date.now()}` });
         }
 
         // TikTok Pixel
@@ -160,7 +201,7 @@ export const useEnhancedTracking = () => {
     };
 
     executeTracking();
-  }, []);
+  }, [getUserData, user]);
 
   // Enhanced page view tracking
   const trackPageView = useCallback((pageData?: TrackingData) => {
