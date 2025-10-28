@@ -270,9 +270,16 @@ export const useEnhancedTracking = () => {
 
   // Enhanced purchase tracking
   const trackPurchase = useCallback((purchaseData: PurchaseTrackingData) => {
+    // Ensure value is a valid number > 0
+    const numericValue = parseFloat(String(purchaseData.value).replace(/[^0-9.]/g, ''));
+    const validValue = numericValue > 0 ? numericValue : 0.01;
+    
+    // Ensure currency is uppercase 3-letter code
+    const validCurrency = String(purchaseData.currency).toUpperCase().replace(/[^A-Z]/g, '').slice(0, 3) || 'USD';
+    
     const enhancedPurchaseData = {
-      currency: purchaseData.currency,
-      value: purchaseData.value,
+      value: validValue, // Must be numeric > 0
+      currency: validCurrency, // Must be 3-letter uppercase code
       transaction_id: purchaseData.order_id,
       content_ids: purchaseData.items.map(item => item.product_id),
       content_type: 'product',
