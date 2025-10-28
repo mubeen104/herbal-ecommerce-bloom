@@ -33,6 +33,14 @@ const useProduct = (productId: string) => {
             image_url,
             alt_text,
             sort_order
+          ),
+          product_categories (
+            category_id,
+            categories (
+              id,
+              name,
+              slug
+            )
           )
         `).eq('id', productId).eq('is_active', true).single();
       if (error) {
