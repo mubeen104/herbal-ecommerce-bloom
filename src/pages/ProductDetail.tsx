@@ -220,10 +220,26 @@ const ProductDetail = () => {
     <>
       <ProductSchema product={product} reviews={reviews} selectedVariant={selectedVariant} />
       
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-background" itemScope itemType="https://schema.org/Product">
         <Header />
       
       <main className="container mx-auto px-4 py-8">
+        {/* Hidden microdata for Meta Pixel catalog sync */}
+        <meta itemProp="sku" content={product.sku || product.id} />
+        <meta itemProp="name" content={product.name} />
+        <meta itemProp="description" content={product.description || product.short_description || ''} />
+        <meta itemProp="image" content={product.product_images?.[0]?.image_url || '/logo.png'} />
+        <meta itemProp="productID" content={product.sku || product.id} />
+        <link itemProp="url" href={`https://www.neweraherbals.com/product/${product.id}`} />
+        <div itemProp="brand" itemScope itemType="https://schema.org/Brand">
+          <meta itemProp="name" content="New Era Herbals" />
+        </div>
+        <div itemProp="offers" itemScope itemType="https://schema.org/Offer">
+          <meta itemProp="priceCurrency" content="USD" />
+          <meta itemProp="price" content={getCurrentPrice().toString()} />
+          <link itemProp="availability" href={(getCurrentInventory() || 0) > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"} />
+          <link itemProp="url" href={`https://www.neweraherbals.com/product/${product.id}`} />
+        </div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
           {/* Product Images */}
           <div className="space-y-4">
