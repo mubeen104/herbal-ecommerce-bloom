@@ -337,6 +337,24 @@ export default function Shop() {
               {sortedProducts?.map((product, index) => <div key={product.id} className="group relative animate-fade-in hover-scale" style={{
             animationDelay: `${index * 0.1}s`
           }}>
+                  {/* Schema.org microdata for Meta Pixel catalog detection */}
+                  <div itemScope itemType="https://schema.org/Product" style={{ display: 'none' }}>
+                    <meta itemProp="productID" content={product.sku || product.id} />
+                    <meta itemProp="sku" content={product.sku || product.id} />
+                    <meta itemProp="name" content={product.name} />
+                    <meta itemProp="description" content={product.description || product.short_description || ''} />
+                    <meta itemProp="image" content={getMainImage(product)} />
+                    <meta itemProp="brand" content="New Era Herbals" />
+                    <link itemProp="availability" href={product.inventory_quantity > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"} />
+                    <div itemProp="offers" itemScope itemType="https://schema.org/Offer">
+                      <meta itemProp="price" content={product.price.toString()} />
+                      <meta itemProp="priceCurrency" content="PKR" />
+                      <meta itemProp="availability" content={product.inventory_quantity > 0 ? "in stock" : "out of stock"} />
+                      <link itemProp="availability" href={product.inventory_quantity > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"} />
+                      <meta itemProp="url" content={`https://www.neweraherbals.com/product/${product.id}`} />
+                    </div>
+                  </div>
+
                   {/* Floating Card Container */}
                   <div className="relative bg-card/40 backdrop-blur-xl border border-border/20 rounded-3xl p-1 shadow-lg group-hover:shadow-2xl transition-all duration-700 group-hover:border-primary/30">
                     {/* Gradient Border Effect */}
