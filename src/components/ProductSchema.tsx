@@ -91,40 +91,61 @@ export const ProductSchema = ({ product, reviews, selectedVariant }: ProductSche
   };
 
   return (
-    <Helmet>
-      <title>{product.name} | Premium Organic Herbal Products | New Era Herbals</title>
-      <meta name="description" content={product.description || product.short_description || `Buy ${product.name} - Premium organic herbal products and natural wellness solutions`} />
-      {product.keywords && product.keywords.length > 0 && (
-        <meta name="keywords" content={product.keywords.join(', ')} />
-      )}
-      <link rel="canonical" href={`https://www.neweraherbals.com/product/${product.id}`} />
+    <>
+      <Helmet>
+        <title>{product.name} | Premium Organic Herbal Products | New Era Herbals</title>
+        <meta name="description" content={product.description || product.short_description || `Buy ${product.name} - Premium organic herbal products and natural wellness solutions`} />
+        {product.keywords && product.keywords.length > 0 && (
+          <meta name="keywords" content={product.keywords.join(', ')} />
+        )}
+        <link rel="canonical" href={`https://www.neweraherbals.com/product/${product.id}`} />
+        
+        {/* Open Graph */}
+        <meta property="og:type" content="product" />
+        <meta property="og:url" content={`https://www.neweraherbals.com/product/${product.id}`} />
+        <meta property="og:title" content={`${product.name} | New Era Herbals`} />
+        <meta property="og:description" content={product.description || product.short_description || ''} />
+        <meta property="og:image" content={product.product_images?.[0]?.image_url || '/logo.png'} />
+        <meta property="product:price:amount" content={getCurrentPrice().toString()} />
+        <meta property="product:price:currency" content="PKR" />
+        <meta property="product:availability" content={(product.inventory_quantity || 0) > 0 ? "in stock" : "out of stock"} />
+        <meta property="product:brand" content="New Era Herbals" />
+        <meta property="product:category" content={product.product_categories?.[0]?.categories?.name || "Herbal Products"} />
+        <meta property="product:retailer_item_id" content={selectedVariant?.sku || product.sku || product.id} />
+        
+        {/* Twitter */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={product.name} />
+        <meta name="twitter:description" content={product.short_description || ''} />
+        <meta name="twitter:image" content={product.product_images?.[0]?.image_url || '/logo.png'} />
+        
+        {/* Structured Data */}
+        <script type="application/ld+json">
+          {JSON.stringify(structuredData)}
+        </script>
+        <script type="application/ld+json">
+          {JSON.stringify(breadcrumbData)}
+        </script>
+      </Helmet>
       
-      {/* Open Graph */}
-      <meta property="og:type" content="product" />
-      <meta property="og:url" content={`https://www.neweraherbals.com/product/${product.id}`} />
-      <meta property="og:title" content={`${product.name} | New Era Herbals`} />
-      <meta property="og:description" content={product.description || product.short_description || ''} />
-      <meta property="og:image" content={product.product_images?.[0]?.image_url || '/logo.png'} />
-      <meta property="product:price:amount" content={getCurrentPrice().toString()} />
-      <meta property="product:price:currency" content="PKR" />
-      <meta property="product:availability" content={(product.inventory_quantity || 0) > 0 ? "in stock" : "out of stock"} />
-      <meta property="product:brand" content="New Era Herbals" />
-      <meta property="product:category" content={product.product_categories?.[0]?.categories?.name || "Herbal Products"} />
-      <meta property="product:retailer_item_id" content={selectedVariant?.sku || product.sku || product.id} />
-      
-      {/* Twitter */}
-      <meta name="twitter:card" content="summary_large_image" />
-      <meta name="twitter:title" content={product.name} />
-      <meta name="twitter:description" content={product.short_description || ''} />
-      <meta name="twitter:image" content={product.product_images?.[0]?.image_url || '/logo.png'} />
-      
-      {/* Structured Data */}
-      <script type="application/ld+json">
-        {JSON.stringify(structuredData)}
-      </script>
-      <script type="application/ld+json">
-        {JSON.stringify(breadcrumbData)}
-      </script>
-    </Helmet>
+      {/* Schema.org microdata for Meta Pixel automatic catalog detection */}
+      <div itemScope itemType="https://schema.org/Product" style={{ display: 'none' }}>
+        <meta itemProp="productID" content={selectedVariant?.sku || product.sku || product.id} />
+        <meta itemProp="sku" content={selectedVariant?.sku || product.sku || product.id} />
+        <meta itemProp="name" content={product.name} />
+        <meta itemProp="description" content={product.description || product.short_description || ''} />
+        <meta itemProp="image" content={product.product_images?.[0]?.image_url || '/logo.png'} />
+        <meta itemProp="brand" content="New Era Herbals" />
+        <link itemProp="availability" href={(product.inventory_quantity || 0) > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"} />
+        <div itemProp="offers" itemScope itemType="https://schema.org/Offer">
+          <meta itemProp="price" content={getCurrentPrice().toString()} />
+          <meta itemProp="priceCurrency" content="PKR" />
+          <meta itemProp="availability" content={(product.inventory_quantity || 0) > 0 ? "in stock" : "out of stock"} />
+          <link itemProp="availability" href={(product.inventory_quantity || 0) > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"} />
+          <meta itemProp="url" content={`https://www.neweraherbals.com/product/${product.id}`} />
+          <meta itemProp="itemCondition" content="https://schema.org/NewCondition" />
+        </div>
+      </div>
+    </>
   );
 };
