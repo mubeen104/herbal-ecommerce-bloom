@@ -18,6 +18,8 @@ import { useGuestCart } from '@/hooks/useGuestCart';
 import { useStoreSettings } from '@/hooks/useStoreSettings';
 import { useToast } from '@/hooks/use-toast';
 import { AddToCartModal } from '@/components/AddToCartModal';
+import { useShopTracking } from '@/hooks/useShopTracking';
+
 export default function Shop() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
@@ -83,6 +85,10 @@ export default function Shop() {
         return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
     }
   });
+
+  // Track shop page views and product list impressions
+  useShopTracking(sortedProducts, selectedCategory, searchTerm);
+
   const handleAddToCartRequest = (product: any) => {
     setAddToCartProduct(product);
   };

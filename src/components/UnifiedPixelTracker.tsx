@@ -277,9 +277,10 @@ function loadQuora(pixelId: string) {
 
 function syncCatalogToPixel(platform: string, catalog: any[]) {
   try {
+    // CRITICAL: Use SKUs for Meta Pixel catalog matching
     const catalogEvent = {
       content_type: 'product_group',
-      content_ids: catalog.map(p => p.id),
+      content_ids: catalog.map(p => p.sku || p.id), // SKU required for catalog matching
       currency: catalog[0]?.currency || 'PKR',
       value: catalog.reduce((sum, p) => sum + p.price, 0),
       num_items: catalog.length
@@ -290,8 +291,9 @@ function syncCatalogToPixel(platform: string, catalog: any[]) {
         if (window.fbq) {
           window.fbq('track', 'ViewContent', {
             ...catalogEvent,
+            content_ids: catalog.map(p => p.sku || p.id), // Meta Pixel requires SKU
             contents: catalog.map(p => ({
-              id: p.id,
+              id: p.sku || p.id, // Use SKU for catalog matching
               title: p.title,
               price: p.price,
               availability: p.availability,
@@ -300,7 +302,7 @@ function syncCatalogToPixel(platform: string, catalog: any[]) {
               image_link: p.image_url
             }))
           });
-          console.info('📦 Meta: Catalog synced');
+          console.info('📦 Meta: Catalog synced with SKUs -', catalog.length, 'products');
         }
         break;
 
@@ -432,7 +434,7 @@ function sendPageView() {
 // Export tracking functions for use throughout the app
 export const pixelTracking = {
   trackViewContent: (productData: {
-    id: string;
+    id: string; // Should be SKU for Meta Pixel catalog matching
     name: string;
     price: number;
     currency: string;
@@ -440,13 +442,13 @@ export const pixelTracking = {
     brand?: string;
   }) => {
     const data = {
-      content_ids: [productData.id],
+      content_ids: [productData.id], // Meta Pixel: id should be SKU
       content_name: productData.name,
       content_type: 'product',
       content_category: productData.category,
       currency: productData.currency,
       value: productData.price,
-      item_id: productData.id,
+      item_id: productData.id, // SKU
       item_name: productData.name,
       item_brand: productData.brand,
       price: productData.price
@@ -464,7 +466,7 @@ export const pixelTracking = {
   },
 
   trackAddToCart: (productData: {
-    id: string;
+    id: string; // Should be SKU for Meta Pixel catalog matching
     name: string;
     price: number;
     currency: string;
@@ -473,18 +475,18 @@ export const pixelTracking = {
     brand?: string;
   }) => {
     const data = {
-      content_ids: [productData.id],
+      content_ids: [productData.id], // Meta Pixel: id should be SKU
       content_name: productData.name,
       content_type: 'product',
       currency: productData.currency,
       value: productData.price * productData.quantity,
       contents: [{
-        id: productData.id,
+        id: productData.id, // SKU
         quantity: productData.quantity,
         item_price: productData.price
       }],
       items: [{
-        item_id: productData.id,
+        item_id: productData.id, // SKU
         item_name: productData.name,
         item_brand: productData.brand,
         item_category: productData.category,

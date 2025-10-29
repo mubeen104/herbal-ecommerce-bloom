@@ -11,7 +11,7 @@ import ScrollToTop from "@/components/ScrollToTop";
 import { UnifiedPixelTracker } from "@/components/UnifiedPixelTracker";
 import { PixelDebugger } from "@/components/PixelDebugger";
 import { MetadataManager } from "@/components/MetadataManager";
-import { useEnhancedTracking } from "@/hooks/useEnhancedTracking";
+import { CatalogSync } from "@/components/CatalogSync";
 import { useEffect } from "react";
 import Index from "./pages/Index";
 import Shop from "./pages/Shop";
@@ -59,6 +59,7 @@ const App = () => (
           <BrowserRouter>
             <ScrollToTop />
             <UnifiedPixelTracker />
+            <CatalogSync />
             <MetadataManager 
               siteInfo={{
                 name: 'New Era Herbals',
@@ -113,23 +114,34 @@ const App = () => (
   </QueryClientProvider>
 );
 
-// Enhanced component to track page views on route changes
+// Enhanced page view tracker with deduplication
 const PageViewTracker = () => {
   const location = useLocation();
-  const { trackPageView } = useEnhancedTracking();
   
   useEffect(() => {
-    // Wait for DOM to be ready and pixels to be loaded
+    // Generate unique event ID for deduplication
+    const eventId = `pageview_${location.pathname}_${Date.now()}`;
+    
+    // Wait for pixels to be loaded
     const timer = setTimeout(() => {
-      trackPageView({
+      const pageData = {
         page_path: location.pathname,
-        page_search: location.search,
-        page_hash: location.hash
-      });
+        page_location: window.location.href,
+        page_title: document.title
+      };
+
+      // Track page view with all enabled pixels
+      if (window.gtag) window.gtag('event', 'page_view', pageData);
+      if (window.fbq) window.fbq('trackSingle', eventId, 'PageView');
+      if (window.ttq) window.ttq.page();
+      if (window.twq) window.twq('track', 'PageView');
+      if (window.pintrk) window.pintrk('page');
+      
+      console.info('📄 Page view tracked:', location.pathname);
     }, 500);
 
     return () => clearTimeout(timer);
-  }, [location, trackPageView]);
+  }, [location]);
   
   return null;
 };

@@ -84,11 +84,12 @@ export const CatalogSync = () => {
 function syncMetaCatalog(products: any[]) {
   if (!window.fbq) return;
 
+  // CRITICAL: Use SKU for catalog matching
   window.fbq('track', 'ViewContent', {
     content_type: 'product_group',
-    content_ids: products.map(p => p.id),
+    content_ids: products.map(p => p.sku || p.id), // SKU required for catalog matching
     contents: products.map(product => ({
-      id: product.id,
+      id: product.sku || product.id, // Meta Pixel requires SKU
       quantity: 1,
       item_price: product.price,
       title: product.title,
@@ -103,7 +104,7 @@ function syncMetaCatalog(products: any[]) {
     value: products.reduce((sum, p) => sum + p.price, 0)
   });
 
-  console.info('📱 Meta Pixel: Catalog synced with', products.length, 'products');
+  console.info('📱 Meta Pixel: Catalog synced with', products.length, 'products (using SKUs)');
 }
 
 function syncGoogleCatalog(products: any[]) {

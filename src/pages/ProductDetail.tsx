@@ -224,13 +224,27 @@ const ProductDetail = () => {
         <Header />
       
       <main className="container mx-auto px-4 py-8">
-        {/* Hidden microdata for Meta Pixel catalog sync */}
+        {/* Enhanced microdata for Meta Pixel auto-catalog sync */}
         <meta itemProp="sku" content={product.sku || product.id} />
         <meta itemProp="name" content={product.name} />
         <meta itemProp="description" content={product.description || product.short_description || ''} />
         <meta itemProp="image" content={product.product_images?.[0]?.image_url || '/logo.png'} />
         <meta itemProp="productID" content={product.sku || product.id} />
-        <link itemProp="url" href={`https://www.neweraherbals.com/product/${product.id}`} />
+        <link itemProp="url" href={`https://www.neweraherbals.com/product/${product.slug || product.id}`} />
+        
+        {/* Open Graph for Meta Pixel */}
+        <meta property="og:type" content="product" />
+        <meta property="og:title" content={product.name} />
+        <meta property="og:description" content={product.description || product.short_description || ''} />
+        <meta property="og:image" content={product.product_images?.[0]?.image_url || '/logo.png'} />
+        <meta property="og:url" content={`https://www.neweraherbals.com/product/${product.slug || product.id}`} />
+        <meta property="product:price:amount" content={getCurrentPrice().toString()} />
+        <meta property="product:price:currency" content="USD" />
+        <meta property="product:availability" content={(getCurrentInventory() || 0) > 0 ? "in stock" : "out of stock"} />
+        <meta property="product:condition" content="new" />
+        <meta property="product:brand" content="New Era Herbals" />
+        <meta property="product:retailer_item_id" content={product.sku || product.id} />
+        
         <div itemProp="brand" itemScope itemType="https://schema.org/Brand">
           <meta itemProp="name" content="New Era Herbals" />
         </div>
@@ -238,7 +252,7 @@ const ProductDetail = () => {
           <meta itemProp="priceCurrency" content="USD" />
           <meta itemProp="price" content={getCurrentPrice().toString()} />
           <link itemProp="availability" href={(getCurrentInventory() || 0) > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"} />
-          <link itemProp="url" href={`https://www.neweraherbals.com/product/${product.id}`} />
+          <link itemProp="url" href={`https://www.neweraherbals.com/product/${product.slug || product.id}`} />
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
           {/* Product Images */}
