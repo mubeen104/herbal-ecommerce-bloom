@@ -6,6 +6,9 @@
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#059669",
+  "serviceworker": {
+    "src": "/sw.js"
+  },
   "icons": [
     {
       "src": "/logo.png",
