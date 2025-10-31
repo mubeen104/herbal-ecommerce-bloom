@@ -15,6 +15,7 @@ const HeroSlider = () => {
   const [api, setApi] = useState<CarouselApi>();
   const [current, setCurrent] = useState(0);
   const [imagesLoaded, setImagesLoaded] = useState<Set<number>>(new Set());
+  const [isPaused, setIsPaused] = useState(false);
   
   // Preload first image immediately
   useEffect(() => {
@@ -42,15 +43,17 @@ const HeroSlider = () => {
 
     // Auto-scroll with configurable speed
     const interval = setInterval(() => {
-      if (api.canScrollNext()) {
-        api.scrollNext();
-      } else {
-        api.scrollTo(0);
+      if (!isPaused) {
+        if (api.canScrollNext()) {
+          api.scrollNext();
+        } else {
+          api.scrollTo(0);
+        }
       }
     }, autoScrollSpeed);
 
     return () => clearInterval(interval);
-  }, [api, autoScrollSpeed]);
+  }, [api, autoScrollSpeed, isPaused]);
 
   // Show instant preview while loading
   if (isLoading || !slides || slides.length === 0) {
@@ -79,8 +82,12 @@ const HeroSlider = () => {
 
   return (
     <section className="relative w-full overflow-hidden">
-      <div className="w-full aspect-[16/9] sm:aspect-[16/10] md:aspect-[16/9] lg:aspect-[21/9] max-w-full">
-        <Carousel 
+      <div 
+        className="w-full aspect-[16/9] sm:aspect-[16/10] md:aspect-[16/9] lg:aspect-[21/9] max-w-full"
+        onMouseEnter={() => setIsPaused(true)}
+        onMouseLeave={() => setIsPaused(false)}
+      >
+        <Carousel
           setApi={setApi} 
           className="w-full h-full"
           opts={{
