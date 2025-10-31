@@ -19,6 +19,7 @@ import { useStoreSettings } from '@/hooks/useStoreSettings';
 import { useToast } from '@/hooks/use-toast';
 import { AddToCartModal } from '@/components/AddToCartModal';
 import { useShopTracking } from '@/hooks/useShopTracking';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function Shop() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -29,6 +30,7 @@ export default function Shop() {
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [addToCartProduct, setAddToCartProduct] = useState<any>(null);
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
+  const [productVariants, setProductVariants] = useState<Record<string, any[]>>({});
 
   // Update search term and category when URL changes
   useEffect(() => {
@@ -85,6 +87,32 @@ export default function Shop() {
         return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
     }
   });
+
+  // Fetch all product variants once
+  useEffect(() => {
+    const fetchVariants = async () => {
+      if (!sortedProducts || sortedProducts.length === 0) return;
+
+      const { data } = await supabase
+        .from('product_variants')
+        .select('*')
+        .eq('is_active', true)
+        .in('product_id', sortedProducts.map(p => p.id));
+
+      if (data) {
+        const variantsByProduct = data.reduce((acc, variant) => {
+          if (!acc[variant.product_id]) {
+            acc[variant.product_id] = [];
+          }
+          acc[variant.product_id].push(variant);
+          return acc;
+        }, {} as Record<string, any[]>);
+        setProductVariants(variantsByProduct);
+      }
+    };
+
+    fetchVariants();
+  }, [sortedProducts]);
 
   // Track shop page views and product list impressions
   useShopTracking(sortedProducts, selectedCategory, searchTerm);
@@ -338,22 +366,45 @@ export default function Shop() {
             animationDelay: `${index * 0.1}s`
           }}>
                   {/* Schema.org microdata for Meta Pixel catalog detection */}
-                  <div itemScope itemType="https://schema.org/Product" style={{ display: 'none' }}>
-                    <meta itemProp="productID" content={product.sku || product.id} />
-                    <meta itemProp="sku" content={product.sku || product.id} />
-                    <meta itemProp="name" content={product.name} />
-                    <meta itemProp="description" content={product.description || product.short_description || ''} />
-                    <meta itemProp="image" content={getMainImage(product)} />
-                    <meta itemProp="brand" content="New Era Herbals" />
-                    <link itemProp="availability" href={product.inventory_quantity > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"} />
-                    <div itemProp="offers" itemScope itemType="https://schema.org/Offer">
-                      <meta itemProp="price" content={product.price.toString()} />
-                      <meta itemProp="priceCurrency" content="PKR" />
-                      <meta itemProp="availability" content={product.inventory_quantity > 0 ? "in stock" : "out of stock"} />
+                  {/* If product has variants, include microdata for each variant */}
+                  {productVariants[product.id]?.length > 0 ? (
+                    productVariants[product.id].map((variant: any) => (
+                      <div key={variant.id} itemScope itemType="https://schema.org/Product" style={{ display: 'none' }}>
+                        <meta itemProp="productID" content={variant.sku || variant.id} />
+                        <meta itemProp="sku" content={variant.sku || variant.id} />
+                        <meta itemProp="name" content={`${product.name} - ${variant.name}`} />
+                        <meta itemProp="description" content={variant.description || product.description || product.short_description || ''} />
+                        <meta itemProp="image" content={getMainImage(product)} />
+                        <meta itemProp="brand" content="New Era Herbals" />
+                        <link itemProp="availability" href={variant.inventory_quantity > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"} />
+                        <div itemProp="offers" itemScope itemType="https://schema.org/Offer">
+                          <meta itemProp="price" content={(variant.price || product.price).toString()} />
+                          <meta itemProp="priceCurrency" content="PKR" />
+                          <meta itemProp="availability" content={variant.inventory_quantity > 0 ? "in stock" : "out of stock"} />
+                          <link itemProp="availability" href={variant.inventory_quantity > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"} />
+                          <meta itemProp="url" content={`https://www.neweraherbals.com/product/${product.slug || product.id}`} />
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    /* No variants - single microdata for parent product */
+                    <div itemScope itemType="https://schema.org/Product" style={{ display: 'none' }}>
+                      <meta itemProp="productID" content={product.sku || product.id} />
+                      <meta itemProp="sku" content={product.sku || product.id} />
+                      <meta itemProp="name" content={product.name} />
+                      <meta itemProp="description" content={product.description || product.short_description || ''} />
+                      <meta itemProp="image" content={getMainImage(product)} />
+                      <meta itemProp="brand" content="New Era Herbals" />
                       <link itemProp="availability" href={product.inventory_quantity > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"} />
-                      <meta itemProp="url" content={`https://www.neweraherbals.com/product/${product.id}`} />
+                      <div itemProp="offers" itemScope itemType="https://schema.org/Offer">
+                        <meta itemProp="price" content={product.price.toString()} />
+                        <meta itemProp="priceCurrency" content="PKR" />
+                        <meta itemProp="availability" content={product.inventory_quantity > 0 ? "in stock" : "out of stock"} />
+                        <link itemProp="availability" href={product.inventory_quantity > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"} />
+                        <meta itemProp="url" content={`https://www.neweraherbals.com/product/${product.slug || product.id}`} />
+                      </div>
                     </div>
-                  </div>
+                  )}
 
                   {/* Floating Card Container */}
                   <div className="relative bg-card/40 backdrop-blur-xl border border-border/20 rounded-3xl p-1 shadow-lg group-hover:shadow-2xl transition-all duration-700 group-hover:border-primary/30">

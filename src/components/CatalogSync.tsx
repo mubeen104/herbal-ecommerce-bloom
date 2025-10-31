@@ -84,30 +84,28 @@ export const CatalogSync = () => {
 function syncMetaCatalog(products: any[]) {
   if (!window.fbq) return;
 
-  // Limit to top 20 products for efficient catalog sync
-  const topProducts = products.slice(0, 20);
-
   // CRITICAL: Use correct format for Meta Pixel events
   // Only id, quantity, item_price are allowed in contents array
   window.fbq('track', 'ViewContent', {
     content_type: 'product_group',
-    content_ids: topProducts
+    content_ids: products
       .map(p => p.sku || p.id)
       .filter(id => id && typeof id === 'string')
-      .slice(0, 100),
-    contents: topProducts
+      .slice(0, 100), // Meta has a 100 content_ids limit
+    contents: products
       .map(product => ({
         id: product.sku || product.id,
         quantity: 1,
         item_price: parseFloat(product.price)
       }))
-      .filter(item => item.id && !isNaN(item.item_price)),
-    num_items: topProducts.length,
+      .filter(item => item.id && !isNaN(item.item_price))
+      .slice(0, 100), // Meta has a 100 contents limit
+    num_items: products.length,
     currency: products[0]?.currency || 'PKR',
-    value: topProducts.reduce((sum, p) => sum + parseFloat(p.price), 0)
+    value: products.reduce((sum, p) => sum + parseFloat(p.price), 0)
   });
 
-  console.info('📱 Meta Pixel: Catalog synced with', topProducts.length, 'products (using SKUs)');
+  console.info('📱 Meta Pixel: Catalog synced with', products.length, 'products (using SKUs)');
 }
 
 function syncGoogleCatalog(products: any[]) {

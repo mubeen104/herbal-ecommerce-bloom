@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useProducts } from './useProducts';
 import { useCategories } from './useCategories';
 import { useStoreSettings } from './useStoreSettings';
+import { supabase } from '@/integrations/supabase/client';
 
 export type CatalogFormat = 
   | 'meta' 
@@ -39,7 +40,7 @@ export const useCatalogExport = (selectedCategoryIds?: string[]) => {
 
   const catalogData = useQuery({
     queryKey: ['catalog-export', products.length, selectedCategoryIds],
-    queryFn: () => {
+    queryFn: async () => {
       const baseUrl = window.location.origin;
       const currency = settings?.currency || 'PKR';
       const brandName = settings?.storeName || 'New Era Herbals';
@@ -54,7 +55,15 @@ export const useCatalogExport = (selectedCategoryIds?: string[]) => {
         );
       }
 
-      return filteredProducts.map(product => {
+      // Fetch all product variants for all products
+      const { data: allVariants } = await supabase
+        .from('product_variants')
+        .select('*')
+        .eq('is_active', true);
+
+      const catalogEntries: CatalogProduct[] = [];
+
+      filteredProducts.forEach(product => {
         const mainImage = product.product_images?.find(img => img.sort_order === 0) 
           || product.product_images?.[0];
         const additionalImages = product.product_images
@@ -62,26 +71,54 @@ export const useCatalogExport = (selectedCategoryIds?: string[]) => {
           .map(img => img.image_url) || [];
 
         const category = product.product_categories?.[0]?.categories?.name || 'Herbal Products';
-        const availability = product.inventory_quantity > 0 ? 'in stock' : 'out of stock';
+        
+        // Get variants for this product
+        const productVariants = allVariants?.filter(v => v.product_id === product.id) || [];
 
-        return {
-          id: product.id,
-          title: product.name,
-          description: product.description || product.short_description,
-          price: product.price,
-          currency,
-          availability,
-          condition: 'new',
-          brand: brandName,
-          category,
-          image_url: mainImage?.image_url || '',
-          additional_images: additionalImages,
-          product_url: `${baseUrl}/product/${product.slug}`,
-          sku: product.sku,
-          inventory: product.inventory_quantity,
-          tags: product.tags
-        } as CatalogProduct;
+        // If product has variants, create catalog entry for each variant
+        if (productVariants.length > 0) {
+          productVariants.forEach(variant => {
+            catalogEntries.push({
+              id: variant.sku || variant.id,
+              title: `${product.name} - ${variant.name}`,
+              description: variant.description || product.description || product.short_description,
+              price: variant.price || product.price,
+              currency,
+              availability: variant.inventory_quantity > 0 ? 'in stock' : 'out of stock',
+              condition: 'new',
+              brand: brandName,
+              category,
+              image_url: mainImage?.image_url || '',
+              additional_images: additionalImages,
+              product_url: `${baseUrl}/product/${product.slug}`,
+              sku: variant.sku,
+              inventory: variant.inventory_quantity,
+              tags: product.tags
+            } as CatalogProduct);
+          });
+        } else {
+          // No variants - create single entry for parent product
+          catalogEntries.push({
+            id: product.sku || product.id,
+            title: product.name,
+            description: product.description || product.short_description,
+            price: product.price,
+            currency,
+            availability: product.inventory_quantity > 0 ? 'in stock' : 'out of stock',
+            condition: 'new',
+            brand: brandName,
+            category,
+            image_url: mainImage?.image_url || '',
+            additional_images: additionalImages,
+            product_url: `${baseUrl}/product/${product.slug}`,
+            sku: product.sku,
+            inventory: product.inventory_quantity,
+            tags: product.tags
+          } as CatalogProduct);
+        }
       });
+
+      return catalogEntries;
     },
     enabled: products.length > 0
   });

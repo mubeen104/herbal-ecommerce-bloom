@@ -288,24 +288,25 @@ function syncCatalogToPixel(platform: string, catalog: any[]) {
     switch (platform) {
       case 'meta_pixel':
         if (window.fbq) {
-          const topProducts = catalog.slice(0, 20);
           window.fbq('track', 'ViewContent', {
             content_type: 'product_group',
-            content_ids: topProducts
+            content_ids: catalog
               .map(p => p.sku || p.id)
-              .filter(id => id && typeof id === 'string'),
-            contents: topProducts
+              .filter(id => id && typeof id === 'string')
+              .slice(0, 100), // Meta has a 100 content_ids limit
+            contents: catalog
               .map(p => ({
                 id: p.sku || p.id,
                 quantity: 1,
                 item_price: parseFloat(p.price)
               }))
-              .filter(item => item.id && !isNaN(item.item_price)),
-            num_items: topProducts.length,
+              .filter(item => item.id && !isNaN(item.item_price))
+              .slice(0, 100), // Meta has a 100 contents limit
+            num_items: catalog.length,
             currency: catalog[0]?.currency || 'PKR',
-            value: topProducts.reduce((sum, p) => sum + parseFloat(p.price), 0)
+            value: catalog.reduce((sum, p) => sum + parseFloat(p.price), 0)
           });
-          console.info('📦 Meta: Catalog synced with SKUs -', topProducts.length, 'products');
+          console.info('📦 Meta: Catalog synced with SKUs -', catalog.length, 'products');
         }
         break;
 
