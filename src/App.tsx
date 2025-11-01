@@ -10,7 +10,6 @@ import WhatsAppButton from "@/components/WhatsAppButton";
 import ScrollToTop from "@/components/ScrollToTop";
 import { UnifiedPixelTracker } from "@/components/UnifiedPixelTracker";
 import { PixelDebugger } from "@/components/PixelDebugger";
-import { MetadataManager } from "@/components/MetadataManager";
 import { CatalogSync } from "@/components/CatalogSync";
 import { useEffect } from "react";
 import Index from "./pages/Index";
@@ -60,14 +59,6 @@ const App = () => (
             <ScrollToTop />
             <UnifiedPixelTracker />
             <CatalogSync />
-            <MetadataManager 
-              siteInfo={{
-                name: 'New Era Herbals',
-                currency: 'PKR',
-                language: 'en-US',
-                country: 'PK'
-              }}
-            />
             <PageViewTracker />
             <PixelDebugger />
           <WhatsAppButton />
