@@ -1,10 +1,5 @@
 import { useEffect } from 'react';
-import { pixelTracking } from '@/components/UnifiedPixelTracker';
 
-/**
- * Custom hook for tracking shop page events
- * Tracks product list views, category views, and search results
- */
 export const useShopTracking = (
   products: any[] = [],
   category?: string,
@@ -13,7 +8,6 @@ export const useShopTracking = (
   useEffect(() => {
     if (!products || products.length === 0) return;
 
-    // Track product list view
     const productData = products.slice(0, 10).map(product => ({
       id: product.sku || product.id,
       name: product.name,
@@ -23,14 +17,10 @@ export const useShopTracking = (
       brand: 'New Era Herbals'
     }));
 
-    // Track category view if category is selected
     if (category && category !== 'all') {
-      console.info('🏷️ Category View:', category, products.length, 'products');
-      
-      // Track with Meta Pixel - CRITICAL: proper format
+      const validProducts = productData.filter(p => p.id && !isNaN(p.price));
+
       if (window.fbq) {
-        const validProducts = productData.filter(p => p.id && !isNaN(p.price));
-        
         window.fbq('track', 'ViewContent', {
           content_type: 'product_group',
           content_ids: validProducts.map(p => String(p.id)),
@@ -45,7 +35,6 @@ export const useShopTracking = (
         });
       }
 
-      // Track with Google Ads
       if (window.gtag) {
         window.gtag('event', 'view_item_list', {
           item_list_name: category,
@@ -62,14 +51,10 @@ export const useShopTracking = (
       }
     }
 
-    // Track search if search term is present
     if (searchTerm && searchTerm.trim()) {
-      console.info('🔍 Search:', searchTerm, products.length, 'results');
-      
-      // Track with Meta Pixel - CRITICAL: proper format
+      const validProducts = productData.filter(p => p.id && !isNaN(p.price));
+
       if (window.fbq) {
-        const validProducts = productData.filter(p => p.id && !isNaN(p.price));
-        
         window.fbq('track', 'Search', {
           search_string: searchTerm,
           content_type: 'product',
@@ -85,7 +70,6 @@ export const useShopTracking = (
         });
       }
 
-      // Track with Google Ads
       if (window.gtag) {
         window.gtag('event', 'search', {
           search_term: searchTerm,
@@ -93,6 +77,5 @@ export const useShopTracking = (
         });
       }
     }
-
   }, [products, category, searchTerm]);
 };

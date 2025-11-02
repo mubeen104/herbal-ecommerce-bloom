@@ -13,7 +13,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import CheckoutOptionsModal from "@/components/CheckoutOptionsModal";
-import { useEnhancedTracking } from "@/hooks/useEnhancedTracking";
+import { usePixelTracking } from "@/hooks/usePixelTracking";
 const Cart = () => {
   const navigate = useNavigate();
   const {

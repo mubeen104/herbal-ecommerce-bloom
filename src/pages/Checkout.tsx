@@ -16,7 +16,7 @@ import CouponInput from "@/components/CouponInput";
 import AddressSelector from "@/components/AddressSelector";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
-import { useEnhancedTracking } from "@/hooks/useEnhancedTracking";
+import { usePixelTracking } from "@/hooks/usePixelTracking";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { useQuery } from "@tanstack/react-query";
@@ -50,7 +50,7 @@ const Checkout = () => {
   const { taxRate, shippingRate, freeShippingThreshold, currency } = useStoreSettings();
   const { toast } = useToast();
   const { user } = useAuth();
-  const { trackPurchase, trackInitiateCheckout } = useEnhancedTracking();
+  const { trackPurchase, trackInitiateCheckout } = usePixelTracking();
   
   // Check for direct product checkout
   const isDirectCheckout = searchParams.get('directProduct') === 'true';
