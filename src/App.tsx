@@ -8,10 +8,8 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import ScrollToTop from "@/components/ScrollToTop";
-import { UnifiedPixelTracker } from "@/components/UnifiedPixelTracker";
+import { ImprovedPixelTracker } from "@/components/ImprovedPixelTracker";
 import { PixelDebugger } from "@/components/PixelDebugger";
-import { CatalogSync } from "@/components/CatalogSync";
-import { useEffect } from "react";
 import Index from "./pages/Index";
 import Shop from "./pages/Shop";
 import Contact from "./pages/Contact";
@@ -57,9 +55,7 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <ScrollToTop />
-            <UnifiedPixelTracker />
-            <CatalogSync />
-            <PageViewTracker />
+            <ImprovedPixelTracker />
             <PixelDebugger />
           <WhatsAppButton />
           <Routes>
@@ -104,69 +100,5 @@ const App = () => (
     </HelmetProvider>
   </QueryClientProvider>
 );
-
-// Enhanced page view tracker with deduplication
-const PageViewTracker = () => {
-  const location = useLocation();
-
-  useEffect(() => {
-    // Wait for pixels to be loaded and initialized
-    const timer = setTimeout(() => {
-      const pageData = {
-        page_path: location.pathname,
-        page_location: window.location.href,
-        page_title: document.title
-      };
-
-      // Track page view with all enabled pixels
-      if (window.gtag) {
-        window.gtag('event', 'page_view', pageData);
-      }
-
-      if (window.fbq) {
-        window.fbq('track', 'PageView');
-        console.info('📘 Meta Pixel PageView tracked');
-      }
-
-      if (window.ttq) {
-        window.ttq.page();
-      }
-
-      if (window.twq) {
-        window.twq('track', 'PageView');
-      }
-
-      if (window.pintrk) {
-        window.pintrk('page');
-      }
-
-      if (window.snaptr) {
-        window.snaptr('track', 'PAGE_VIEW');
-      }
-
-      if (window.lintrk) {
-        window.lintrk('track', { conversion_id: 'pageview' });
-      }
-
-      if (window.uetq) {
-        window.uetq.push('event', 'page_view', pageData);
-      }
-
-      if (window.rdt) {
-        window.rdt('track', 'PageVisit');
-      }
-
-      if (window.qp) {
-        window.qp('track', 'ViewContent');
-      }
-
-      console.info('📄 Page view tracked:', location.pathname);
-    }, 800);
-
-    return () => clearTimeout(timer);
-  }, [location]);
-
-  return null;
-};
 
 export default App;

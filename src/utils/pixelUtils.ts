@@ -1,4 +1,59 @@
-// Utility functions for Meta Pixel enhanced matching
+// Utility functions for Meta Pixel enhanced matching and event validation
+
+export interface StandardizedEventData {
+  content_ids?: string[];
+  content_name?: string;
+  content_type?: string;
+  content_category?: string;
+  currency: string;
+  value: number;
+  num_items?: number;
+  contents?: Array<{
+    id: string;
+    quantity: number;
+    item_price: number;
+  }>;
+}
+
+export interface StandardizedProductData {
+  id: string;
+  name: string;
+  price: number;
+  currency: string;
+  quantity?: number;
+  category?: string;
+  brand?: string;
+}
+
+/**
+ * Validate and standardize product ID
+ */
+export const standardizeProductId = (product: any): string => {
+  return String(product.sku || product.id || product.product_id || '');
+};
+
+/**
+ * Normalize currency code
+ */
+export const normalizeCurrency = (currency: string): string => {
+  const currencyMap: { [key: string]: string } = {
+    'Rs': 'PKR',
+    'rs': 'PKR',
+    'PKR': 'PKR',
+    'USD': 'USD',
+    '$': 'USD'
+  };
+  return currencyMap[currency] || 'PKR';
+};
+
+/**
+ * Validate event data before sending
+ */
+export const validateEventData = (data: any): boolean => {
+  if (!data.currency || !data.value) return false;
+  if (isNaN(parseFloat(data.value))) return false;
+  return true;
+};
 
 /**
  * SHA-256 hash function for Meta Pixel advanced matching
