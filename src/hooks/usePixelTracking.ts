@@ -2,10 +2,6 @@ import { useCallback } from 'react';
 import { useEnabledPixels } from './useAdvertisingPixels';
 import { trackPixelEvent } from './usePixelPerformance';
 
-/**
- * Modern pixel tracking hook - Unified interface for all advertising pixels
- * Works seamlessly like Shopify's tracking system with performance tracking
- */
 export const usePixelTracking = () => {
   const { data: enabledPixels } = useEnabledPixels();
 
@@ -19,33 +15,26 @@ export const usePixelTracking = () => {
   };
 
   const trackViewContent = useCallback((productData: {
-    product_id: string; // Changed from 'id' to match actual usage (SKU or UUID)
-    id?: string; // Backward compatibility
+    product_id: string;
     name: string;
     price: number;
     currency: string;
     category?: string;
     brand?: string;
-    availability?: string;
-    imageUrl?: string;
   }) => {
-    const productId = productData.product_id || productData.id || '';
     const data = {
-      content_ids: [productId],
+      content_ids: [productData.product_id],
       content_name: productData.name,
       content_type: 'product',
       content_category: productData.category,
       currency: productData.currency,
       value: productData.price,
-      item_id: productId,
+      item_id: productData.product_id,
       item_name: productData.name,
       item_brand: productData.brand,
-      price: productData.price,
-      availability: productData.availability,
-      image_link: productData.imageUrl
+      price: productData.price
     };
 
-    // Google Ads
     if (window.gtag) {
       window.gtag('event', 'view_item', {
         currency: data.currency,
@@ -60,7 +49,6 @@ export const usePixelTracking = () => {
       });
     }
 
-    // Meta Pixel
     if (window.fbq) {
       window.fbq('track', 'ViewContent', {
         content_ids: data.content_ids,
@@ -72,10 +60,9 @@ export const usePixelTracking = () => {
       });
     }
 
-    // TikTok
     if (window.ttq) {
       window.ttq.track('ViewContent', {
-        content_id: productId,
+        content_id: productData.product_id,
         content_name: productData.name,
         content_category: productData.category,
         price: productData.price,
@@ -84,7 +71,6 @@ export const usePixelTracking = () => {
       });
     }
 
-    // Other pixels
     if (window.twq) window.twq('track', 'ViewContent', data);
     if (window.pintrk) window.pintrk('track', 'pagevisit', data);
     if (window.snaptr) window.snaptr('track', 'VIEW_CONTENT', data);
@@ -92,25 +78,21 @@ export const usePixelTracking = () => {
     if (window.rdt) window.rdt('track', 'ViewContent', data);
     if (window.qp) window.qp('track', 'ViewContent', data);
 
-    // Track to database
     enabledPixels?.forEach(pixel => {
       trackPixelEvent({
         pixelId: pixel.id,
         eventType: 'view_content',
         eventValue: productData.price,
         currency: productData.currency,
-        productId: productId,
+        productId: productData.product_id,
         sessionId: getSessionId(),
         metadata: { product_name: productData.name, category: productData.category, brand: productData.brand }
-      }).catch(console.error);
+      }).catch(() => {});
     });
-
-    console.info('👁️ Product view tracked:', productData.name);
   }, [enabledPixels]);
 
   const trackAddToCart = useCallback((productData: {
-    product_id: string; // Changed from 'id' to match actual usage (SKU or UUID)
-    id?: string; // Backward compatibility
+    product_id: string;
     name: string;
     price: number;
     currency: string;
@@ -118,16 +100,14 @@ export const usePixelTracking = () => {
     category?: string;
     brand?: string;
   }) => {
-    const productId = productData.product_id || productData.id || '';
     const totalValue = productData.price * productData.quantity;
 
-    // Google Ads
     if (window.gtag) {
       window.gtag('event', 'add_to_cart', {
         currency: productData.currency,
         value: totalValue,
         items: [{
-          item_id: productId,
+          item_id: productData.product_id,
           item_name: productData.name,
           item_brand: productData.brand,
           item_category: productData.category,
@@ -137,26 +117,24 @@ export const usePixelTracking = () => {
       });
     }
 
-    // Meta Pixel
     if (window.fbq) {
       window.fbq('track', 'AddToCart', {
-        content_ids: [productId],
+        content_ids: [productData.product_id],
         content_name: productData.name,
         content_type: 'product',
         currency: productData.currency,
         value: totalValue,
         contents: [{
-          id: productId,
+          id: productData.product_id,
           quantity: productData.quantity,
           item_price: productData.price
         }]
       });
     }
 
-    // TikTok
     if (window.ttq) {
       window.ttq.track('AddToCart', {
-        content_id: productId,
+        content_id: productData.product_id,
         content_name: productData.name,
         price: productData.price,
         quantity: productData.quantity,
@@ -165,52 +143,45 @@ export const usePixelTracking = () => {
       });
     }
 
-    // Other pixels
     if (window.twq) window.twq('track', 'AddToCart', { value: totalValue, currency: productData.currency });
-    if (window.pintrk) window.pintrk('track', 'addtocart', { value: totalValue, currency: productData.currency, product_id: productId });
-    if (window.snaptr) window.snaptr('track', 'ADD_CART', { item_ids: [productId], price: totalValue, currency: productData.currency });
-    if (window.uetq) window.uetq.push('event', 'add_to_cart', { ecomm_prodid: productId, ecomm_totalvalue: totalValue });
-    if (window.rdt) window.rdt('track', 'AddToCart', { itemCount: productData.quantity, value: totalValue, currency: productData.currency });
+    if (window.pintrk) window.pintrk('track', 'addtocart', { value: totalValue, currency: productData.currency });
+    if (window.snaptr) window.snaptr('track', 'ADD_CART', { price: totalValue, currency: productData.currency });
+    if (window.uetq) window.uetq.push('event', 'add_to_cart', { ecomm_totalvalue: totalValue });
+    if (window.rdt) window.rdt('track', 'AddToCart', { value: totalValue, currency: productData.currency });
     if (window.qp) window.qp('track', 'AddToCart', { value: totalValue, currency: productData.currency });
 
-    // Track to database
     enabledPixels?.forEach(pixel => {
       trackPixelEvent({
         pixelId: pixel.id,
         eventType: 'add_to_cart',
         eventValue: totalValue,
         currency: productData.currency,
-        productId: productId,
+        productId: productData.product_id,
         sessionId: getSessionId(),
-        metadata: { product_name: productData.name, quantity: productData.quantity, category: productData.category, brand: productData.brand }
-      }).catch(console.error);
+        metadata: { product_name: productData.name, quantity: productData.quantity }
+      }).catch(() => {});
     });
-
-    console.info('🛒 Add to cart tracked:', productData.name, 'x', productData.quantity);
   }, [enabledPixels]);
 
   const trackInitiateCheckout = useCallback((checkoutData: {
     value: number;
     currency: string;
     items: Array<{
-      product_id: string; // Changed from 'id' to match actual usage (SKU or UUID)
-      id?: string; // Backward compatibility
-      product_name: string; // Changed from 'name'
-      name?: string; // Backward compatibility
+      product_id: string;
+      name: string;
       price: number;
       quantity: number;
       category?: string;
       brand?: string;
     }>;
   }) => {
-    // Google Ads
     if (window.gtag) {
       window.gtag('event', 'begin_checkout', {
         currency: checkoutData.currency,
         value: checkoutData.value,
         items: checkoutData.items.map(item => ({
-          item_id: item.product_id || item.id,
-          item_name: item.product_name || item.name,
+          item_id: item.product_id,
+          item_name: item.name,
           item_brand: item.brand,
           item_category: item.category,
           price: item.price,
@@ -219,27 +190,25 @@ export const usePixelTracking = () => {
       });
     }
 
-    // Meta Pixel
     if (window.fbq) {
       window.fbq('track', 'InitiateCheckout', {
-        content_ids: checkoutData.items.map(i => i.product_id || i.id),
+        content_ids: checkoutData.items.map(i => i.product_id),
         currency: checkoutData.currency,
         value: checkoutData.value,
         num_items: checkoutData.items.length,
         contents: checkoutData.items.map(i => ({
-          id: i.product_id || i.id,
+          id: i.product_id,
           quantity: i.quantity,
           item_price: i.price
         }))
       });
     }
 
-    // TikTok
     if (window.ttq) {
       window.ttq.track('InitiateCheckout', {
         contents: checkoutData.items.map(i => ({
-          content_id: i.product_id || i.id,
-          content_name: i.product_name || i.name,
+          content_id: i.product_id,
+          content_name: i.name,
           price: i.price,
           quantity: i.quantity
         })),
@@ -248,15 +217,13 @@ export const usePixelTracking = () => {
       });
     }
 
-    // Other pixels
     if (window.twq) window.twq('track', 'InitiateCheckout', { value: checkoutData.value, currency: checkoutData.currency });
-    if (window.pintrk) window.pintrk('track', 'checkout', { value: checkoutData.value, currency: checkoutData.currency, order_quantity: checkoutData.items.length });
+    if (window.pintrk) window.pintrk('track', 'checkout', { value: checkoutData.value, currency: checkoutData.currency });
     if (window.snaptr) window.snaptr('track', 'START_CHECKOUT', { price: checkoutData.value, currency: checkoutData.currency });
     if (window.uetq) window.uetq.push('event', 'begin_checkout', { ecomm_totalvalue: checkoutData.value });
     if (window.rdt) window.rdt('track', 'InitiateCheckout', { value: checkoutData.value, currency: checkoutData.currency });
     if (window.qp) window.qp('track', 'InitiateCheckout', { value: checkoutData.value, currency: checkoutData.currency });
 
-    // Track to database
     enabledPixels?.forEach(pixel => {
       trackPixelEvent({
         pixelId: pixel.id,
@@ -264,23 +231,18 @@ export const usePixelTracking = () => {
         eventValue: checkoutData.value,
         currency: checkoutData.currency,
         sessionId: getSessionId(),
-        metadata: { items: checkoutData.items, num_items: checkoutData.items.length }
-      }).catch(console.error);
+        metadata: { num_items: checkoutData.items.length }
+      }).catch(() => {});
     });
-
-    console.info('💳 Checkout initiated:', checkoutData.value, checkoutData.currency);
   }, [enabledPixels]);
 
   const trackPurchase = useCallback((orderData: {
-    order_id: string; // Changed from 'orderId' to match actual usage
-    orderId?: string; // Backward compatibility
+    order_id: string;
     value: number;
     currency: string;
     items: Array<{
-      product_id: string; // Changed from 'id' to match actual usage (SKU or UUID)
-      id?: string; // Backward compatibility
-      product_name: string; // Changed from 'name'
-      name?: string; // Backward compatibility
+      product_id: string;
+      name: string;
       price: number;
       quantity: number;
       category?: string;
@@ -288,21 +250,17 @@ export const usePixelTracking = () => {
     }>;
     shipping?: number;
     tax?: number;
-    coupon?: string;
   }) => {
-    const orderId = orderData.order_id || orderData.orderId || '';
-    // Google Ads
     if (window.gtag) {
       window.gtag('event', 'purchase', {
-        transaction_id: orderId,
+        transaction_id: orderData.order_id,
         currency: orderData.currency,
         value: orderData.value,
         shipping: orderData.shipping || 0,
         tax: orderData.tax || 0,
-        coupon: orderData.coupon,
         items: orderData.items.map(item => ({
-          item_id: item.product_id || item.id,
-          item_name: item.product_name || item.name,
+          item_id: item.product_id,
+          item_name: item.name,
           item_brand: item.brand,
           item_category: item.category,
           price: item.price,
@@ -311,28 +269,26 @@ export const usePixelTracking = () => {
       });
     }
 
-    // Meta Pixel
     if (window.fbq) {
       window.fbq('track', 'Purchase', {
-        content_ids: orderData.items.map(i => i.product_id || i.id),
+        content_ids: orderData.items.map(i => i.product_id),
         content_type: 'product',
         currency: orderData.currency,
         value: orderData.value,
         num_items: orderData.items.length,
         contents: orderData.items.map(i => ({
-          id: i.product_id || i.id,
+          id: i.product_id,
           quantity: i.quantity,
           item_price: i.price
         }))
       });
     }
 
-    // TikTok
     if (window.ttq) {
       window.ttq.track('PlaceAnOrder', {
         contents: orderData.items.map(i => ({
-          content_id: i.product_id || i.id,
-          content_name: i.product_name || i.name,
+          content_id: i.product_id,
+          content_name: i.name,
           price: i.price,
           quantity: i.quantity
         })),
@@ -341,54 +297,41 @@ export const usePixelTracking = () => {
       });
     }
 
-    // Other pixels
-    if (window.twq) window.twq('track', 'Purchase', { value: orderData.value, currency: orderData.currency, conversion_id: orderId });
-    if (window.pintrk) window.pintrk('track', 'checkout', { value: orderData.value, currency: orderData.currency, order_id: orderId });
-    if (window.snaptr) window.snaptr('track', 'PURCHASE', { transaction_id: orderId, price: orderData.value, currency: orderData.currency });
+    if (window.twq) window.twq('track', 'Purchase', { value: orderData.value, currency: orderData.currency });
+    if (window.pintrk) window.pintrk('track', 'checkout', { value: orderData.value, currency: orderData.currency });
+    if (window.snaptr) window.snaptr('track', 'PURCHASE', { transaction_id: orderData.order_id, price: orderData.value, currency: orderData.currency });
     if (window.uetq) window.uetq.push('event', 'purchase', { revenue_value: orderData.value, currency: orderData.currency });
-    if (window.rdt) window.rdt('track', 'Purchase', { transactionId: orderId, value: orderData.value, currency: orderData.currency });
+    if (window.rdt) window.rdt('track', 'Purchase', { transactionId: orderData.order_id, value: orderData.value, currency: orderData.currency });
     if (window.qp) window.qp('track', 'Purchase', { value: orderData.value, currency: orderData.currency });
 
-    // Track to database
     enabledPixels?.forEach(pixel => {
       trackPixelEvent({
         pixelId: pixel.id,
         eventType: 'purchase',
         eventValue: orderData.value,
         currency: orderData.currency,
-        orderId: orderId,
+        orderId: orderData.order_id,
         sessionId: getSessionId(),
-        metadata: { items: orderData.items, shipping: orderData.shipping, tax: orderData.tax, coupon: orderData.coupon, num_items: orderData.items.length }
-      }).catch(console.error);
+        metadata: { num_items: orderData.items.length, shipping: orderData.shipping, tax: orderData.tax }
+      }).catch(() => {});
     });
-
-    console.info('💰 Purchase tracked:', orderId, orderData.value, orderData.currency);
   }, [enabledPixels]);
 
-  const trackSearch = useCallback((searchTerm: string, resultsCount?: number) => {
-    const data = {
-      search_term: searchTerm,
-      content_type: 'product',
-      number_of_results: resultsCount
-    };
-
+  const trackSearch = useCallback((searchTerm: string) => {
     if (window.gtag) window.gtag('event', 'search', { search_term: searchTerm });
     if (window.fbq) window.fbq('track', 'Search', { search_string: searchTerm });
     if (window.ttq) window.ttq.track('Search', { query: searchTerm });
     if (window.pintrk) window.pintrk('track', 'search', { search_query: searchTerm });
     if (window.rdt) window.rdt('track', 'Search');
 
-    // Track to database
     enabledPixels?.forEach(pixel => {
       trackPixelEvent({
         pixelId: pixel.id,
         eventType: 'search',
         sessionId: getSessionId(),
-        metadata: { search_term: searchTerm, results_count: resultsCount }
-      }).catch(console.error);
+        metadata: { search_term: searchTerm }
+      }).catch(() => {});
     });
-
-    console.info('🔍 Search tracked:', searchTerm);
   }, [enabledPixels]);
 
   return {

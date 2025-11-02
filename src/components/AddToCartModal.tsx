@@ -7,7 +7,7 @@ import { ProductVariantSelector } from '@/components/ProductVariantSelector';
 import { useProductVariants, ProductVariant } from '@/hooks/useProductVariants';
 import { useStoreSettings } from '@/hooks/useStoreSettings';
 import { useToast } from '@/hooks/use-toast';
-import { useEnhancedTracking } from '@/hooks/useEnhancedTracking';
+import { usePixelTracking } from '@/hooks/usePixelTracking';
 
 interface Product {
   id: string;
@@ -44,7 +44,7 @@ export const AddToCartModal: React.FC<AddToCartModalProps> = ({
   const { data: variants } = useProductVariants(product.id);
   const { currency } = useStoreSettings();
   const { toast } = useToast();
-  const { trackAddToCart } = useEnhancedTracking();
+  const { trackAddToCart } = usePixelTracking();
 
   // Reset state when modal opens
   useEffect(() => {

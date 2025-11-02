@@ -8,8 +8,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import ScrollToTop from "@/components/ScrollToTop";
-import { ImprovedPixelTracker } from "@/components/ImprovedPixelTracker";
-import { PixelDebugger } from "@/components/PixelDebugger";
+import { PixelTracker } from "@/components/PixelTracker";
 import Index from "./pages/Index";
 import Shop from "./pages/Shop";
 import Contact from "./pages/Contact";
@@ -55,9 +54,8 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <ScrollToTop />
-            <ImprovedPixelTracker />
-            <PixelDebugger />
-          <WhatsAppButton />
+            <PixelTracker />
+            <WhatsAppButton />
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/shop" element={<Shop />} />
