@@ -72,11 +72,6 @@ const adminMenuItems = [{
   icon: Rss,
   badge: null
 }, {
-  title: 'Catalog Export',
-  url: '/admin/catalog',
-  icon: Database,
-  badge: null
-}, {
   title: 'Settings',
   url: '/admin/settings',
   icon: Settings,

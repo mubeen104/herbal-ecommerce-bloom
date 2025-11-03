@@ -48,8 +48,8 @@ export const useCatalogExport = (selectedCategoryIds?: string[]) => {
       // Filter products by selected categories if specified
       let filteredProducts = products;
       if (selectedCategoryIds && selectedCategoryIds.length > 0) {
-        filteredProducts = products.filter(product => 
-          product.product_categories?.some(pc => 
+        filteredProducts = products.filter(product =>
+          product.product_categories?.some(pc =>
             selectedCategoryIds.includes(pc.category_id)
           )
         );
@@ -64,11 +64,22 @@ export const useCatalogExport = (selectedCategoryIds?: string[]) => {
       const catalogEntries: CatalogProduct[] = [];
 
       filteredProducts.forEach(product => {
-        const mainImage = product.product_images?.find(img => img.sort_order === 0) 
+        const mainImage = product.product_images?.find(img => img.sort_order === 0)
           || product.product_images?.[0];
+
+        // Ensure absolute URLs for images
+        const imageUrl = mainImage?.image_url
+          ? (mainImage.image_url.startsWith('http')
+              ? mainImage.image_url
+              : `${baseUrl}${mainImage.image_url.startsWith('/') ? '' : '/'}${mainImage.image_url}`)
+          : '';
+
         const additionalImages = product.product_images
           ?.filter(img => img.sort_order !== 0)
-          .map(img => img.image_url) || [];
+          .map(img => img.image_url.startsWith('http')
+            ? img.image_url
+            : `${baseUrl}${img.image_url.startsWith('/') ? '' : '/'}${img.image_url}`)
+          || [];
 
         const category = product.product_categories?.[0]?.categories?.name || 'Herbal Products';
         
@@ -88,7 +99,7 @@ export const useCatalogExport = (selectedCategoryIds?: string[]) => {
               condition: 'new',
               brand: brandName,
               category,
-              image_url: mainImage?.image_url || '',
+              image_url: imageUrl,
               additional_images: additionalImages,
               product_url: `${baseUrl}/product/${product.slug}`,
               sku: variant.sku,
@@ -108,7 +119,7 @@ export const useCatalogExport = (selectedCategoryIds?: string[]) => {
             condition: 'new',
             brand: brandName,
             category,
-            image_url: mainImage?.image_url || '',
+            image_url: imageUrl,
             additional_images: additionalImages,
             product_url: `${baseUrl}/product/${product.slug}`,
             sku: product.sku,

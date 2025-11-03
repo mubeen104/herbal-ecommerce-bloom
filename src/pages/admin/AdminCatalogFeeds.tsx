@@ -9,6 +9,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   useCatalogFeeds,
   useFeedHistory,
@@ -18,7 +20,8 @@ import {
   FeedFormat,
 } from '@/hooks/useCatalogFeeds';
 import { useCategories } from '@/hooks/useCategories';
-import { Plus, Copy, ExternalLink, Trash2, Edit, TestTube2, Clock, CheckCircle2, XCircle, Link as LinkIcon } from 'lucide-react';
+import { useCatalogExport, CatalogFormat } from '@/hooks/useCatalogExport';
+import { Plus, Copy, ExternalLink, Trash2, Edit, TestTube2, Clock, CheckCircle2, XCircle, Link as LinkIcon, Download, FileJson, FileSpreadsheet, FileCode2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { generateSlug, isValidFeedSlug, getRecommendedCacheDuration } from '@/utils/catalogUtils';
 
@@ -28,6 +31,17 @@ export default function AdminCatalogFeeds() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [editingFeed, setEditingFeed] = useState<string | null>(null);
   const [selectedFeedForHistory, setSelectedFeedForHistory] = useState<string | null>(null);
+
+  // Manual export state
+  const [selectedManualFormat, setSelectedManualFormat] = useState<CatalogFormat>('meta');
+  const [selectedManualCategories, setSelectedManualCategories] = useState<string[]>([]);
+  const {
+    catalogData,
+    isLoading: exportLoading,
+    exportAsJSON,
+    exportAsCSV,
+    exportAsXML
+  } = useCatalogExport(selectedManualCategories.length > 0 ? selectedManualCategories : undefined);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -105,16 +119,77 @@ export default function AdminCatalogFeeds() {
     }
   };
 
+  const handleManualExport = (type: 'json' | 'csv' | 'xml') => {
+    try {
+      if (type === 'json') {
+        exportAsJSON(selectedManualFormat);
+      } else if (type === 'csv') {
+        exportAsCSV(selectedManualFormat);
+      } else {
+        exportAsXML(selectedManualFormat);
+      }
+      const categoryInfo = selectedManualCategories.length > 0
+        ? ` (${selectedManualCategories.length} ${selectedManualCategories.length === 1 ? 'category' : 'categories'})`
+        : ' (all products)';
+      toast.success(`Catalog exported successfully as ${type.toUpperCase()}${categoryInfo}`);
+    } catch (error) {
+      toast.error('Failed to export catalog');
+      console.error('Export error:', error);
+    }
+  };
+
+  const toggleManualCategory = (categoryId: string) => {
+    setSelectedManualCategories(prev =>
+      prev.includes(categoryId)
+        ? prev.filter(id => id !== categoryId)
+        : [...prev, categoryId]
+    );
+  };
+
+  const toggleAllManualCategories = () => {
+    if (selectedManualCategories.length === categories.length && categories.length > 0) {
+      setSelectedManualCategories([]);
+    } else {
+      setSelectedManualCategories(categories.map(c => c.id));
+    }
+  };
+
+  const MANUAL_PLATFORM_INFO = {
+    meta: { name: 'Meta (Facebook/Instagram)', icon: '📱' },
+    google: { name: 'Google Merchant Center', icon: '🔍' },
+    tiktok: { name: 'TikTok Ads', icon: '🎵' },
+    pinterest: { name: 'Pinterest Catalogs', icon: '📌' },
+    snapchat: { name: 'Snapchat Ads', icon: '👻' },
+    microsoft: { name: 'Microsoft Advertising', icon: '🔷' },
+    twitter: { name: 'Twitter Ads', icon: '🐦' },
+    linkedin: { name: 'LinkedIn Ads', icon: '💼' },
+    generic: { name: 'Generic Format', icon: '📦' }
+  };
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Catalog Feed Management</h1>
-          <p className="text-muted-foreground mt-2">
-            Create automated product feeds for advertising platforms
-          </p>
-        </div>
-        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+      <div>
+        <h1 className="text-3xl font-bold">Catalog Management</h1>
+        <p className="text-muted-foreground mt-2">
+          Manage automated feeds and export catalogs for advertising platforms
+        </p>
+      </div>
+
+      <Tabs defaultValue="feeds" className="space-y-6">
+        <TabsList>
+          <TabsTrigger value="feeds">Automated Feeds</TabsTrigger>
+          <TabsTrigger value="manual">Manual Export</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="feeds" className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-2xl font-semibold">Automated Product Feeds</h2>
+              <p className="text-muted-foreground mt-1">
+                Create permanent feed URLs that update automatically
+              </p>
+            </div>
+            <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
           <DialogTrigger asChild>
             <Button>
               <Plus className="h-4 w-4 mr-2" />
@@ -406,35 +481,193 @@ export default function AdminCatalogFeeds() {
         </CardContent>
       </Card>
 
-      {/* Integration Guide */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Platform Integration Guide</CardTitle>
-          <CardDescription>How to use your feed URLs with advertising platforms</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {PLATFORM_OPTIONS.map((platform) => (
-            <div key={platform.value} className="flex items-start gap-3 p-3 rounded-lg border">
-              <span className="text-2xl">{platform.icon}</span>
-              <div className="flex-1">
-                <h4 className="font-medium">{platform.label}</h4>
-                <p className="text-sm text-muted-foreground mt-1">
-                  {platform.value === 'meta' &&
-                    'Upload to Commerce Manager → Catalog → Add Items → Data Source → Schedule Upload'}
-                  {platform.value === 'google' && 'Upload to Google Merchant Center → Products → Feeds → Add Feed'}
-                  {platform.value === 'tiktok' && 'Upload to TikTok Ads Manager → Assets → Catalogs → Create Catalog'}
-                  {platform.value === 'pinterest' && 'Upload to Pinterest Business Hub → Catalogs → Create Feed'}
-                  {platform.value === 'snapchat' && 'Upload to Snapchat Ads Manager → Assets → Catalog → Upload Products'}
-                  {platform.value === 'microsoft' && 'Upload to Microsoft Advertising → Tools → Catalog → Import Products'}
-                  {platform.value === 'twitter' && 'Upload to Twitter Ads Manager → Tools → Catalog → Upload'}
-                  {platform.value === 'linkedin' && 'Upload to LinkedIn Campaign Manager → Account Assets → Catalogs'}
-                  {platform.value === 'generic' && 'Standard format for custom integrations and manual imports'}
-                </p>
+          {/* Integration Guide */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Platform Integration Guide</CardTitle>
+              <CardDescription>How to use your feed URLs with advertising platforms</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {PLATFORM_OPTIONS.map((platform) => (
+                <div key={platform.value} className="flex items-start gap-3 p-3 rounded-lg border">
+                  <span className="text-2xl">{platform.icon}</span>
+                  <div className="flex-1">
+                    <h4 className="font-medium">{platform.label}</h4>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {platform.value === 'meta' &&
+                        'Upload to Commerce Manager → Catalog → Add Items → Data Source → Schedule Upload'}
+                      {platform.value === 'google' && 'Upload to Google Merchant Center → Products → Feeds → Add Feed'}
+                      {platform.value === 'tiktok' && 'Upload to TikTok Ads Manager → Assets → Catalogs → Create Catalog'}
+                      {platform.value === 'pinterest' && 'Upload to Pinterest Business Hub → Catalogs → Create Feed'}
+                      {platform.value === 'snapchat' && 'Upload to Snapchat Ads Manager → Assets → Catalog → Upload Products'}
+                      {platform.value === 'microsoft' && 'Upload to Microsoft Advertising → Tools → Catalog → Import Products'}
+                      {platform.value === 'twitter' && 'Upload to Twitter Ads Manager → Tools → Catalog → Upload'}
+                      {platform.value === 'linkedin' && 'Upload to LinkedIn Campaign Manager → Account Assets → Catalogs'}
+                      {platform.value === 'generic' && 'Standard format for custom integrations and manual imports'}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="manual" className="space-y-6">
+          <div>
+            <h2 className="text-2xl font-semibold">Manual Catalog Export</h2>
+            <p className="text-muted-foreground mt-1">
+              Download one-time catalog files for manual uploads
+            </p>
+          </div>
+
+          {/* Category Filter */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Filter by Category</CardTitle>
+              <CardDescription>
+                Select specific categories to export, or leave all unchecked to export all products
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="select-all-manual"
+                    checked={selectedManualCategories.length === categories.length && categories.length > 0}
+                    onCheckedChange={toggleAllManualCategories}
+                  />
+                  <Label htmlFor="select-all-manual" className="font-semibold cursor-pointer">
+                    Select All Categories
+                  </Label>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 pt-2">
+                  {categories.map(category => (
+                    <div key={category.id} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`manual-${category.id}`}
+                        checked={selectedManualCategories.includes(category.id)}
+                        onCheckedChange={() => toggleManualCategory(category.id)}
+                      />
+                      <Label htmlFor={`manual-${category.id}`} className="cursor-pointer">
+                        {category.name}
+                      </Label>
+                    </div>
+                  ))}
+                </div>
+                {selectedManualCategories.length > 0 && (
+                  <p className="text-sm text-muted-foreground pt-2">
+                    {selectedManualCategories.length} {selectedManualCategories.length === 1 ? 'category' : 'categories'} selected • {catalogData.length} products
+                  </p>
+                )}
               </div>
-            </div>
-          ))}
-        </CardContent>
-      </Card>
+            </CardContent>
+          </Card>
+
+          {/* Export Options */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Export Catalog</CardTitle>
+              <CardDescription>
+                Select a platform format and file type to download your catalog
+                {selectedManualCategories.length > 0 && ` (${catalogData.length} products from selected categories)`}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="manual-platform">Platform Format</Label>
+                <Select
+                  value={selectedManualFormat}
+                  onValueChange={(value) => setSelectedManualFormat(value as CatalogFormat)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select platform" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(MANUAL_PLATFORM_INFO).map(([key, info]) => (
+                      <SelectItem key={key} value={key}>
+                        <span className="flex items-center gap-2">
+                          <span>{info.icon}</span>
+                          <span>{info.name}</span>
+                        </span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <Separator />
+
+              <div className="grid gap-3 md:grid-cols-3">
+                <Button
+                  onClick={() => handleManualExport('json')}
+                  disabled={exportLoading || catalogData.length === 0}
+                  className="w-full"
+                >
+                  <FileJson className="h-4 w-4 mr-2" />
+                  Export as JSON
+                </Button>
+
+                <Button
+                  onClick={() => handleManualExport('csv')}
+                  disabled={exportLoading || catalogData.length === 0}
+                  className="w-full"
+                >
+                  <FileSpreadsheet className="h-4 w-4 mr-2" />
+                  Export as CSV
+                </Button>
+
+                <Button
+                  onClick={() => handleManualExport('xml')}
+                  disabled={exportLoading || catalogData.length === 0}
+                  className="w-full"
+                >
+                  <FileCode2 className="h-4 w-4 mr-2" />
+                  Export as XML
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Catalog Preview */}
+          {catalogData.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Catalog Preview</CardTitle>
+                <CardDescription>
+                  First 5 products in your catalog
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {catalogData.slice(0, 5).map((product) => (
+                    <div key={product.id} className="flex items-center gap-3 p-3 rounded-lg border">
+                      {product.image_url && (
+                        <img
+                          src={product.image_url}
+                          alt={product.title}
+                          className="w-16 h-16 object-cover rounded"
+                        />
+                      )}
+                      <div className="flex-1">
+                        <h4 className="font-medium">{product.title}</h4>
+                        <p className="text-sm text-muted-foreground">
+                          {product.category} • {product.price} {product.currency}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {product.availability} • SKU: {product.sku || 'N/A'}
+                        </p>
+                      </div>
+                      <Badge variant={product.availability === 'in stock' ? 'default' : 'secondary'}>
+                        {product.availability}
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
