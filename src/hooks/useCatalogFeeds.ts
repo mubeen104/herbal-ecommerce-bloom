@@ -121,25 +121,39 @@ export const useCatalogFeeds = () => {
     }
   });
 
-  const getFeedUrl = (feedSlug: string, format: FeedFormat = 'xml') => {
+  const getFeedUrl = (feedSlug: string, format?: FeedFormat) => {
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-    return `${supabaseUrl}/functions/v1/catalog-feed/${feedSlug}`;
+    const baseUrl = `${supabaseUrl}/functions/v1/catalog-feed/${feedSlug}`;
+    return format ? `${baseUrl}?format=${format}` : baseUrl;
   };
 
   const testFeed = async (feedSlug: string) => {
     try {
-      const url = getFeedUrl(feedSlug);
+      const url = getFeedUrl(feedSlug, 'json');
       const response = await fetch(url);
 
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Feed test failed');
+        const errorText = await response.text();
+        let errorMessage = 'Feed test failed';
+        try {
+          const error = JSON.parse(errorText);
+          errorMessage = error.error || errorMessage;
+        } catch {
+          errorMessage = errorText || errorMessage;
+        }
+        throw new Error(errorMessage);
       }
 
       const productCount = response.headers.get('X-Product-Count');
       const generationTime = response.headers.get('X-Generation-Time-Ms');
 
-      toast.success(`Feed test successful! ${productCount} products generated in ${generationTime}ms`);
+      if (productCount && generationTime) {
+        toast.success(`Feed test successful! ${productCount} products generated in ${generationTime}ms`);
+      } else {
+        const data = await response.json();
+        const count = Array.isArray(data) ? data.length : 0;
+        toast.success(`Feed test successful! ${count} products generated`);
+      }
       return true;
     } catch (error: any) {
       toast.error(error.message || 'Feed test failed');

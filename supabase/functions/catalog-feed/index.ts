@@ -33,14 +33,21 @@ Deno.serve(async (req: Request) => {
     });
   }
 
+  const startTime = Date.now();
+
   try {
     const url = new URL(req.url);
-    const feedId = url.searchParams.get("feed_id");
-    const format = url.searchParams.get("format") || "csv";
 
-    if (!feedId) {
+    // Extract slug from path: /catalog-feed/{slug}
+    const pathParts = url.pathname.split('/');
+    const slug = pathParts[pathParts.length - 1];
+
+    // Allow format override via query parameter
+    const formatParam = url.searchParams.get("format");
+
+    if (!slug || slug === 'catalog-feed') {
       return new Response(
-        JSON.stringify({ error: "feed_id parameter is required" }),
+        JSON.stringify({ error: "Feed slug is required in URL path: /catalog-feed/{slug}" }),
         {
           status: 400,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -52,11 +59,11 @@ Deno.serve(async (req: Request) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Get feed configuration
+    // Get feed configuration by slug
     const { data: feed, error: feedError } = await supabase
       .from("catalog_feeds")
       .select("*")
-      .eq("id", feedId)
+      .eq("feed_url_slug", slug)
       .eq("is_active", true)
       .maybeSingle();
 
@@ -89,14 +96,26 @@ Deno.serve(async (req: Request) => {
       .eq("is_active", true);
 
     // Apply category filter if specified
+    // Note: Category filtering needs to be done post-query due to joined table limitations
+    let categoryFilterIds: string[] = [];
     if (feed.category_filter && Array.isArray(feed.category_filter) && feed.category_filter.length > 0) {
-      query = query.in("product_categories.category_id", feed.category_filter);
+      categoryFilterIds = feed.category_filter;
     }
 
     const { data: products, error: productsError } = await query;
 
     if (productsError) {
       throw productsError;
+    }
+
+    // Filter products by category if specified
+    let filteredProducts = products;
+    if (categoryFilterIds.length > 0 && products) {
+      filteredProducts = products.filter(product =>
+        product.product_categories?.some((pc: any) =>
+          categoryFilterIds.includes(pc.category_id)
+        )
+      );
     }
 
     // Get settings for brand and currency
@@ -117,7 +136,7 @@ Deno.serve(async (req: Request) => {
 
     const catalogEntries: CatalogProduct[] = [];
 
-    products?.forEach((product) => {
+    filteredProducts?.forEach((product) => {
       const mainImage = product.product_images?.find((img: any) => img.sort_order === 0)
         || product.product_images?.[0];
 
@@ -186,32 +205,49 @@ Deno.serve(async (req: Request) => {
     // Format based on platform
     const formatted = formatForPlatform(feed.platform, catalogEntries);
 
+    const generationTime = Date.now() - startTime;
+
     // Update feed history
     await supabase.from("catalog_feed_history").insert({
-      feed_id: feedId,
+      feed_id: feed.id,
       product_count: catalogEntries.length,
       status: "success",
+      generation_time_ms: generationTime,
     });
 
-    // Update last generated timestamp
+    // Update last generated timestamp and increment generation count
     await supabase
       .from("catalog_feeds")
-      .update({ last_generated_at: new Date().toISOString() })
-      .eq("id", feedId);
+      .update({
+        last_generated_at: new Date().toISOString(),
+        generation_count: (feed.generation_count || 0) + 1
+      })
+      .eq("id", feed.id);
+
+    // Use format from query param if provided, otherwise use feed's default format
+    const outputFormat = formatParam || feed.format;
+
+    // Common response headers
+    const commonHeaders = {
+      ...corsHeaders,
+      "X-Product-Count": catalogEntries.length.toString(),
+      "X-Generation-Time-Ms": generationTime.toString(),
+      "Cache-Control": `public, max-age=${feed.cache_duration || 3600}`,
+    };
 
     // Return in requested format
-    if (format === "json") {
+    if (outputFormat === "json") {
       return new Response(JSON.stringify(formatted, null, 2), {
         headers: {
-          ...corsHeaders,
+          ...commonHeaders,
           "Content-Type": "application/json",
         },
       });
-    } else if (format === "xml") {
+    } else if (outputFormat === "xml") {
       const xml = generateXML(formatted, feed.platform);
       return new Response(xml, {
         headers: {
-          ...corsHeaders,
+          ...commonHeaders,
           "Content-Type": "application/xml",
         },
       });
@@ -220,8 +256,9 @@ Deno.serve(async (req: Request) => {
       const csv = generateCSV(formatted);
       return new Response(csv, {
         headers: {
-          ...corsHeaders,
+          ...commonHeaders,
           "Content-Type": "text/csv",
+          "Content-Disposition": `attachment; filename=\"catalog-${slug}-${new Date().toISOString().split('T')[0]}.csv\"`,
         },
       });
     }
