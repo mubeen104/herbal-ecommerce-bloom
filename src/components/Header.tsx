@@ -22,7 +22,7 @@ const Header = () => {
   const navigation = [
     { name: "Home", href: "/", hasMegaMenu: false },
     { name: "Shop", href: "/shop", hasMegaMenu: true },
-    { name: "Learn", href: "/blog", hasMegaMenu: false },
+    { name: "Blog", href: "/blog", hasMegaMenu: false },
     { name: "About", href: "/about", hasMegaMenu: false },
     { name: "Contact", href: "/contact", hasMegaMenu: false },
   ];
