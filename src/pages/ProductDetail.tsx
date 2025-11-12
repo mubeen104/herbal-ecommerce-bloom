@@ -275,7 +275,7 @@ const ProductDetail = () => {
           <div className="space-y-6">
             {/* Title */}
             <div>
-              <h1 className="text-3xl font-bold text-foreground mb-2">{product.name}</h1>
+              <h1 className="text-3xl font-bold text-foreground mb-2">{product.name} - Premium Organic Herbal Product</h1>
               {selectedVariant && <p className="text-lg text-muted-foreground">
                   Variant: {selectedVariant.name}
                 </p>}
@@ -307,7 +307,7 @@ const ProductDetail = () => {
 
             {/* Description */}
             <div>
-              <h3 className="text-lg font-semibold text-foreground mb-2">Description</h3>
+              <h2 className="text-lg font-semibold text-foreground mb-2">Product Description</h2>
               <p className="text-muted-foreground leading-relaxed">
                 {selectedVariant?.description || product.description || product.short_description}
               </p>
@@ -368,7 +368,7 @@ const ProductDetail = () => {
           <TabsContent value="features" className="mt-6">
             <Card>
               <CardContent className="p-6">
-                <h4 className="font-semibold text-foreground mb-4">Product Features</h4>
+                <h3 className="font-semibold text-foreground mb-4">Key Features & Benefits</h3>
                 {product.features ? <div className="prose max-w-none">
                     <p className="text-muted-foreground leading-relaxed whitespace-pre-line">
                       {product.features}
@@ -381,7 +381,7 @@ const ProductDetail = () => {
           <TabsContent value="ingredients" className="mt-6">
             <Card>
               <CardContent className="p-6">
-                <h4 className="font-semibold text-foreground mb-4">Ingredients</h4>
+                <h3 className="font-semibold text-foreground mb-4">Natural Ingredients</h3>
                 {product.ingredients ? <div className="prose max-w-none">
                     <p className="text-muted-foreground leading-relaxed whitespace-pre-line">
                       {product.ingredients}
@@ -394,7 +394,7 @@ const ProductDetail = () => {
           <TabsContent value="usage" className="mt-6">
             <Card>
               <CardContent className="p-6">
-                <h4 className="font-semibold text-foreground mb-4">Usage Instructions</h4>
+                <h3 className="font-semibold text-foreground mb-4">Usage Instructions & Dosage</h3>
                 {product.usage_instructions ? <div className="prose max-w-none">
                     <p className="text-muted-foreground leading-relaxed whitespace-pre-line">
                       {product.usage_instructions}
@@ -409,7 +409,7 @@ const ProductDetail = () => {
               <CardContent className="p-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <h4 className="font-semibold text-foreground mb-3">Product Information</h4>
+                    <h3 className="font-semibold text-foreground mb-3">Product Specifications</h3>
                     <dl className="space-y-2">
                       {product.sku && <div className="flex justify-between">
                           <dt className="text-sm text-muted-foreground">SKU:</dt>
@@ -425,7 +425,7 @@ const ProductDetail = () => {
                   </div>
                   
                   <div>
-                    <h4 className="font-semibold text-foreground mb-3">Shipping & Returns</h4>
+                    <h3 className="font-semibold text-foreground mb-3">Shipping & Return Policy</h3>
                     <div className="text-sm text-muted-foreground space-y-2">
                       <p>• Free standard shipping on orders over {currency} {freeShippingThreshold.toFixed(0)}</p>
                       <p>• Express shipping available at checkout</p>

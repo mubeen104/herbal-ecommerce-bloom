@@ -172,7 +172,7 @@ const AdminReviews = () => {
     return (
       <div className="space-y-6">
         <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold">Reviews</h1>
+          <h1 className="text-3xl font-bold">Reviews Management</h1>
         </div>
         <div className="animate-pulse space-y-4">
           {[...Array(5)].map((_, i) => (

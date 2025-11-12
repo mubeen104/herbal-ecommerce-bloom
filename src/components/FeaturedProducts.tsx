@@ -123,10 +123,10 @@ const FeaturedProducts = () => {
           <h2 className="text-4xl md:text-6xl font-bold text-foreground mb-6 tracking-tight">
             Featured
             <span className="block text-transparent bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text">
-              Herbal Products
+              Organic Herbal Products
             </span>
           </h2>
-          <h3 className="text-2xl md:text-3xl text-muted-foreground mb-4">Premium Organic Supplements & Natural Wellness</h3>
+          <p className="text-2xl md:text-3xl text-muted-foreground mb-4 font-semibold">Premium Organic Supplements & Natural Wellness Solutions</p>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto leading-relaxed">
             Discover our handpicked collection of organic herbal supplements, natural remedies, and ayurvedic wellness essentials that transform your daily health routine
           </p>
@@ -263,9 +263,10 @@ const FeaturedProducts = () => {
                         {/* Product Info */}
                         <div className="p-2 sm:p-4 lg:p-6">
                           <div className="mb-2 sm:mb-3 lg:mb-4">
-                            <h3 className="font-semibold text-sm sm:text-base lg:text-lg leading-tight line-clamp-2 group-hover:text-primary transition-colors duration-300 mb-1 sm:mb-2">
+                            <h3 className="sr-only">{product.name}</h3>
+                            <p className="font-semibold text-sm sm:text-base lg:text-lg leading-tight line-clamp-2 group-hover:text-primary transition-colors duration-300 mb-1 sm:mb-2">
                               {product.name}
-                            </h3>
+                            </p>
                             {product.short_description && <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2 leading-relaxed">
                                 {product.short_description}
                               </p>}

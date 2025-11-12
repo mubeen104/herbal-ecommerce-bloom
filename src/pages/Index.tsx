@@ -78,6 +78,7 @@ const Index = () => {
       <div className="min-h-screen bg-background">
         <Header />
         <main className="space-y-16">
+          <h1 className="sr-only">Premium Organic Herbal Products & Natural Wellness Solutions - New Era Herbals</h1>
           <Hero />
           <div className="animate-fade-in">
             <FeaturedProducts />

@@ -107,9 +107,9 @@ const Categories = () => {
           </div>
           
           <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-6 bg-gradient-to-r from-foreground via-accent to-foreground bg-clip-text text-transparent">
-            Shop Natural Products by Category
+            Shop Organic Herbal Products by Category
           </h2>
-          <h3 className="text-2xl md:text-3xl text-muted-foreground mb-4">Organic Supplements, Herbal Teas & Wellness Products</h3>
+          <p className="text-2xl md:text-3xl text-muted-foreground mb-4 font-semibold">Natural Supplements, Ayurvedic Herbs & Wellness Solutions</p>
           <p className="text-muted-foreground text-xl max-w-3xl mx-auto leading-relaxed">
             Explore our expertly curated categories of premium natural herbal products, organic wellness supplements, ayurvedic remedies, and holistic health solutions designed to support your healthy lifestyle journey
           </p>
@@ -157,12 +157,13 @@ const Categories = () => {
                       
                       {/* Category Name Overlay */}
                       <div className="absolute bottom-2 sm:bottom-4 left-2 sm:left-4 right-2 sm:right-4">
-                        <h3 className="text-lg sm:text-xl lg:text-2xl font-bold text-white mb-1 sm:mb-2 group-hover:text-accent" 
+                        <h3 className="sr-only">{category.name} - Organic Herbal Products</h3>
+                        <p className="text-lg sm:text-xl lg:text-2xl font-bold text-white mb-1 sm:mb-2 group-hover:text-accent"
                           style={{
                             transition: `color 600ms cubic-bezier(0.4, 0, 0.2, 1)`
                           }}>
                           {category.name}
-                        </h3>
+                        </p>
                       </div>
                     </div>
 
