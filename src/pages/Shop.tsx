@@ -20,7 +20,6 @@ import { useToast } from '@/hooks/use-toast';
 import { AddToCartModal } from '@/components/AddToCartModal';
 import { useShopTracking } from '@/hooks/useShopTracking';
 import { supabase } from '@/integrations/supabase/client';
-
 export default function Shop() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
@@ -92,13 +91,9 @@ export default function Shop() {
   useEffect(() => {
     const fetchVariants = async () => {
       if (!sortedProducts || sortedProducts.length === 0) return;
-
-      const { data } = await supabase
-        .from('product_variants')
-        .select('*')
-        .eq('is_active', true)
-        .in('product_id', sortedProducts.map(p => p.id));
-
+      const {
+        data
+      } = await supabase.from('product_variants').select('*').eq('is_active', true).in('product_id', sortedProducts.map(p => p.id));
       if (data) {
         const variantsByProduct = data.reduce((acc, variant) => {
           if (!acc[variant.product_id]) {
@@ -110,13 +105,11 @@ export default function Shop() {
         setProductVariants(variantsByProduct);
       }
     };
-
     fetchVariants();
   }, [sortedProducts]);
 
   // Track shop page views and product list impressions
   useShopTracking(sortedProducts, selectedCategory, searchTerm);
-
   const handleAddToCartRequest = (product: any) => {
     setAddToCartProduct(product);
   };
@@ -129,8 +122,7 @@ export default function Shop() {
     }
     return '/logo.png';
   };
-  return (
-    <>
+  return <>
       <Helmet>
         <title>Shop Premium Natural Herbal Products & Organic Supplements | New Era Herbals</title>
         <meta name="description" content="Browse our collection of premium natural herbal products, organic supplements, ayurvedic herbs, and wellness solutions. Shop certified organic herbs, herbal teas, natural remedies, and holistic health products." />
@@ -153,23 +145,20 @@ export default function Shop() {
         {/* Breadcrumb Schema */}
         <script type="application/ld+json">
           {JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "BreadcrumbList",
-            "itemListElement": [
-              {
-                "@type": "ListItem",
-                "position": 1,
-                "name": "Home",
-                "item": "https://www.neweraherbals.com"
-              },
-              {
-                "@type": "ListItem",
-                "position": 2,
-                "name": "Shop",
-                "item": "https://www.neweraherbals.com/shop"
-              }
-            ]
-          })}
+          "@context": "https://schema.org",
+          "@type": "BreadcrumbList",
+          "itemListElement": [{
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": "https://www.neweraherbals.com"
+          }, {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Shop",
+            "item": "https://www.neweraherbals.com/shop"
+          }]
+        })}
         </script>
       </Helmet>
       
@@ -179,15 +168,7 @@ export default function Shop() {
       {/* Hero Section with SEO-optimized headings */}
       <section className="relative overflow-hidden bg-muted/20 border-b">
         <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg%20width%3D%2260%22%20height%3D%2260%22%20viewBox%3D%220%200%2060%2060%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Cg%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3Cg%20fill%3D%22%23059669%22%20fill-opacity%3D%220.03%22%3E%3Ccircle%20cx%3D%2230%22%20cy%3D%2230%22%20r%3D%224%22/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-30"></div>
-        <div className="relative container mx-auto px-4 py-20">
-          <div className="text-center max-w-4xl mx-auto">
-            <h1 className="text-5xl md:text-6xl font-bold mb-6 text-foreground">Premium Organic Herbal Products & Natural Supplements</h1>
-            <p className="text-2xl md:text-3xl text-muted-foreground mb-4 font-semibold">Ayurvedic Wellness Solutions for Holistic Health & Natural Healing</p>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Explore our curated collection of certified organic supplements, ayurvedic herbs, herbal teas, and natural remedies for complete wellness
-            </p>
-          </div>
-        </div>
+        
       </section>
       
       <main className="flex-1">
@@ -362,17 +343,14 @@ export default function Shop() {
                 </p>
               </CardContent>
             </Card> : <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6 lg:gap-8">
-              {sortedProducts?.map((product, index) => <div
-                key={product.id}
-                className="group relative animate-fade-in hover-scale cursor-pointer"
-                style={{ animationDelay: `${index * 0.1}s` }}
-                onClick={() => navigate(`/product/${product.slug}`)}
-              >
+              {sortedProducts?.map((product, index) => <div key={product.id} className="group relative animate-fade-in hover-scale cursor-pointer" style={{
+              animationDelay: `${index * 0.1}s`
+            }} onClick={() => navigate(`/product/${product.slug}`)}>
                   {/* Schema.org microdata for Meta Pixel catalog detection */}
                   {/* If product has variants, include microdata for each variant */}
-                  {productVariants[product.id]?.length > 0 ? (
-                    productVariants[product.id].map((variant: any) => (
-                      <div key={variant.id} itemScope itemType="https://schema.org/Product" style={{ display: 'none' }}>
+                  {productVariants[product.id]?.length > 0 ? productVariants[product.id].map((variant: any) => <div key={variant.id} itemScope itemType="https://schema.org/Product" style={{
+                display: 'none'
+              }}>
                         <meta itemProp="productID" content={variant.sku || variant.id} />
                         <meta itemProp="sku" content={variant.sku || variant.id} />
                         <meta itemProp="name" content={`${product.name} - ${variant.name}`} />
@@ -387,11 +365,10 @@ export default function Shop() {
                           <link itemProp="availability" href={variant.inventory_quantity > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"} />
                           <meta itemProp="url" content={`https://www.neweraherbals.com/product/${product.slug || product.id}`} />
                         </div>
-                      </div>
-                    ))
-                  ) : (
-                    /* No variants - single microdata for parent product */
-                    <div itemScope itemType="https://schema.org/Product" style={{ display: 'none' }}>
+                      </div>) : (/* No variants - single microdata for parent product */
+              <div itemScope itemType="https://schema.org/Product" style={{
+                display: 'none'
+              }}>
                       <meta itemProp="productID" content={product.sku || product.id} />
                       <meta itemProp="sku" content={product.sku || product.id} />
                       <meta itemProp="name" content={product.name} />
@@ -406,8 +383,7 @@ export default function Shop() {
                         <link itemProp="availability" href={product.inventory_quantity > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"} />
                         <meta itemProp="url" content={`https://www.neweraherbals.com/product/${product.slug || product.id}`} />
                       </div>
-                    </div>
-                  )}
+                    </div>)}
 
                   {/* Floating Card Container */}
                   <div className="relative bg-card/40 backdrop-blur-xl border border-border/20 rounded-3xl p-1 shadow-lg group-hover:shadow-2xl transition-all duration-700 group-hover:border-primary/30">
@@ -439,7 +415,10 @@ export default function Shop() {
                             <div className="flex gap-3">
                               <Dialog>
                                 <DialogTrigger asChild>
-                                  <Button size="sm" className="bg-white/95 text-foreground hover:bg-white rounded-full px-4 py-2 shadow-lg border-0" onClick={(e) => { e.stopPropagation(); setSelectedProduct(product); }}>
+                                  <Button size="sm" className="bg-white/95 text-foreground hover:bg-white rounded-full px-4 py-2 shadow-lg border-0" onClick={e => {
+                                e.stopPropagation();
+                                setSelectedProduct(product);
+                              }}>
                                     <Eye className="h-4 w-4 mr-2" />
                                     Quick View
                                   </Button>
@@ -529,12 +508,18 @@ export default function Shop() {
 
                           {/* Action Buttons */}
                           <div className="flex flex-col sm:flex-row gap-1 sm:gap-2">
-                            <Button onClick={(e) => { e.stopPropagation(); handleAddToCartRequest(product); }} disabled={cartLoading || product.inventory_quantity === 0} className="flex-1 rounded-full font-medium text-xs sm:text-sm py-1.5 sm:py-2 px-2 sm:px-3" variant="outline">
+                            <Button onClick={e => {
+                          e.stopPropagation();
+                          handleAddToCartRequest(product);
+                        }} disabled={cartLoading || product.inventory_quantity === 0} className="flex-1 rounded-full font-medium text-xs sm:text-sm py-1.5 sm:py-2 px-2 sm:px-3" variant="outline">
                               <ShoppingCart className="h-3 w-3 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" />
                               {product.inventory_quantity === 0 ? 'Out of Stock' : 'Add'}
                             </Button>
                             
-                            <Button onClick={(e) => { e.stopPropagation(); navigate(`/product/${product.slug}`); }} className="flex-1 rounded-full font-medium text-xs sm:text-sm py-2 sm:py-2.5">
+                            <Button onClick={e => {
+                          e.stopPropagation();
+                          navigate(`/product/${product.slug}`);
+                        }} className="flex-1 rounded-full font-medium text-xs sm:text-sm py-2 sm:py-2.5">
                               View Details
                             </Button>
                           </div>
@@ -561,6 +546,5 @@ export default function Shop() {
         {/* Add to Cart Modal */}
         {addToCartProduct && <AddToCartModal product={addToCartProduct} isOpen={!!addToCartProduct} onClose={() => setAddToCartProduct(null)} onAddToCart={handleAddToCart} isLoading={cartLoading} />}
       </div>
-    </>
-  );
+    </>;
 }
