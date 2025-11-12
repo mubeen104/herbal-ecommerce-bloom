@@ -141,10 +141,9 @@ const FeaturedProducts = () => {
             opts={{
               align: "start",
               loop: true,
-              duration: 30,
+              duration: enableSmoothScrolling ? animationDuration : 0,
               skipSnaps: false,
-              dragFree: false,
-              slidesToScroll: 1
+              dragFree: true
             }}
             className="w-full max-w-7xl mx-auto"
             setApi={setCarouselApi}
