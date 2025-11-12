@@ -118,6 +118,8 @@ const BestSellingProducts = () => {
                       willChange: 'transform'
                     }}
                     onClick={() => navigate(`/product/${product.slug}`)}
+                    onMouseEnter={() => setIsPaused(true)}
+                    onMouseLeave={() => setIsPaused(false)}
                   >
                     <div className="relative bg-card/40 backdrop-blur-xl border border-border/20 rounded-3xl p-1 shadow-lg group-hover:shadow-2xl group-hover:border-primary/30 group-hover:scale-105"
                       style={{ transition: `all 400ms cubic-bezier(0.34, 1.56, 0.64, 1)`, willChange: 'transform, box-shadow, border-color' }}>

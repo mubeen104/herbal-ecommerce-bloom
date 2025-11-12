@@ -137,7 +137,10 @@ const Categories = () => {
                 <Card className="group cursor-pointer border border-border/50 bg-card/80 backdrop-blur-sm shadow-lg hover:shadow-2xl hover:-translate-y-2 hover:rotate-1 overflow-hidden animate-fade-in" style={{
                   animationDelay: `${index * 0.1}s`,
                   transition: `all ${animationDuration}ms cubic-bezier(0.4, 0, 0.2, 1)`
-                }}>
+                }}
+                onMouseEnter={() => setIsPaused(true)}
+                onMouseLeave={() => setIsPaused(false)}
+                >
                   <CardContent className="p-0">
                     {/* Enhanced Category Image */}
                     <div className="relative h-40 sm:h-48 lg:h-56 overflow-hidden">

@@ -158,6 +158,8 @@ const FeaturedProducts = () => {
                     willChange: 'transform'
                   }}
                   onClick={() => navigate(`/product/${product.slug}`)}
+                  onMouseEnter={() => setIsPaused(true)}
+                  onMouseLeave={() => setIsPaused(false)}
                 >
                    {/* Floating Card Container */}
                   <div className="relative bg-card/40 backdrop-blur-xl border border-border/20 rounded-3xl p-1 shadow-lg group-hover:shadow-2xl group-hover:border-primary/30 group-hover:scale-105"
