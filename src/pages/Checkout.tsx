@@ -141,10 +141,9 @@ const Checkout = () => {
         currency: currency === 'Rs' ? 'PKR' : 'USD',
         items: effectiveCartItems.map(item => ({
           product_id: item.product_variants?.sku || item.products?.sku || item.product?.sku || item.product_id,
-          product_name: item.products?.name || item.product?.name || 'Unknown Product',
+          name: item.products?.name || item.product?.name || 'Unknown Product',
           quantity: item.quantity,
-          price: isDirectCheckout ? effectiveDirectPrice : (item.product_variants?.price || item.products?.price || item.product?.price || 0),
-          currency: currency === 'Rs' ? 'PKR' : 'USD'
+          price: isDirectCheckout ? effectiveDirectPrice : (item.product_variants?.price || item.products?.price || item.product?.price || 0)
         }))
       });
     }
@@ -330,10 +329,9 @@ const Checkout = () => {
         currency: currency === 'Rs' ? 'PKR' : 'USD',
         items: effectiveCartItems.map(item => ({
           product_id: item.product_variants?.sku || item.products?.sku || item.product?.sku || item.product_id, // Priority: variant SKU → parent SKU → UUID
-          product_name: item.products?.name || item.product?.name || 'Unknown Product',
+          name: item.products?.name || item.product?.name || 'Unknown Product',
           quantity: item.quantity,
-          price: isDirectCheckout ? effectiveDirectPrice : (item.product_variants?.price || item.products?.price || item.product?.price || 0),
-          currency: currency === 'Rs' ? 'PKR' : 'USD'
+          price: isDirectCheckout ? effectiveDirectPrice : (item.product_variants?.price || item.products?.price || item.product?.price || 0)
         }))
       });
       

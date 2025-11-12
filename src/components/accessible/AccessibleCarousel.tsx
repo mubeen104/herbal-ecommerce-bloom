@@ -317,7 +317,6 @@ export const AccessibleCarousel = ({
                   aria-label={`Slide ${index + 1} of ${totalSlides}`}
                   aria-hidden={index !== currentIndex}
                   className="min-w-full flex-shrink-0"
-                  inert={index !== currentIndex ? '' : undefined}
                 >
                   {child}
                 </div>

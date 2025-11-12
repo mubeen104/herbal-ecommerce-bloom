@@ -50,23 +50,23 @@ export const useCatalogFeeds = () => {
     queryKey: ['catalog-feeds'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('catalog_feeds')
+        .from('catalog_feeds' as any)
         .select('*')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data as CatalogFeed[];
+      return data as unknown as CatalogFeed[];
     }
   });
 
   const createFeed = useMutation({
     mutationFn: async (feed: Omit<CatalogFeed, 'id' | 'created_at' | 'updated_at' | 'last_generated_at' | 'last_error' | 'generation_count'>) => {
       const { data, error } = await supabase
-        .from('catalog_feeds')
+        .from('catalog_feeds' as any)
         .insert({
           ...feed,
           category_filter: feed.category_filter || [],
-        })
+        } as any)
         .select()
         .single();
 
@@ -85,8 +85,8 @@ export const useCatalogFeeds = () => {
   const updateFeed = useMutation({
     mutationFn: async ({ id, ...updates }: Partial<CatalogFeed> & { id: string }) => {
       const { data, error } = await supabase
-        .from('catalog_feeds')
-        .update(updates)
+        .from('catalog_feeds' as any)
+        .update(updates as any)
         .eq('id', id)
         .select()
         .single();
@@ -106,7 +106,7 @@ export const useCatalogFeeds = () => {
   const deleteFeed = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
-        .from('catalog_feeds')
+        .from('catalog_feeds' as any)
         .delete()
         .eq('id', id);
 
@@ -177,14 +177,14 @@ export const useFeedHistory = (feedId: string) => {
     queryKey: ['catalog-feed-history', feedId],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('catalog_feed_history')
+        .from('catalog_feed_history' as any)
         .select('*')
         .eq('feed_id', feedId)
         .order('created_at', { ascending: false })
         .limit(50);
 
       if (error) throw error;
-      return data as FeedHistory[];
+      return data as unknown as FeedHistory[];
     },
     enabled: !!feedId,
   });
