@@ -1,13 +1,14 @@
 import { useState, useEffect } from "react";
-import { 
-  Carousel, 
-  CarouselContent, 
-  CarouselItem, 
-  CarouselNext, 
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
   CarouselPrevious,
-  type CarouselApi 
+  type CarouselApi
 } from "@/components/ui/carousel";
 import { useHeroSlides } from "@/hooks/useHeroSlides";
+import { useCarouselAutoScroll } from "@/hooks/useCarouselAutoScroll";
 
 
 const HeroSlider = () => {
@@ -16,6 +17,8 @@ const HeroSlider = () => {
   const [current, setCurrent] = useState(0);
   const [imagesLoaded, setImagesLoaded] = useState<Set<number>>(new Set());
   const [isPaused, setIsPaused] = useState(false);
+
+  useCarouselAutoScroll(api, isPaused);
   
   // Preload first image immediately
   useEffect(() => {
@@ -29,31 +32,21 @@ const HeroSlider = () => {
   }, [slides]);
   
 
-  // Use slide-specific speed or default
-  const autoScrollSpeed = slides?.[0]?.auto_scroll_speed || 5000;
-
   useEffect(() => {
     if (!api) return;
 
     setCurrent(api.selectedScrollSnap() + 1);
 
-    api.on("select", () => {
+    const handleSelect = () => {
       setCurrent(api.selectedScrollSnap() + 1);
-    });
+    };
 
-    // Auto-scroll with configurable speed
-    const interval = setInterval(() => {
-      if (!isPaused) {
-        if (api.canScrollNext()) {
-          api.scrollNext();
-        } else {
-          api.scrollTo(0);
-        }
-      }
-    }, autoScrollSpeed);
+    api.on("select", handleSelect);
 
-    return () => clearInterval(interval);
-  }, [api, autoScrollSpeed, isPaused]);
+    return () => {
+      api.off("select", handleSelect);
+    };
+  }, [api]);
 
   // Show instant preview while loading
   if (isLoading || !slides || slides.length === 0) {
@@ -88,13 +81,15 @@ const HeroSlider = () => {
         onMouseLeave={() => setIsPaused(false)}
       >
         <Carousel
-          setApi={setApi} 
+          setApi={setApi}
           className="w-full h-full"
           opts={{
             align: "start",
             loop: true,
+            duration: 30,
             skipSnaps: false,
-            dragFree: false
+            dragFree: false,
+            slidesToScroll: 1
           }}
         >
           <CarouselContent className="h-full">

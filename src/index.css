@@ -128,7 +128,7 @@
   .text-shadow {
     text-shadow: var(--text-shadow);
   }
-  
+
   .text-shadow-lg {
     text-shadow: var(--text-shadow-lg);
   }
@@ -164,6 +164,18 @@
     backdrop-filter: blur(16px);
     border: 1px solid rgba(255, 255, 255, 0.1);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  }
+
+  [data-carousel] {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    perspective: 1000px;
+  }
+
+  [data-carousel-item] {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    will-change: transform;
   }
 
   @keyframes float {

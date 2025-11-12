@@ -96,41 +96,43 @@ const BestSellingProducts = () => {
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
         >
-          <Carousel 
+          <Carousel
             opts={{
               align: "start",
               loop: true,
-              duration: enableSmoothScrolling ? 600 : 0,
+              duration: 30,
               skipSnaps: false,
-              dragFree: true
-            }} 
-            className="w-full max-w-7xl mx-auto" 
+              dragFree: false,
+              slidesToScroll: 1
+            }}
+            className="w-full max-w-7xl mx-auto"
             setApi={setCarouselApi}
           >
             <CarouselContent className="-ml-2 md:-ml-4">
               {products.map((product, index) => (
                 <CarouselItem key={product.id} className="pl-2 md:pl-4 basis-1/2 sm:basis-1/2 lg:basis-1/3 xl:basis-1/4">
                   <div
-                    className="group relative animate-fade-in hover-scale cursor-pointer"
+                    className="group relative animate-fade-in cursor-pointer"
                     style={{
                       animationDelay: `${index * 0.1}s`,
-                      transition: `transform ${animationDuration}ms cubic-bezier(0.4, 0, 0.2, 1)`
+                      transition: `transform 400ms cubic-bezier(0.34, 1.56, 0.64, 1)`,
+                      willChange: 'transform'
                     }}
                     onClick={() => navigate(`/product/${product.slug}`)}
                   >
-                    <div className="relative bg-card/40 backdrop-blur-xl border border-border/20 rounded-3xl p-1 shadow-lg group-hover:shadow-2xl group-hover:border-primary/30"
-                      style={{ transition: `all 600ms cubic-bezier(0.4, 0, 0.2, 1)` }}>
+                    <div className="relative bg-card/40 backdrop-blur-xl border border-border/20 rounded-3xl p-1 shadow-lg group-hover:shadow-2xl group-hover:border-primary/30 group-hover:scale-105"
+                      style={{ transition: `all 400ms cubic-bezier(0.34, 1.56, 0.64, 1)`, willChange: 'transform, box-shadow, border-color' }}>
                       <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-accent/20 to-secondary/20 rounded-3xl opacity-0 group-hover:opacity-100 blur-sm"
-                        style={{ transition: `opacity 600ms cubic-bezier(0.4, 0, 0.2, 1)` }} />
+                        style={{ transition: `opacity 400ms cubic-bezier(0.4, 0, 0.2, 1)` }} />
 
                       <Card className="relative bg-card/80 backdrop-blur-sm border-0 rounded-3xl overflow-hidden shadow-none">
                         <CardContent className="p-0">
                           <div className="relative overflow-hidden rounded-t-3xl aspect-square">
-                            <img 
-                              src={getMainImage(product)} 
-                              alt={product.name} 
-                              className="w-full h-full object-contain group-hover:scale-105"
-                              style={{ transition: `transform 600ms cubic-bezier(0.4, 0, 0.2, 1)` }} 
+                            <img
+                              src={getMainImage(product)}
+                              alt={product.name}
+                              className="w-full h-full object-contain group-hover:scale-110"
+                              style={{ transition: `transform 500ms cubic-bezier(0.34, 1.56, 0.64, 1)`, willChange: 'transform' }}
                             />
                             
                             {product.compare_price && product.compare_price > product.price && (

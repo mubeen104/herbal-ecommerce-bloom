@@ -11,32 +11,48 @@ interface CarouselApi {
 
 export const useCarouselAutoScroll = (api: CarouselApi | undefined, isPaused: boolean = false) => {
   const { carouselScrollSpeed, enableSmoothScrolling } = useUISettings();
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const animationFrameRef = useRef<number | null>(null);
+  const lastScrollTimeRef = useRef<number>(0);
   const isUserInteractingRef = useRef(false);
-  const pauseTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const resumeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isPausedRef = useRef(isPaused);
 
-  const startAutoScroll = () => {
-    if (!api || intervalRef.current) {
+  useEffect(() => {
+    isPausedRef.current = isPaused;
+  }, [isPaused]);
+
+  const scrollLoop = (timestamp: number) => {
+    if (!api || !enableSmoothScrolling) {
       return;
     }
 
-    intervalRef.current = setInterval(() => {
-      // Only auto-scroll if user is not currently interacting and not paused
-      if (!isUserInteractingRef.current && !isPaused) {
-        if (api.canScrollNext()) {
-          api.scrollNext();
-        } else {
-          api.scrollTo(0);
-        }
+    const elapsed = timestamp - lastScrollTimeRef.current;
+
+    if (elapsed >= carouselScrollSpeed && !isUserInteractingRef.current && !isPausedRef.current) {
+      lastScrollTimeRef.current = timestamp;
+
+      if (api.canScrollNext()) {
+        api.scrollNext();
+      } else {
+        api.scrollTo(0);
       }
-    }, carouselScrollSpeed);
+    }
+
+    animationFrameRef.current = requestAnimationFrame(scrollLoop);
+  };
+
+  const startAutoScroll = () => {
+    if (!api || !enableSmoothScrolling || animationFrameRef.current) {
+      return;
+    }
+
+    lastScrollTimeRef.current = performance.now();
+    animationFrameRef.current = requestAnimationFrame(scrollLoop);
   };
 
   const stopAutoScroll = () => {
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
+      animationFrameRef.current = null;
     }
   };
 
@@ -47,85 +63,39 @@ export const useCarouselAutoScroll = (api: CarouselApi | undefined, isPaused: bo
 
     const handleUserInteractionStart = () => {
       isUserInteractingRef.current = true;
-      if (pauseTimeoutRef.current) {
-        clearTimeout(pauseTimeoutRef.current);
-      }
-      if (resumeTimeoutRef.current) {
-        clearTimeout(resumeTimeoutRef.current);
-      }
-      stopAutoScroll();
     };
 
     const handleUserInteractionEnd = () => {
       isUserInteractingRef.current = false;
-      if (resumeTimeoutRef.current) {
-        clearTimeout(resumeTimeoutRef.current);
-      }
-      // Resume auto-scroll after a delay
-      resumeTimeoutRef.current = setTimeout(() => {
-        if (!isUserInteractingRef.current && !isPaused) {
-          startAutoScroll();
-        }
-      }, 1500);
+      lastScrollTimeRef.current = performance.now();
     };
 
-    // Set up event listeners for user interactions
     api.on('pointerDown', handleUserInteractionStart);
+    api.on('pointerUp', handleUserInteractionEnd);
     api.on('select', handleUserInteractionEnd);
 
-    // Start auto-scroll
     startAutoScroll();
 
-    // Cleanup function
     return () => {
       stopAutoScroll();
       api.off('pointerDown', handleUserInteractionStart);
+      api.off('pointerUp', handleUserInteractionEnd);
       api.off('select', handleUserInteractionEnd);
     };
-  }, [api, carouselScrollSpeed, enableSmoothScrolling, isPaused]);
+  }, [api, carouselScrollSpeed, enableSmoothScrolling]);
 
-  // Handle isPaused changes smoothly
   useEffect(() => {
-    if (isPaused) {
-      // Clear any pending resume
-      if (resumeTimeoutRef.current) {
-        clearTimeout(resumeTimeoutRef.current);
-      }
-      // Don't stop immediately, let current scroll complete
-      pauseTimeoutRef.current = setTimeout(() => {
-        if (!isUserInteractingRef.current && intervalRef.current) {
-          clearInterval(intervalRef.current);
-          intervalRef.current = null;
-        }
-      }, 300);
-    } else {
-      // Clear any pending pause
-      if (pauseTimeoutRef.current) {
-        clearTimeout(pauseTimeoutRef.current);
-      }
-      // Resume with a small delay for smoothness
-      if (!isUserInteractingRef.current && !intervalRef.current && api && enableSmoothScrolling) {
-        resumeTimeoutRef.current = setTimeout(() => {
-          if (!isPaused && !isUserInteractingRef.current) {
-            startAutoScroll();
-          }
-        }, 500);
-      }
+    if (isPaused || !enableSmoothScrolling) {
+      stopAutoScroll();
+    } else if (api && !animationFrameRef.current && !isUserInteractingRef.current) {
+      lastScrollTimeRef.current = performance.now();
+      startAutoScroll();
     }
   }, [isPaused, api, enableSmoothScrolling]);
 
-  // Cleanup on unmount
   useEffect(() => {
     return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-      if (pauseTimeoutRef.current) {
-        clearTimeout(pauseTimeoutRef.current);
-      }
-      if (resumeTimeoutRef.current) {
-        clearTimeout(resumeTimeoutRef.current);
-      }
+      stopAutoScroll();
     };
   }, []);
 };
