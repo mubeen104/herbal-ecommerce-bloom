@@ -72,21 +72,35 @@ const Header = () => {
               <div
                 key={item.name}
                 className="relative"
-                onMouseEnter={() => item.hasMegaMenu && setIsMegaMenuOpen(true)}
-                onMouseLeave={() => item.hasMegaMenu && setIsMegaMenuOpen(false)}
               >
-                <Link
-                  to={item.href}
-                  className="relative px-6 py-3 text-foreground hover:text-primary transition-all duration-300 font-semibold group flex items-center space-x-1"
-                >
-                  <span className="relative z-10">{item.name}</span>
-                  {item.hasMegaMenu && <ChevronDown className="h-4 w-4" />}
-                  <div className="absolute inset-0 bg-primary/5 rounded-xl scale-0 group-hover:scale-100 transition-all duration-300 origin-center"></div>
-                  <div className="absolute bottom-1 left-1/2 w-0 h-1 bg-primary rounded-full group-hover:w-8 transition-all duration-300 transform -translate-x-1/2"></div>
-                </Link>
+                {item.hasMegaMenu ? (
+                  <div
+                    onMouseEnter={() => setIsMegaMenuOpen(true)}
+                    onMouseLeave={() => setIsMegaMenuOpen(false)}
+                  >
+                    <Link
+                      to={item.href}
+                      className="relative px-6 py-3 text-foreground hover:text-primary transition-all duration-300 font-semibold group flex items-center space-x-1"
+                    >
+                      <span className="relative z-10">{item.name}</span>
+                      <ChevronDown className="h-4 w-4" />
+                      <div className="absolute inset-0 bg-primary/5 rounded-xl scale-0 group-hover:scale-100 transition-all duration-300 origin-center"></div>
+                      <div className="absolute bottom-1 left-1/2 w-0 h-1 bg-primary rounded-full group-hover:w-8 transition-all duration-300 transform -translate-x-1/2"></div>
+                    </Link>
+                    <MegaMenu isOpen={isMegaMenuOpen} onClose={() => setIsMegaMenuOpen(false)} />
+                  </div>
+                ) : (
+                  <Link
+                    to={item.href}
+                    className="relative px-6 py-3 text-foreground hover:text-primary transition-all duration-300 font-semibold group flex items-center space-x-1"
+                  >
+                    <span className="relative z-10">{item.name}</span>
+                    <div className="absolute inset-0 bg-primary/5 rounded-xl scale-0 group-hover:scale-100 transition-all duration-300 origin-center"></div>
+                    <div className="absolute bottom-1 left-1/2 w-0 h-1 bg-primary rounded-full group-hover:w-8 transition-all duration-300 transform -translate-x-1/2"></div>
+                  </Link>
+                )}
               </div>
             ))}
-            <MegaMenu isOpen={isMegaMenuOpen} onClose={() => setIsMegaMenuOpen(false)} />
           </nav>
 
           {/* Search Bar - Desktop */}

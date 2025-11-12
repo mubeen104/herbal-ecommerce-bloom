@@ -33,7 +33,6 @@ export const MegaMenu = ({ isOpen, onClose }: MegaMenuProps) => {
     <div
       ref={menuRef}
       className="absolute left-0 top-full mt-0 bg-background/95 backdrop-blur-md border border-border shadow-xl rounded-b-lg animate-in slide-in-from-top-2 z-50 min-w-[220px]"
-      onMouseLeave={onClose}
     >
       <div className="py-2">
         {isLoading ? (
