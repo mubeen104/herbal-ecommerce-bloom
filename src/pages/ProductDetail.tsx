@@ -452,20 +452,15 @@ const ProductDetail = () => {
             <CardContent>
               {reviews && reviews.length > 0 ? <div className="space-y-6">
                   {reviews.map(review => <div key={review.id} className="border-b border-border pb-6 last:border-0">
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center space-x-2">
-                          <span className="font-medium text-foreground">
-                            {review.profiles?.first_name && review.profiles?.last_name
-                              ? `${review.profiles.first_name} ${review.profiles.last_name}`
-                              : 'Anonymous User'}
-                          </span>
-                          <div className="flex items-center">
-                            {[...Array(5)].map((_, i) => <Star key={i} className={`w-4 h-4 ${i < review.rating ? 'text-yellow-400 fill-yellow-400' : 'text-muted-foreground'}`} />)}
-                          </div>
-                        </div>
-                        <span className="text-sm text-muted-foreground">
-                          {new Date(review.created_at).toLocaleDateString()}
+                      <div className="flex items-center space-x-2 mb-2">
+                        <span className="font-medium text-foreground">
+                          {review.profiles?.first_name && review.profiles?.last_name
+                            ? `${review.profiles.first_name} ${review.profiles.last_name}`
+                            : 'Anonymous User'}
                         </span>
+                        <div className="flex items-center">
+                          {[...Array(5)].map((_, i) => <Star key={i} className={`w-4 h-4 ${i < review.rating ? 'text-yellow-400 fill-yellow-400' : 'text-muted-foreground'}`} />)}
+                        </div>
                       </div>
                       {review.title && <h5 className="font-medium text-foreground mb-2">{review.title}</h5>}
                       {review.content && <p className="text-muted-foreground">{review.content}</p>}
