@@ -34,6 +34,10 @@ interface Review {
     name: string;
     slug: string;
   } | null;
+  profiles: {
+    first_name: string | null;
+    last_name: string | null;
+  } | null;
 }
 
 const useReviews = (status: 'pending' | 'approved' | 'all' = 'all') => {
@@ -47,6 +51,10 @@ const useReviews = (status: 'pending' | 'approved' | 'all' = 'all') => {
           products (
             name,
             slug
+          ),
+          profiles (
+            first_name,
+            last_name
           )
         `)
         .order('created_at', { ascending: false });
@@ -153,7 +161,10 @@ const AdminReviews = () => {
     review.content?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const getUserName = () => {
+  const getUserName = (review: Review) => {
+    if (review.profiles?.first_name && review.profiles?.last_name) {
+      return `${review.profiles.first_name} ${review.profiles.last_name}`;
+    }
     return 'Anonymous User';
   };
 
@@ -217,7 +228,7 @@ const AdminReviews = () => {
                         </Badge>
                       </div>
                       <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-                        <span>By: {getUserName()}</span>
+                        <span>By: {getUserName(review)}</span>
                         <span>{new Date(review.created_at).toLocaleDateString()}</span>
                       </div>
                     </div>

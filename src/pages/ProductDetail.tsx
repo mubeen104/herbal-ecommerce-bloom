@@ -57,7 +57,13 @@ const useProductReviews = (productId: string) => {
       const {
         data,
         error
-      } = await supabase.from('reviews').select('*').eq('product_id', productId).eq('is_approved', true).order('created_at', {
+      } = await supabase.from('reviews').select(`
+        *,
+        profiles (
+          first_name,
+          last_name
+        )
+      `).eq('product_id', productId).eq('is_approved', true).order('created_at', {
         ascending: false
       });
       if (error) {
@@ -449,7 +455,9 @@ const ProductDetail = () => {
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center space-x-2">
                           <span className="font-medium text-foreground">
-                            Anonymous User
+                            {review.profiles?.first_name && review.profiles?.last_name
+                              ? `${review.profiles.first_name} ${review.profiles.last_name}`
+                              : 'Anonymous User'}
                           </span>
                           <div className="flex items-center">
                             {[...Array(5)].map((_, i) => <Star key={i} className={`w-4 h-4 ${i < review.rating ? 'text-yellow-400 fill-yellow-400' : 'text-muted-foreground'}`} />)}
