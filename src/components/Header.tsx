@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Search, ShoppingBag, User, Menu, X, Leaf, LogOut, Settings } from "lucide-react";
+import { Search, ShoppingBag, User, Menu, X, Leaf, LogOut, Settings, ChevronDown } from "lucide-react";
+import { MegaMenu } from "@/components/navigation/MegaMenu";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
@@ -12,15 +13,18 @@ import { useNavigate, Link } from "react-router-dom";
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isMegaMenuOpen, setIsMegaMenuOpen] = useState(false);
   const { user, signOut, isAdmin } = useAuth();
   const { cartCount } = useGuestCart();
   const { storeName } = useStoreSettings();
   const navigate = useNavigate();
 
   const navigation = [
-    { name: "Home", href: "/" },
-    { name: "Shop", href: "/shop" },
-    { name: "Contact Us", href: "/contact" },
+    { name: "Home", href: "/", hasMegaMenu: false },
+    { name: "Shop", href: "/shop", hasMegaMenu: true },
+    { name: "Learn", href: "/blog", hasMegaMenu: false },
+    { name: "About", href: "/about", hasMegaMenu: false },
+    { name: "Contact", href: "/contact", hasMegaMenu: false },
   ];
 
   const handleSearch = (e: React.FormEvent) => {
@@ -63,18 +67,26 @@ const Header = () => {
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex space-x-1">
+          <nav className="hidden md:flex space-x-1 relative">
             {navigation.map((item) => (
-              <Link
+              <div
                 key={item.name}
-                to={item.href}
-                className="relative px-6 py-3 text-foreground hover:text-primary transition-all duration-300 font-semibold group"
+                className="relative"
+                onMouseEnter={() => item.hasMegaMenu && setIsMegaMenuOpen(true)}
+                onMouseLeave={() => item.hasMegaMenu && setIsMegaMenuOpen(false)}
               >
-                <span className="relative z-10">{item.name}</span>
-                <div className="absolute inset-0 bg-primary/5 rounded-xl scale-0 group-hover:scale-100 transition-all duration-300 origin-center"></div>
-                <div className="absolute bottom-1 left-1/2 w-0 h-1 bg-primary rounded-full group-hover:w-8 transition-all duration-300 transform -translate-x-1/2"></div>
-              </Link>
+                <Link
+                  to={item.href}
+                  className="relative px-6 py-3 text-foreground hover:text-primary transition-all duration-300 font-semibold group flex items-center space-x-1"
+                >
+                  <span className="relative z-10">{item.name}</span>
+                  {item.hasMegaMenu && <ChevronDown className="h-4 w-4" />}
+                  <div className="absolute inset-0 bg-primary/5 rounded-xl scale-0 group-hover:scale-100 transition-all duration-300 origin-center"></div>
+                  <div className="absolute bottom-1 left-1/2 w-0 h-1 bg-primary rounded-full group-hover:w-8 transition-all duration-300 transform -translate-x-1/2"></div>
+                </Link>
+              </div>
             ))}
+            <MegaMenu isOpen={isMegaMenuOpen} onClose={() => setIsMegaMenuOpen(false)} />
           </nav>
 
           {/* Search Bar - Desktop */}
@@ -177,7 +189,7 @@ const Header = () => {
 
       {/* Mobile Navigation */}
       {isMenuOpen && (
-        <div className="md:hidden bg-white border-t border-border shadow-lg animate-fade-in">
+        <div className="md:hidden bg-white border-t border-border shadow-lg animate-fade-in max-h-[calc(100vh-140px)] overflow-y-auto">
           <div className="px-4 py-4 space-y-1">
             {navigation.map((item, index) => (
               <Link

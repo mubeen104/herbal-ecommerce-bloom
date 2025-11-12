@@ -9,6 +9,8 @@ import { AdminLayout } from "@/components/admin/AdminLayout";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import ScrollToTop from "@/components/ScrollToTop";
 import { PixelTracker } from "@/components/PixelTracker";
+import { Breadcrumbs } from "@/components/navigation/Breadcrumbs";
+import { MobileBottomNav } from "@/components/navigation/MobileBottomNav";
 import Index from "./pages/Index";
 import Shop from "./pages/Shop";
 import Contact from "./pages/Contact";
@@ -55,7 +57,9 @@ const App = () => (
           <BrowserRouter>
             <ScrollToTop />
             <PixelTracker />
+            <Breadcrumbs />
             <WhatsAppButton />
+            <MobileBottomNav />
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/shop" element={<Shop />} />

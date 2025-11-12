@@ -1,6 +1,6 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
-import { AdminSidebar } from './AdminSidebar';
+import { AdminSidebarGrouped } from './AdminSidebarGrouped';
 import { Bell, Search, User, Package, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -40,7 +40,7 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
 
   return (
     <div className="h-screen flex w-full bg-gradient-to-br from-background via-muted/20 to-secondary/10">
-      <AdminSidebar />
+      <AdminSidebarGrouped />
       <div className="flex-1 flex flex-col h-full">
         {/* Ultra Modern Admin Header */}
         <header className="h-16 flex items-center justify-between px-4 lg:px-6 bg-card/50 backdrop-blur-xl border-b border-border/30 shrink-0 shadow-sm">
