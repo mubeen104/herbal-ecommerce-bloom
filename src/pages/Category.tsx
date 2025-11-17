@@ -19,6 +19,8 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/co
 import { AddToCartModal } from '@/components/AddToCartModal';
 import { useProductRatings } from '@/hooks/useProductRatings';
 import { ProductRating } from '@/components/ProductRating';
+import Header from '@/components/Header';
+import Footer from '@/components/Footer';
 
 const PRODUCTS_PER_PAGE = 12;
 
@@ -333,7 +335,9 @@ const Category = () => {
         <link rel="canonical" href={`https://yourdomain.com/category/${category.slug}`} />
       </Helmet>
 
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-background flex flex-col">
+        <Header />
+
         {/* Hero Section */}
         <div className="relative h-96 overflow-hidden">
           <div
@@ -695,6 +699,8 @@ const Category = () => {
             </div>
           </div>
         )}
+
+        <Footer />
       </div>
 
       {/* Add to Cart Modal */}

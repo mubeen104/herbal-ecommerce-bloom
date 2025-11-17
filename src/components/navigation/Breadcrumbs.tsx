@@ -29,10 +29,11 @@ export const Breadcrumbs = () => {
   });
 
   const { data: categoryData } = useQuery({
-    queryKey: ['breadcrumb-category', location.search],
+    queryKey: ['breadcrumb-category', location.search, pathnames[1]],
     queryFn: async () => {
       const params = new URLSearchParams(location.search);
       const categorySlug = params.get('category');
+
       if (categorySlug) {
         const { data } = await supabase
           .from('categories')
@@ -41,9 +42,20 @@ export const Breadcrumbs = () => {
           .single();
         return data;
       }
+
+      if (pathnames[0] === 'category' && pathnames[1]) {
+        const { data } = await supabase
+          .from('categories')
+          .select('name')
+          .eq('slug', pathnames[1])
+          .single();
+        return data;
+      }
+
       return null;
     },
-    enabled: location.pathname === '/shop' && location.search.includes('category='),
+    enabled: (location.pathname === '/shop' && location.search.includes('category=')) ||
+             (pathnames[0] === 'category' && !!pathnames[1]),
   });
 
   if (pathnames.length === 0 || pathnames[0] === 'admin' || pathnames[0] === 'auth') {
@@ -77,6 +89,15 @@ export const Breadcrumbs = () => {
         label: productData.name,
         href: `/product/${pathnames[1]}`
       });
+    } else if (pathnames[0] === 'category') {
+      breadcrumbs.push({ label: 'Shop', href: '/shop' });
+
+      if (categoryData && pathnames[1]) {
+        breadcrumbs.push({
+          label: categoryData.name,
+          href: `/category/${pathnames[1]}`
+        });
+      }
     } else if (pathnames[0] === 'blog') {
       breadcrumbs.push({ label: 'Blog', href: '/blog' });
       if (pathnames[1]) {
