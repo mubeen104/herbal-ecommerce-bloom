@@ -44,39 +44,13 @@ const Category = () => {
   const observerRef = useRef<IntersectionObserver | null>(null);
   const lastProductRef = useRef<HTMLDivElement | null>(null);
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-background">
-        <div className="h-96 bg-muted animate-pulse" />
-        <div className="container mx-auto px-4 py-12">
-          <div className="grid grid-cols-1 gap-8">
-            <Skeleton className="h-48 w-full" />
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {[...Array(8)].map((_, i) => (
-                <Skeleton key={i} className="h-96 w-full" />
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (!data?.category) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-4xl font-bold mb-4">Category Not Found</h1>
-          <Button onClick={() => navigate('/shop')}>Browse Shop</Button>
-        </div>
-      </div>
-    );
-  }
-
-  const { category, products, relatedCategories } = data;
+  // Prepare data for hooks - must be called before conditional returns
+  const products = data?.products || [];
+  const category = data?.category;
+  const relatedCategories = data?.relatedCategories || [];
 
   // Get subcategories
-  const subcategories = relatedCategories.filter(cat => cat.parent_id === category.id);
+  const subcategories = relatedCategories.filter(cat => cat.parent_id === category?.id);
 
   // Filter products
   let filteredProducts = products.filter((p) => {
@@ -104,17 +78,19 @@ const Category = () => {
   // Pagination
   const paginatedProducts = filteredProducts.slice(0, displayedProducts);
   const productIds = paginatedProducts.map(p => p.id);
+
+  // This hook must be called before any conditional returns
   const { data: ratings = [] } = useProductRatings(productIds);
 
   // Infinite scroll
-  useEffect(() => {
-    setHasMore(displayedProducts < filteredProducts.length);
-  }, [displayedProducts, filteredProducts.length]);
-
   const loadMore = useCallback(() => {
     if (displayedProducts < filteredProducts.length) {
       setDisplayedProducts(prev => Math.min(prev + PRODUCTS_PER_PAGE, filteredProducts.length));
     }
+  }, [displayedProducts, filteredProducts.length]);
+
+  useEffect(() => {
+    setHasMore(displayedProducts < filteredProducts.length);
   }, [displayedProducts, filteredProducts.length]);
 
   useEffect(() => {
@@ -142,6 +118,36 @@ const Category = () => {
   useEffect(() => {
     setDisplayedProducts(PRODUCTS_PER_PAGE);
   }, [sortBy, priceRange, showInStockOnly, selectedSubcategories]);
+
+  // Now we can do conditional returns after all hooks are called
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="h-96 bg-muted animate-pulse" />
+        <div className="container mx-auto px-4 py-12">
+          <div className="grid grid-cols-1 gap-8">
+            <Skeleton className="h-48 w-full" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {[...Array(8)].map((_, i) => (
+                <Skeleton key={i} className="h-96 w-full" />
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!category) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-4xl font-bold mb-4">Category Not Found</h1>
+          <Button onClick={() => navigate('/shop')}>Browse Shop</Button>
+        </div>
+      </div>
+    );
+  }
 
   const getMainImage = (product: any) => {
     return product.product_images?.[0]?.image_url || '/placeholder.svg';
