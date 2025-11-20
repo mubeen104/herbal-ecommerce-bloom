@@ -74,7 +74,7 @@ export default function AdminProducts() {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [productImages, setProductImages] = useState<ProductImage[]>([]);
   const [productVariants, setProductVariants] = useState<ProductVariant[]>([]);
-  
+
   const [formData, setFormData] = useState({
     name: '',
     price: '',
@@ -97,6 +97,10 @@ export default function AdminProducts() {
   const { data: categories } = useCategories();
   const { currency } = useStoreSettings();
 
+  // Track if mutation is in progress to prevent duplicate submissions
+  const isMutatingRef = useRef(false);
+  const lastSaveTimestampRef = useRef<number>(0);
+
   // Fetch products
   const { data: products, isLoading } = useQuery({
     queryKey: ['admin-products'],
@@ -117,8 +121,22 @@ export default function AdminProducts() {
   // Create/Update product mutation
   const productMutation = useMutation({
     mutationFn: async (productData: any) => {
+      // Prevent duplicate submissions
+      if (isMutatingRef.current) {
+        throw new Error('Save already in progress. Please wait.');
+      }
+
+      // Debounce: Prevent saves within 1 second of last save
+      const now = Date.now();
+      if (now - lastSaveTimestampRef.current < 1000) {
+        throw new Error('Please wait before saving again.');
+      }
+
+      isMutatingRef.current = true;
+      lastSaveTimestampRef.current = now;
+
       let product;
-      
+
       if (editingProduct) {
         const { data, error } = await supabase
           .from('products')
@@ -148,9 +166,22 @@ export default function AdminProducts() {
       return product;
     },
     onSuccess: (product) => {
-      queryClient.invalidateQueries({ queryKey: ['admin-products'] });
+      isMutatingRef.current = false;
+
+      // Use optimistic update instead of invalidating all queries
+      // Only invalidate the specific product's variants
       queryClient.invalidateQueries({ queryKey: ['product-variants', product.id] });
-      queryClient.invalidateQueries({ queryKey: ['products'] });
+
+      // Update the products list in cache rather than refetch
+      queryClient.setQueryData(['admin-products'], (oldData: any) => {
+        if (!oldData) return oldData;
+        if (editingProduct) {
+          return oldData.map((p: any) => p.id === product.id ? product : p);
+        } else {
+          return [product, ...oldData];
+        }
+      });
+
       setIsDialogOpen(false);
       setEditingProduct(null);
       resetForm();
@@ -160,6 +191,7 @@ export default function AdminProducts() {
       });
     },
     onError: (error: any) => {
+      isMutatingRef.current = false;
       toast({
         title: "Error",
         description: error.message,
@@ -202,37 +234,75 @@ export default function AdminProducts() {
   };
 
   const handleProductVariants = async (productId: string) => {
-    // Delete existing variants first
-    if (editingProduct) {
-      await supabase.from('product_variants').delete().eq('product_id', editingProduct.id);
-    }
-
     // Skip variants for Kit & Deals products
     if (formData.is_kits_deals) {
+      // If editing and switching to kit/deals, clean up existing variants
+      if (editingProduct) {
+        await supabase.from('product_variants').delete().eq('product_id', editingProduct.id);
+      }
       return;
     }
 
+    // Get existing variants to check what changed
+    const { data: existingVariants } = await supabase
+      .from('product_variants')
+      .select('id, name, price')
+      .eq('product_id', productId);
+
     if (productVariants.length > 0) {
-      // Clean up local duplicates
+      // Clean up local duplicates with strict validation
       const seen = new Set<string>();
       const cleanedVariants = productVariants.filter(v => {
         const name = (v.name || '').trim();
         if (!name || name.length < 2) return false; // Require meaningful names
-        
+
         const price = parseFloat(v.price || '0') || 0;
         if (price <= 0) return false; // Require valid prices
-        
-        const key = `${name.toLowerCase()}|${price}`;
-        
-        // Skip local duplicates
-        if (seen.has(key)) return false;
-        
+
+        // Create unique key using lowercase name
+        const key = name.toLowerCase();
+
+        // Skip local duplicates (case-insensitive)
+        if (seen.has(key)) {
+          console.warn(`Skipping duplicate variant: ${name}`);
+          return false;
+        }
+
         seen.add(key);
         return true;
       });
 
-      if (cleanedVariants.length === 0) return;
+      if (cleanedVariants.length === 0) {
+        // No valid variants to save, delete existing ones if editing
+        if (editingProduct && existingVariants && existingVariants.length > 0) {
+          await supabase.from('product_variants').delete().eq('product_id', editingProduct.id);
+        }
+        return;
+      }
 
+      // Check which variants are new vs existing
+      const existingNames = new Set(
+        (existingVariants || []).map(v => v.name.toLowerCase().trim())
+      );
+
+      const newVariants = cleanedVariants.filter(
+        v => !existingNames.has(v.name.toLowerCase().trim())
+      );
+
+      // Delete existing variants before inserting (atomic operation)
+      if (editingProduct) {
+        const { error: deleteError } = await supabase
+          .from('product_variants')
+          .delete()
+          .eq('product_id', editingProduct.id);
+
+        if (deleteError) {
+          console.error('Failed to delete existing variants:', deleteError);
+          throw deleteError;
+        }
+      }
+
+      // Prepare variant data
       const variantData = cleanedVariants.map((variant, index) => ({
         product_id: productId,
         name: variant.name.trim(),
@@ -243,24 +313,39 @@ export default function AdminProducts() {
         sort_order: index
       }));
 
-      const { data: insertedVariants, error } = await supabase
+      // Insert variants with error handling
+      const { data: insertedVariants, error: insertError } = await supabase
         .from('product_variants')
         .insert(variantData)
         .select();
-      
-      if (error) throw error;
 
-      // Handle variant images
-      for (let i = 0; i < cleanedVariants.length; i++) {
-        const variant = cleanedVariants[i];
-        if (variant.image_url && insertedVariants[i]) {
-          await supabase.from('product_variant_images').insert({
-            variant_id: insertedVariants[i].id,
-            image_url: variant.image_url,
-            alt_text: variant.name,
-            sort_order: 0
-          });
+      if (insertError) {
+        // Check if it's a duplicate error
+        if (insertError.code === '23505') {
+          console.error('Duplicate variant detected by database:', insertError.message);
+          throw new Error('A variant with this name already exists. Please use unique names.');
         }
+        throw insertError;
+      }
+
+      // Handle variant images only if insert was successful
+      if (insertedVariants && insertedVariants.length > 0) {
+        for (let i = 0; i < cleanedVariants.length; i++) {
+          const variant = cleanedVariants[i];
+          if (variant.image_url && insertedVariants[i]) {
+            await supabase.from('product_variant_images').insert({
+              variant_id: insertedVariants[i].id,
+              image_url: variant.image_url,
+              alt_text: variant.name,
+              sort_order: 0
+            });
+          }
+        }
+      }
+    } else {
+      // No variants provided, clean up existing ones if editing
+      if (editingProduct && existingVariants && existingVariants.length > 0) {
+        await supabase.from('product_variants').delete().eq('product_id', editingProduct.id);
       }
     }
   };
@@ -306,9 +391,11 @@ export default function AdminProducts() {
     });
     setSelectedCategories([]);
     setProductImages([]);
-    if (!formData.is_kits_deals) {
-      setProductVariants([]);
-    }
+    // Always clear variants on reset
+    setProductVariants([]);
+    setEditingProduct(null);
+    // Reset mutation tracking
+    isMutatingRef.current = false;
   };
 
   // Image management
@@ -579,14 +666,24 @@ export default function AdminProducts() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
+    // Prevent double submission
+    if (isMutatingRef.current || productMutation.isPending) {
+      toast({
+        title: "Please wait",
+        description: "Save is already in progress.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     // Process keywords - split by comma, trim, filter empty, limit to 30
     const keywordsArray = formData.keywords
       .split(',')
       .map(keyword => keyword.trim())
       .filter(keyword => keyword.length > 0)
       .slice(0, 30);
-    
+
     const productData = {
       name: formData.name,
       price: parseFloat(formData.price),
