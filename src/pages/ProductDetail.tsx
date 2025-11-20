@@ -117,21 +117,27 @@ const ProductDetail = () => {
     data: variants
   } = useProductVariants(product?.id!);
 
-  // Track product view when product loads
+  // Track product view when product loads (only once per product)
   useEffect(() => {
-    if (product) {
-      const mainImage = product.product_images?.[0]?.image_url || '/logo.png';
+    if (product && product.id) {
       const categoryName = product.product_categories?.[0]?.categories?.name || '';
-      trackViewContent({
-        product_id: selectedVariant?.sku || product.sku || product.id, // Priority: variant SKU → parent SKU → UUID
-        name: product.name,
-        price: selectedVariant?.price || product.price,
-        currency: currency === 'Rs' ? 'PKR' : 'USD',
-        category: categoryName,
-        brand: 'New Era Herbals'
-      });
+      const currentPrice = selectedVariant?.price || product.price;
+      const currentId = selectedVariant?.sku || product.sku || product.id;
+
+      // Only track if we have valid data
+      if (currentId && product.name && typeof currentPrice === 'number' && !isNaN(currentPrice)) {
+        trackViewContent({
+          product_id: currentId,
+          name: product.name,
+          price: currentPrice,
+          currency: currency === 'Rs' ? 'PKR' : 'USD',
+          category: categoryName,
+          brand: 'New Era Herbals'
+        });
+      }
     }
-  }, [product, selectedVariant, currency, trackViewContent]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [product?.id]); // Only track when product ID changes (new product)
   if (isLoading) {
     return <div className="min-h-screen bg-background">
         <Header />
@@ -167,21 +173,34 @@ const ProductDetail = () => {
   }
   const handleAddToCart = async () => {
     try {
+      const currentPrice = selectedVariant?.price || product.price;
+      const currentId = selectedVariant?.sku || product.sku || product.id;
+      const categoryName = product.product_categories?.[0]?.categories?.name || '';
+
+      // Validate before adding to cart
+      if (!currentId || !product.name || typeof currentPrice !== 'number' || isNaN(currentPrice) || quantity <= 0) {
+        toast({
+          title: "Error",
+          description: "Invalid product data. Please refresh and try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       await addToCart(product.id, quantity, selectedVariant?.id);
       const displayName = selectedVariant ? `${product.name} - ${selectedVariant.name}` : product.name;
-      const categoryName = product.product_categories?.[0]?.categories?.name || '';
-      
-      // Track add to cart event with SKU for Meta Pixel catalog matching
+
+      // Track add to cart event with validated data
       trackAddToCart({
-        product_id: selectedVariant?.sku || product.sku || product.id, // Priority: variant SKU → parent SKU → UUID
+        product_id: currentId,
         name: product.name,
-        price: selectedVariant?.price || product.price,
+        price: currentPrice,
         currency: currency === 'Rs' ? 'PKR' : 'USD',
         quantity,
         category: categoryName,
         brand: 'New Era Herbals'
       });
-      
+
       toast({
         title: "Added to cart",
         description: `${quantity} x ${displayName} added to your cart.`

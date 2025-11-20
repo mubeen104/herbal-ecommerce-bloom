@@ -77,20 +77,33 @@ export const AddToCartModal: React.FC<AddToCartModalProps> = ({
 
   const handleAddToCart = async () => {
     try {
+      const currentPrice = getCurrentPrice();
+      const currentId = selectedVariant?.sku || product.sku || product.id;
+
+      // Validate before adding to cart
+      if (!currentId || !product.name || typeof currentPrice !== 'number' || isNaN(currentPrice) || quantity <= 0) {
+        toast({
+          title: "Error",
+          description: "Invalid product data. Please refresh and try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       await onAddToCart(product.id, quantity, selectedVariant?.id);
-      
-      // Track add to cart event with SKU for catalog matching (required for Meta Pixel)
+
+      // Track add to cart event with validated data
       trackAddToCart({
-        product_id: selectedVariant?.sku || product.sku || product.id, // Priority: variant SKU → parent SKU → UUID
+        product_id: currentId,
         name: product.name,
-        price: getCurrentPrice(),
+        price: currentPrice,
         currency: currency === 'Rs' ? 'PKR' : 'USD',
         quantity: quantity,
         category: 'Herbal Products'
       });
-      
-      const displayName = selectedVariant ? 
-        `${product.name} - ${selectedVariant.name}` : 
+
+      const displayName = selectedVariant ?
+        `${product.name} - ${selectedVariant.name}` :
         product.name;
       toast({
         title: "Added to cart",

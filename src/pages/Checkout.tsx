@@ -126,28 +126,41 @@ const Checkout = () => {
 
   // Track InitiateCheckout when user lands on checkout page
   useEffect(() => {
-    if (effectiveCartItems.length > 0) {
-      const discount = appliedCoupon ? 
-        (appliedCoupon.type === 'percentage' ? 
-          (effectiveCartTotal * appliedCoupon.value) / 100 : 
-          Math.min(appliedCoupon.value, effectiveCartTotal)) 
+    if (effectiveCartItems.length > 0 && effectiveCartTotal > 0) {
+      const discount = appliedCoupon ?
+        (appliedCoupon.type === 'percentage' ?
+          (effectiveCartTotal * appliedCoupon.value) / 100 :
+          Math.min(appliedCoupon.value, effectiveCartTotal))
         : 0;
       const subtotal = effectiveCartTotal - discount;
       const shipping = subtotal >= freeShippingThreshold ? 0 : shippingRate;
       const tax = subtotal * (taxRate / 100);
       const total = subtotal + shipping + tax;
 
-      trackInitiateCheckout({
-        value: total,
-        currency: currency === 'Rs' ? 'PKR' : 'USD',
-        items: effectiveCartItems.map(item => ({
+      // Only track if we have valid items with required data
+      const validItems = effectiveCartItems
+        .filter(item => {
+          const productId = item.product_variants?.sku || item.products?.sku || item.product?.sku || item.product_id;
+          const productName = item.products?.name || item.product?.name;
+          const price = isDirectCheckout ? effectiveDirectPrice : (item.product_variants?.price || item.products?.price || item.product?.price || 0);
+          return productId && productName && typeof price === 'number' && !isNaN(price) && item.quantity > 0;
+        })
+        .map(item => ({
           product_id: item.product_variants?.sku || item.products?.sku || item.product?.sku || item.product_id,
           name: item.products?.name || item.product?.name || 'Unknown Product',
           quantity: item.quantity,
           price: isDirectCheckout ? effectiveDirectPrice : (item.product_variants?.price || item.products?.price || item.product?.price || 0)
-        }))
-      });
+        }));
+
+      if (validItems.length > 0 && total > 0) {
+        trackInitiateCheckout({
+          value: total,
+          currency: currency === 'Rs' ? 'PKR' : 'USD',
+          items: validItems
+        });
+      }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Only run once on mount
 
   const [guestInfo, setGuestInfo] = useState<GuestInfo>({
