@@ -181,11 +181,6 @@ const Cart = () => {
                 <a href="/shop">Continue Shopping</a>
               </Button>
             </div>) : <>
-            {/* Cart Suggestions */}
-            <div className="lg:col-span-3">
-              <CartSuggestions cartItems={cartItems} limit={4} />
-            </div>
-
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
               {/* Cart Items */}
               <div className="lg:col-span-2 space-y-3 sm:space-y-4">
@@ -289,6 +284,11 @@ const Cart = () => {
                   </CardContent>
                 </Card>
               </div>
+            </div>
+
+            {/* Cart Suggestions - Moved to end */}
+            <div className="mt-8 sm:mt-12">
+              <CartSuggestions cartItems={cartItems} limit={4} />
             </div>
           </>}
         </div>
