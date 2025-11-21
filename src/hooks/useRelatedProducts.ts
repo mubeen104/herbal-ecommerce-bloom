@@ -91,11 +91,23 @@ export const useRelatedProducts = (
       }
 
       try {
-        // Get current product details
+        // Get current product details from products table
         const { data: currentProductData, error: currentProductError } = await supabase
-          .from('products_with_recommendations')
-          .select('*')
+          .from('products')
+          .select(`
+            id,
+            name,
+            slug,
+            price,
+            compare_price,
+            inventory_quantity,
+            is_best_seller,
+            is_featured,
+            tags,
+            product_categories(category_id)
+          `)
           .eq('id', productId)
+          .eq('is_active', true)
           .single();
 
         if (currentProductError) {
@@ -107,15 +119,34 @@ export const useRelatedProducts = (
           return [];
         }
 
-        // Get all other active products
+        // Extract category IDs
+        const currentCategoryIds = (currentProductData.product_categories || []).map(
+          (pc: any) => pc.category_id
+        );
+
+        // Get all other active products from products table
         let query = supabase
-          .from('products_with_recommendations')
-          .select('*')
+          .from('products')
+          .select(`
+            id,
+            name,
+            slug,
+            price,
+            compare_price,
+            inventory_quantity,
+            is_best_seller,
+            is_featured,
+            tags,
+            product_categories(category_id),
+            product_images(image_url, alt_text, sort_order)
+          `)
+          .eq('is_active', true)
+          .gt('inventory_quantity', 0)
           .neq('id', productId);
 
         // Exclude specified IDs
         if (excludeIds.length > 0) {
-          query = query.not('id', 'in', `(${excludeIds.join(',')})`);
+          query = query.not('id', 'in', `(${excludeIds.join(',')})`)
         }
 
         const { data: candidateProducts, error: candidatesError } = await query;
@@ -130,22 +161,40 @@ export const useRelatedProducts = (
         }
 
         // Calculate scores for all candidates
-        const scoredProducts = candidateProducts.map(candidate => ({
-          id: candidate.id,
-          name: candidate.name,
-          slug: candidate.slug,
-          price: candidate.price,
-          compare_price: candidate.compare_price,
-          inventory_quantity: candidate.inventory_quantity,
-          is_best_seller: candidate.is_best_seller,
-          is_featured: candidate.is_featured,
-          image_url: candidate.image_url,
-          image_alt: candidate.image_alt,
-          recommendation_score: calculateRecommendationScore(
-            currentProductData as ProductWithRecommendations,
-            candidate as ProductWithRecommendations
-          ),
-        }));
+        const scoredProducts = candidateProducts.map(candidate => {
+          const candidateCategoryIds = (candidate.product_categories || []).map(
+            (pc: any) => pc.category_id
+          );
+          const primaryImage = (candidate.product_images || [])
+            .sort((a: any, b: any) => a.sort_order - b.sort_order)[0];
+
+          return {
+            id: candidate.id,
+            name: candidate.name,
+            slug: candidate.slug,
+            price: candidate.price,
+            compare_price: candidate.compare_price,
+            inventory_quantity: candidate.inventory_quantity,
+            is_best_seller: candidate.is_best_seller,
+            is_featured: candidate.is_featured,
+            image_url: primaryImage?.image_url || '/placeholder.svg',
+            image_alt: primaryImage?.alt_text || candidate.name,
+            recommendation_score: calculateRecommendationScore(
+              {
+                ...currentProductData,
+                category_ids: currentCategoryIds,
+                image_url: '',
+                image_alt: ''
+              } as ProductWithRecommendations,
+              {
+                ...candidate,
+                category_ids: candidateCategoryIds,
+                image_url: primaryImage?.image_url || '/placeholder.svg',
+                image_alt: primaryImage?.alt_text || candidate.name
+              } as ProductWithRecommendations
+            ),
+          };
+        });
 
         // Filter products with score > 0, sort by score, and limit
         const topRecommendations = scoredProducts

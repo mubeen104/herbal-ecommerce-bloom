@@ -107,11 +107,22 @@ export const useSuggestedCartProducts = (
       }
 
       try {
-        // Get cart products details
+        // Get cart products details from products table
         const { data: cartProducts, error: cartError } = await supabase
-          .from('products_with_recommendations')
-          .select('*')
-          .in('id', cartProductIds);
+          .from('products')
+          .select(`
+            id,
+            name,
+            slug,
+            price,
+            compare_price,
+            inventory_quantity,
+            is_best_seller,
+            is_featured,
+            product_categories(category_id)
+          `)
+          .in('id', cartProductIds)
+          .eq('is_active', true);
 
         if (cartError) {
           console.error('Error fetching cart products:', cartError);
@@ -122,10 +133,29 @@ export const useSuggestedCartProducts = (
           return [];
         }
 
-        // Get all other active products (not in cart)
+        // Enhance cart products with category IDs
+        const enhancedCartProducts = cartProducts.map(p => ({
+          ...p,
+          category_ids: (p.product_categories || []).map((pc: any) => pc.category_id)
+        }));
+
+        // Get all other active products (not in cart) from products table
         const { data: candidateProducts, error: candidatesError } = await supabase
-          .from('products_with_recommendations')
-          .select('*')
+          .from('products')
+          .select(`
+            id,
+            name,
+            slug,
+            price,
+            compare_price,
+            inventory_quantity,
+            is_best_seller,
+            is_featured,
+            product_categories(category_id),
+            product_images(image_url, alt_text, sort_order)
+          `)
+          .eq('is_active', true)
+          .gt('inventory_quantity', 0)
           .not('id', 'in', `(${cartProductIds.join(',')})`);
 
         if (candidatesError) {
@@ -138,22 +168,35 @@ export const useSuggestedCartProducts = (
         }
 
         // Calculate scores for all candidates
-        const scoredProducts = candidateProducts.map(candidate => ({
-          id: candidate.id,
-          name: candidate.name,
-          slug: candidate.slug,
-          price: candidate.price,
-          compare_price: candidate.compare_price,
-          inventory_quantity: candidate.inventory_quantity,
-          is_best_seller: candidate.is_best_seller,
-          is_featured: candidate.is_featured,
-          image_url: candidate.image_url,
-          image_alt: candidate.image_alt,
-          suggestion_score: calculateCartSuggestionScore(
-            cartProducts as ProductWithRecommendations[],
-            candidate as ProductWithRecommendations
-          ),
-        }));
+        const scoredProducts = candidateProducts.map(candidate => {
+          const candidateCategoryIds = (candidate.product_categories || []).map(
+            (pc: any) => pc.category_id
+          );
+          const primaryImage = (candidate.product_images || [])
+            .sort((a: any, b: any) => a.sort_order - b.sort_order)[0];
+
+          return {
+            id: candidate.id,
+            name: candidate.name,
+            slug: candidate.slug,
+            price: candidate.price,
+            compare_price: candidate.compare_price,
+            inventory_quantity: candidate.inventory_quantity,
+            is_best_seller: candidate.is_best_seller,
+            is_featured: candidate.is_featured,
+            image_url: primaryImage?.image_url || '/placeholder.svg',
+            image_alt: primaryImage?.alt_text || candidate.name,
+            suggestion_score: calculateCartSuggestionScore(
+              enhancedCartProducts as ProductWithRecommendations[],
+              {
+                ...candidate,
+                category_ids: candidateCategoryIds,
+                image_url: primaryImage?.image_url || '/placeholder.svg',
+                image_alt: primaryImage?.alt_text || candidate.name
+              } as ProductWithRecommendations
+            ),
+          };
+        });
 
         // Filter products with score > 0, sort by score, and limit
         const topSuggestions = scoredProducts
