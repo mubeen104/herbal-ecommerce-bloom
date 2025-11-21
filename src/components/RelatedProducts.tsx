@@ -15,6 +15,7 @@ import { useProductRatings } from '@/hooks/useProductRatings';
 import { ProductRating } from '@/components/ProductRating';
 import { usePixelTracking } from '@/hooks/usePixelTracking';
 import { getCurrencyCode } from '@/utils/trackingUtils';
+import { RecommendationError } from '@/components/RecommendationError';
 
 interface RelatedProductsProps {
   productId: string;
@@ -23,7 +24,7 @@ interface RelatedProductsProps {
 }
 
 const RelatedProducts = ({ productId, limit = 6, excludeIds = [] }: RelatedProductsProps) => {
-  const { data: relatedProducts = [], isLoading } = useRelatedProducts(productId, limit, excludeIds);
+  const { data: relatedProducts = [], isLoading, isError, error, refetch } = useRelatedProducts(productId, limit, excludeIds);
   const { addToCart } = useGuestCart();
   const { user } = useAuth();
   const { currency } = useStoreSettings();
@@ -117,8 +118,47 @@ const RelatedProducts = ({ productId, limit = 6, excludeIds = [] }: RelatedProdu
     );
   }
 
+  if (isError) {
+    return (
+      <section className="mt-12 mb-8">
+        <div className="mb-6">
+          <h2 id="related-products-heading" className="text-2xl md:text-3xl font-bold text-foreground mb-2">
+            You May Also Like
+          </h2>
+          <p className="text-muted-foreground">
+            Customers who viewed this item also viewed these products
+          </p>
+        </div>
+        <RecommendationError
+          error={error}
+          onRetry={refetch}
+          title="Recommendations unavailable"
+          description="We couldn't load product recommendations at this time."
+        />
+      </section>
+    );
+  }
+
   if (!relatedProducts || relatedProducts.length === 0) {
-    return null;
+    return (
+      <section className="mt-12 mb-8">
+        <div className="mb-6">
+          <h2 id="related-products-heading" className="text-2xl md:text-3xl font-bold text-foreground mb-2">
+            You May Also Like
+          </h2>
+          <p className="text-muted-foreground">
+            Customers who viewed this item also viewed these products
+          </p>
+        </div>
+        <Card className="mb-6 border-gray-200 bg-gray-50">
+          <CardContent className="p-6">
+            <p className="text-gray-600 text-center">
+              No related products found at this time.
+            </p>
+          </CardContent>
+        </Card>
+      </section>
+    );
   }
 
   return (

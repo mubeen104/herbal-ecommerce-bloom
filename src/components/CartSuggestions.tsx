@@ -14,6 +14,7 @@ import { AddToCartModal } from '@/components/AddToCartModal';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { usePixelTracking } from '@/hooks/usePixelTracking';
 import { getCurrencyCode } from '@/utils/trackingUtils';
+import { RecommendationError } from '@/components/RecommendationError';
 
 interface CartSuggestionsProps {
   cartItems: any[];
@@ -21,7 +22,7 @@ interface CartSuggestionsProps {
 }
 
 const CartSuggestions = ({ cartItems, limit = 4 }: CartSuggestionsProps) => {
-  const { data: suggestedProducts = [], isLoading } = useSuggestedCartProducts(cartItems, limit);
+  const { data: suggestedProducts = [], isLoading, isError, error, refetch } = useSuggestedCartProducts(cartItems, limit);
   const { addToCart } = useGuestCart();
   const { user } = useAuth();
   const { currency } = useStoreSettings();
@@ -124,8 +125,51 @@ const CartSuggestions = ({ cartItems, limit = 4 }: CartSuggestionsProps) => {
     );
   }
 
+  if (isError) {
+    return (
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-lg md:text-xl">
+            <Sparkles className="w-5 h-5 text-primary" />
+            Complete Your Order
+          </CardTitle>
+          <p className="text-sm text-muted-foreground mt-1">
+            Customers who bought items in your cart also bought these
+          </p>
+        </CardHeader>
+        <CardContent>
+          <RecommendationError
+            error={error}
+            onRetry={refetch}
+            title="Suggestions unavailable"
+            description="We couldn't load cart suggestions at this time."
+          />
+        </CardContent>
+      </Card>
+    );
+  }
+
   if (!suggestedProducts || suggestedProducts.length === 0) {
-    return null;
+    return (
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-lg md:text-xl">
+            <Sparkles className="w-5 h-5 text-primary" />
+            Complete Your Order
+          </CardTitle>
+          <p className="text-sm text-muted-foreground mt-1">
+            Customers who bought items in your cart also bought these
+          </p>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-6">
+            <p className="text-gray-600">
+              No suggestions available at this time. Check back later for personalized recommendations.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    );
   }
 
   return (

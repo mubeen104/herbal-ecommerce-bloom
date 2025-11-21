@@ -1,7 +1,7 @@
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { AuthProvider } from "@/contexts/AuthContext";
@@ -11,6 +11,7 @@ import ScrollToTop from "@/components/ScrollToTop";
 import { PixelTracker } from "@/components/PixelTracker";
 import { Breadcrumbs } from "@/components/navigation/Breadcrumbs";
 import { MobileBottomNav } from "@/components/navigation/MobileBottomNav";
+import { queryClient } from "@/lib/reactQueryClient";
 import Index from "./pages/Index";
 import Shop from "./pages/Shop";
 import Contact from "./pages/Contact";
@@ -46,7 +47,6 @@ import Blog from "./pages/Blog";
 import BlogPost from "./pages/BlogPost";
 import Category from "./pages/Category";
 
-const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
