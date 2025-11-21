@@ -14,6 +14,7 @@ import { AddToCartModal } from '@/components/AddToCartModal';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { usePixelTracking } from '@/hooks/usePixelTracking';
 import { getCurrencyCode } from '@/utils/trackingUtils';
+import { RecommendationError } from '@/components/RecommendationError';
 
 interface CartSuggestionsProps {
   cartItems: any[];
