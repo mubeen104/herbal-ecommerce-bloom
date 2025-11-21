@@ -8,6 +8,7 @@ class EventDeduplicationManager {
   private ttl = 5000; // 5 seconds TTL for deduplication
   private storageKey = 'pixel_event_dedup';
   private transactionIds: Set<string> = new Set();
+  private cleanupInterval?: number;
 
   constructor() {
     this.loadFromStorage();
@@ -64,13 +65,16 @@ class EventDeduplicationManager {
       return false;
     }
 
-    // Also check regular deduplication
-    if (!this.shouldTrack('purchase', { ...data, order_id: orderId })) {
-      return false;
-    }
-
-    // Mark transaction as tracked
+    // Mark transaction as tracked IMMEDIATELY to prevent race condition
     this.transactionIds.add(orderId);
+
+    // Also add to event deduplication
+    const hash = this.generateHash('purchase', { ...data, order_id: orderId });
+    this.events.set(hash, {
+      hash,
+      timestamp: Date.now()
+    });
+
     this.saveToStorage();
     return true;
   }
@@ -115,8 +119,13 @@ class EventDeduplicationManager {
   }
 
   private startCleanup(): void {
+    // Clear existing interval first
+    if (this.cleanupInterval) {
+      clearInterval(this.cleanupInterval);
+    }
+
     // Clean up old events every 10 seconds
-    setInterval(() => {
+    this.cleanupInterval = window.setInterval(() => {
       const now = Date.now();
       const toDelete: string[] = [];
 
@@ -138,6 +147,14 @@ class EventDeduplicationManager {
     this.events.clear();
     this.transactionIds.clear();
     sessionStorage.removeItem(this.storageKey);
+  }
+
+  destroy(): void {
+    if (this.cleanupInterval) {
+      clearInterval(this.cleanupInterval);
+      this.cleanupInterval = undefined;
+    }
+    this.clear();
   }
 
   setTTL(milliseconds: number): void {

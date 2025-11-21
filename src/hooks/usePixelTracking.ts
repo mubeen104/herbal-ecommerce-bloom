@@ -109,7 +109,7 @@ export const usePixelTracking = () => {
     } catch (error) {
       console.warn('Error tracking ViewContent event:', error);
     }
-  }, [enabledPixels]);
+  }, [enabledPixels, user]);
 
   const trackAddToCart = useCallback((productData: {
     product_id: string;
@@ -207,7 +207,7 @@ export const usePixelTracking = () => {
     } catch (error) {
       console.warn('Error tracking AddToCart event:', error);
     }
-  }, [enabledPixels]);
+  }, [enabledPixels, user]);
 
   const trackInitiateCheckout = useCallback((checkoutData: {
     value: number;
@@ -311,7 +311,7 @@ export const usePixelTracking = () => {
     } catch (error) {
       console.warn('Error tracking InitiateCheckout event:', error);
     }
-  }, [enabledPixels]);
+  }, [enabledPixels, user]);
 
   const trackPurchase = useCallback((orderData: {
     order_id: string;
@@ -440,7 +440,7 @@ export const usePixelTracking = () => {
     } catch (error) {
       console.warn('Error tracking Purchase event:', error);
     }
-  }, [enabledPixels]);
+  }, [enabledPixels, user]);
 
   const trackSearch = useCallback((searchTerm: string) => {
     // Validate input

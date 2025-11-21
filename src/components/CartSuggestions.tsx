@@ -12,6 +12,8 @@ import { useStoreSettings } from '@/hooks/useStoreSettings';
 import { useToast } from '@/hooks/use-toast';
 import { AddToCartModal } from '@/components/AddToCartModal';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { usePixelTracking } from '@/hooks/usePixelTracking';
+import { getCurrencyCode } from '@/utils/trackingUtils';
 
 interface CartSuggestionsProps {
   cartItems: any[];
@@ -25,6 +27,7 @@ const CartSuggestions = ({ cartItems, limit = 4 }: CartSuggestionsProps) => {
   const { currency } = useStoreSettings();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { trackViewRecommendation, trackAddRecommendedToCart } = usePixelTracking();
 
   const [addToCartProduct, setAddToCartProduct] = useState<any>(null);
   const [isOpen, setIsOpen] = useState(true);
@@ -42,11 +45,24 @@ const CartSuggestions = ({ cartItems, limit = 4 }: CartSuggestionsProps) => {
 
   useEffect(() => {
     if (suggestedProducts.length > 0 && isOpen) {
+      const currencyCode = getCurrencyCode(currency);
+
       suggestedProducts.forEach(product => {
+        // Track in database for analytics
         trackCartSuggestionView(cartProductIds, product.id, sessionId, user?.id);
+
+        // Track to advertising pixels
+        trackViewRecommendation({
+          product_id: product.id,
+          name: product.name,
+          price: product.price,
+          currency: currencyCode,
+          source: 'cart_page',
+          recommendation_score: product.suggestion_score
+        });
       });
     }
-  }, [suggestedProducts, isOpen, cartProductIds, sessionId, user?.id]);
+  }, [suggestedProducts, isOpen, cartProductIds, sessionId, user?.id, currency, trackViewRecommendation]);
 
   const handleAddToCartRequest = (product: any) => {
     setAddToCartProduct(product);
@@ -54,7 +70,24 @@ const CartSuggestions = ({ cartItems, limit = 4 }: CartSuggestionsProps) => {
 
   const handleAddToCart = async (suggestedProductId: string, quantity: number, variantId?: string) => {
     await addToCart(suggestedProductId, quantity, variantId);
+
+    // Track in database for analytics
     trackCartSuggestionConversion(cartProductIds, suggestedProductId, sessionId, user?.id);
+
+    // Track to advertising pixels
+    const product = suggestedProducts.find(p => p.id === suggestedProductId);
+    if (product) {
+      const currencyCode = getCurrencyCode(currency);
+      trackAddRecommendedToCart({
+        product_id: product.id,
+        name: product.name,
+        price: product.price,
+        quantity: quantity,
+        currency: currencyCode,
+        source: 'cart_page'
+      });
+    }
+
     toast({
       title: 'Added to cart',
       description: 'Product has been added to your cart.',

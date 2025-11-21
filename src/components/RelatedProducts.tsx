@@ -13,6 +13,8 @@ import { useToast } from '@/hooks/use-toast';
 import { AddToCartModal } from '@/components/AddToCartModal';
 import { useProductRatings } from '@/hooks/useProductRatings';
 import { ProductRating } from '@/components/ProductRating';
+import { usePixelTracking } from '@/hooks/usePixelTracking';
+import { getCurrencyCode } from '@/utils/trackingUtils';
 
 interface RelatedProductsProps {
   productId: string;
@@ -27,6 +29,7 @@ const RelatedProducts = ({ productId, limit = 6, excludeIds = [] }: RelatedProdu
   const { currency } = useStoreSettings();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { trackViewRecommendation, trackAddRecommendedToCart } = usePixelTracking();
 
   const [addToCartProduct, setAddToCartProduct] = useState<any>(null);
   const [sessionId] = useState(() => {
@@ -42,11 +45,24 @@ const RelatedProducts = ({ productId, limit = 6, excludeIds = [] }: RelatedProdu
 
   useEffect(() => {
     if (relatedProducts.length > 0) {
+      const currencyCode = getCurrencyCode(currency);
+
       relatedProducts.forEach(product => {
+        // Track in database for analytics
         trackRelatedProductView(productId, product.id, sessionId, user?.id);
+
+        // Track to advertising pixels
+        trackViewRecommendation({
+          product_id: product.id,
+          name: product.name,
+          price: product.price,
+          currency: currencyCode,
+          source: 'product_page',
+          recommendation_score: product.recommendation_score
+        });
       });
     }
-  }, [relatedProducts, productId, sessionId, user?.id]);
+  }, [relatedProducts, productId, sessionId, user?.id, currency, trackViewRecommendation]);
 
   const handleAddToCartRequest = (product: any) => {
     setAddToCartProduct(product);
@@ -54,7 +70,23 @@ const RelatedProducts = ({ productId, limit = 6, excludeIds = [] }: RelatedProdu
 
   const handleAddToCart = async (relatedProductId: string, quantity: number, variantId?: string) => {
     await addToCart(relatedProductId, quantity, variantId);
+
+    // Track in database for analytics
     trackRelatedProductConversion(productId, relatedProductId, sessionId, user?.id);
+
+    // Track to advertising pixels
+    const product = relatedProducts.find(p => p.id === relatedProductId);
+    if (product) {
+      const currencyCode = getCurrencyCode(currency);
+      trackAddRecommendedToCart({
+        product_id: product.id,
+        name: product.name,
+        price: product.price,
+        quantity: quantity,
+        currency: currencyCode,
+        source: 'product_page'
+      });
+    }
   };
 
   const handleProductClick = (product: any) => {
