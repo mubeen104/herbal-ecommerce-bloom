@@ -36,15 +36,16 @@ const Header = () => {
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-border/30 shadow-md hover:shadow-lg transition-all duration-300">
-      <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-accent/5 pointer-events-none"></div>
+    <header className="sticky top-0 z-50 bg-white/85 backdrop-blur-xl border-b border-accent/20 shadow-lg hover:shadow-xl transition-all duration-300">
+      <div className="absolute inset-0 bg-gradient-to-r from-primary/8 via-accent/3 to-accent/8 pointer-events-none"></div>
+      <div className="absolute bottom-0 inset-x-0 h-0.5 bg-gradient-to-r from-transparent via-accent/40 to-transparent pointer-events-none"></div>
       <div className="relative max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
         {/* Top bar */}
         <div className="flex items-center justify-between h-16 sm:h-20 gap-2 sm:gap-4">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2 sm:space-x-3 group flex-shrink-0">
             <div className="relative transform transition-all duration-300 group-hover:scale-110">
-              <div className="bg-gradient-to-br from-primary/10 to-primary/5 rounded-lg p-2.5 shadow-sm transition-all duration-300 group-hover:shadow-md group-hover:from-primary/15 group-hover:to-primary/10 border border-primary/10">
+              <div className="bg-gradient-to-br from-primary/15 via-primary/10 to-accent/5 rounded-lg p-2.5 shadow-sm transition-all duration-300 group-hover:shadow-lg group-hover:from-primary/20 group-hover:to-accent/10 border border-accent/30">
                 <img 
                   src="/logo.png" 
                   alt={`${storeName} Logo`} 

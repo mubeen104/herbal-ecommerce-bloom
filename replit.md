@@ -74,19 +74,41 @@ Core data models include `products`, `categories`, `product_variants`, `orders`,
 
 ## Recent Updates (November 22, 2025)
 
-### All Homepage Product Carousels Updated with Modern Design
-- **FeaturedProducts.tsx** ✅ - Modern card design with gradient badges, improved spacing, hover effects
-- **NewArrivals.tsx** ✅ - Modern card design with consistent styling across carousel
-- **KitsDeals.tsx** ✅ - Modern card design with prominent product information
-- **BestSellingProducts.tsx** ✅ - Modern card design with enhanced visual hierarchy
+### Premium Herbal & Health-Focused Brand Identity ✨
+Transformed the design from generic/template-like to a distinctive **herbal wellness premium aesthetic** with a sophisticated botanical color palette and enhanced brand presence.
 
-**Modern Design Pattern Unified Across All Product Carousels:**
-- Clean card layout with `rounded-2xl` borders and `border-border/40` styling
-- Muted background images (`bg-muted/30`) for product containers
-- Gradient red sale badges (`from-red-500 to-red-600`) positioned at top-right
-- Responsive pricing and rating sections with clear typography
-- Full-width gradient action buttons (`from-primary to-accent`) for "Add to Cart"
-- Outline variant buttons for "View Details"
-- Quick View overlay with smooth transitions
-- Hover elevation effects for interactive feedback
-- Consistent spacing and typography across all sections
+**Color Palette Transformation:**
+- **Primary Color**: Deep forest green (150° 42% 28%) - Premium, natural, health-focused
+- **Background**: Warm ivory (45° 15% 98%) - Natural, organic feel instead of stark white
+- **Accent Color**: Bronze/gold (30° 65% 45%) - Premium wellness positioning, warm luxury
+- **Additional Botanicals**: Olive green, moss green for subtle accents
+- **Dark Mode**: Deep forest background with warm ivory text and bronze accents - maintains herbal aesthetic
+- **Sidebar**: Botanical-themed colors matching the main palette
+
+**Premium Header Enhancement:**
+- Added subtle bronze/gold accent border at bottom for premium feel
+- Enhanced logo area with gradient background incorporating accent colors
+- Improved glassmorphism effect with botanical color gradients
+- Premium shadow and backdrop blur effects
+- Border-accent/20 styling for sophisticated separation
+
+**Product Card Button Redesign - All Carousels:**
+- **FeaturedProducts.tsx** ✅ - "Add to Cart" buttons: Bronze/gold gradient (from-accent via-accent to-accent-bronze)
+- **BestSellingProducts.tsx** ✅ - "Add to Cart" buttons: Bronze/gold gradient + Fixed crash (added missing `isLoading` prop)
+- **NewArrivals.tsx** ✅ - "Add to Cart" buttons: Bronze/gold gradient
+- **KitsDeals.tsx** ✅ - "Add to Cart" buttons: Bronze/gold gradient
+- Enhanced hover effects with `hover:opacity-95` and `shadow-md` for premium interaction feedback
+
+**Bug Fix:**
+- Fixed "Add to Cart" crash in BestSellingProducts component by:
+  - Adding missing `isLoading={cartLoading}` prop to AddToCartModal
+  - Implementing proper conditional rendering pattern: `{addToCartProduct && (...)}`
+  - Ensures modal only renders when product is selected
+
+**Design Consistency:**
+- Unified botanical color palette across all components
+- Premium gold/bronze accents create luxury wellness positioning
+- Deep forest greens evoke natural, health-conscious brand
+- Warm ivory backgrounds feel organic and approachable
+- All interactive elements use premium gradient styling
+- Dark mode maintains herbal aesthetic throughout

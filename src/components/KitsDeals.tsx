@@ -352,7 +352,7 @@ const KitsDeals = () => {
                             <Button
                               onClick={(e) => { e.stopPropagation(); handleAddToCartRequest(product); }}
                               disabled={cartLoading || product.inventory_quantity === 0}
-                              className="w-full rounded-lg font-semibold text-xs sm:text-sm py-2 sm:py-2.5 bg-gradient-to-r from-primary to-accent hover:opacity-90 transition-opacity text-white border-0"
+                              className="w-full rounded-lg font-semibold text-xs sm:text-sm py-2 sm:py-2.5 bg-gradient-to-r from-accent via-accent to-accent-bronze hover:opacity-95 transition-opacity text-white border-0 shadow-md"
                             >
                               <ShoppingCart className="h-4 w-4 mr-2" />
                               {product.inventory_quantity === 0 ? 'Out of Stock' : 'Add to Cart'}
