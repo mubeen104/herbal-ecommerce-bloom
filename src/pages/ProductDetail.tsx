@@ -86,11 +86,7 @@ const useProductReviews = (productId: string) => {
   });
 };
 const ProductDetail = () => {
-  const {
-    slug
-  } = useParams<{
-    slug: string;
-  }>();
+  const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const {
     toast
@@ -141,14 +137,14 @@ const ProductDetail = () => {
   if (isLoading) {
     return <div className="min-h-screen bg-background">
         <Header />
-        <div className="container mx-auto px-4 py-8">
+        <div className="container mx-auto px-3 sm:px-4 py-6 sm:py-8">
           <div className="animate-pulse">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <div className="bg-muted rounded-lg h-96"></div>
-              <div className="space-y-4">
-                <div className="bg-muted rounded h-8 w-3/4"></div>
-                <div className="bg-muted rounded h-6 w-1/2"></div>
-                <div className="bg-muted rounded h-20 w-full"></div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 md:gap-8">
+              <div className="bg-muted rounded-lg h-64 sm:h-96"></div>
+              <div className="space-y-3 sm:space-y-4">
+                <div className="bg-muted rounded h-7 sm:h-8 w-3/4"></div>
+                <div className="bg-muted rounded h-5 sm:h-6 w-1/2"></div>
+                <div className="bg-muted rounded h-16 sm:h-20 w-full"></div>
               </div>
             </div>
           </div>
@@ -159,11 +155,11 @@ const ProductDetail = () => {
   if (error || !product) {
     return <div className="min-h-screen bg-background">
         <Header />
-        <div className="container mx-auto px-4 py-8">
+        <div className="container mx-auto px-3 sm:px-4 py-6 sm:py-8">
           <Card>
-            <CardContent className="p-8 text-center">
-              <h2 className="text-2xl font-bold text-foreground mb-4">Product Not Found</h2>
-              <p className="text-muted-foreground mb-6">The product you're looking for doesn't exist or has been removed.</p>
+            <CardContent className="p-4 sm:p-8 text-center">
+              <h2 className="text-lg sm:text-2xl font-bold text-foreground mb-3 sm:mb-4">Product Not Found</h2>
+              <p className="text-muted-foreground mb-4 sm:mb-6 text-sm sm:text-base">The product you're looking for doesn't exist or has been removed.</p>
               <Button onClick={() => navigate('/shop')}>Back to Shop</Button>
             </CardContent>
           </Card>
@@ -258,7 +254,7 @@ const ProductDetail = () => {
         <Header />
         <Breadcrumbs />
 
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-3 sm:px-4 py-6 sm:py-8">
         {/* Enhanced microdata for Meta Pixel auto-catalog sync */}
         <meta itemProp="sku" content={product.sku || product.id} />
         <meta itemProp="name" content={product.name} />

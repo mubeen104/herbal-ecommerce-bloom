@@ -141,19 +141,19 @@ const Footer = () => {
         <Leaf className="w-full h-full -rotate-12" />
       </div>
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="relative max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
         
         {/* Top Section - Company Info */}
         
 
         {/* Middle Section - Links & Newsletter */}
-        <div className="py-8 sm:py-10 md:py-12 border-b border-border/30">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
+        <div className="py-6 sm:py-8 md:py-10 lg:py-12 border-b border-border/30">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 md:gap-8">
             
             {/* Quick Links - Left */}
-            <div className="lg:col-span-1 space-y-4 sm:space-y-6 animate-fade-in flex flex-col items-center text-center">
-              <h3 className="text-base sm:text-lg font-bold text-foreground flex items-center">
-                <div className="w-4 sm:w-6 h-0.5 bg-gradient-to-r from-primary to-transparent mr-2 sm:mr-3" />
+            <div className="lg:col-span-1 space-y-3 sm:space-y-5 md:space-y-6 animate-fade-in flex flex-col items-center text-center">
+              <h3 className="text-sm sm:text-base md:text-lg font-bold text-foreground flex items-center justify-center gap-2">
+                <div className="w-3 sm:w-4 md:w-6 h-0.5 bg-gradient-to-r from-primary to-transparent" />
                 Quick Links
               </h3>
               <ul className="space-y-2 sm:space-y-3">

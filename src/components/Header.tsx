@@ -44,9 +44,9 @@ const Header = () => {
 
   return (
     <header className="bg-white shadow-lg border-b border-border sticky top-0 z-50 backdrop-blur-md">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
         {/* Top bar */}
-        <div className="flex items-center justify-between h-20">
+        <div className="flex items-center justify-between h-16 sm:h-20">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-4 group">
             <div className="relative transform transition-all duration-300 hover:scale-105">
@@ -59,7 +59,7 @@ const Header = () => {
               </div>
             </div>
             <div className="hidden sm:block">
-              <span className="text-2xl font-bold text-foreground tracking-tight transition-colors duration-300 group-hover:text-primary">
+              <span className="text-lg sm:text-2xl font-bold text-foreground tracking-tight transition-colors duration-300 group-hover:text-primary">
                 {storeName}
               </span>
               <div className="h-0.5 bg-primary w-0 group-hover:w-full transition-all duration-500"></div>
@@ -119,11 +119,11 @@ const Header = () => {
           </div>
 
           {/* Actions */}
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-2 sm:space-x-3">
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-12 w-12 text-foreground hover:text-primary hover:bg-primary/10 rounded-full transition-all duration-300 hover:scale-110 hover:shadow-lg">
+                  <Button variant="ghost" size="icon" className="h-10 sm:h-12 w-10 sm:w-12 text-foreground hover:text-primary hover:bg-primary/10 rounded-full transition-all duration-300 hover:scale-110 hover:shadow-lg" data-testid="button-user-profile">
                     <User className="h-5 w-5" />
                   </Button>
                 </DropdownMenuTrigger>
@@ -157,14 +157,14 @@ const Header = () => {
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <Button variant="ghost" size="icon" className="h-12 w-12 text-foreground hover:text-primary hover:bg-primary/10 rounded-full transition-all duration-300 hover:scale-110 hover:shadow-lg" asChild>
+              <Button variant="ghost" size="icon" className="h-10 sm:h-12 w-10 sm:w-12 text-foreground hover:text-primary hover:bg-primary/10 rounded-full transition-all duration-300 hover:scale-110 hover:shadow-lg" asChild data-testid="button-auth-login">
                 <Link to="/auth">
                   <User className="h-5 w-5" />
                 </Link>
               </Button>
             )}
             
-            <Button variant="ghost" size="icon" className="h-12 w-12 text-foreground hover:text-primary hover:bg-primary/10 rounded-full transition-all duration-300 relative hover:scale-110 hover:shadow-lg" asChild>
+            <Button variant="ghost" size="icon" className="h-10 sm:h-12 w-10 sm:w-12 text-foreground hover:text-primary hover:bg-primary/10 rounded-full transition-all duration-300 relative hover:scale-110 hover:shadow-lg" asChild data-testid="button-cart">
               <Link to="/cart">
                 <ShoppingBag className="h-5 w-5" />
                 {cartCount > 0 && (
@@ -177,8 +177,9 @@ const Header = () => {
             <Button
               variant="ghost"
               size="icon"
-              className="md:hidden h-12 w-12 text-foreground hover:text-primary hover:bg-primary/10 rounded-full transition-all duration-300 hover:scale-110"
+              className="md:hidden h-10 w-10 text-foreground hover:text-primary hover:bg-primary/10 rounded-full transition-all duration-300 hover:scale-110"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
+              data-testid="button-mobile-menu"
             >
               {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </Button>
@@ -186,16 +187,17 @@ const Header = () => {
         </div>
 
         {/* Mobile Search */}
-        <div className="lg:hidden pb-4">
+        <div className="lg:hidden pb-3 sm:pb-4">
           <form onSubmit={handleSearch} className="relative group">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5 transition-all duration-300 group-focus-within:text-primary group-focus-within:scale-110" />
+            <Search className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5 transition-all duration-300 group-focus-within:text-primary group-focus-within:scale-110" />
             <Input
               type="text"
-              placeholder="Search herbs, supplements..."
+              placeholder="Search herbs..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={handleSearchKeyDown}
-              className="pl-12 pr-4 py-3 bg-muted/20 border-2 border-muted text-foreground placeholder:text-muted-foreground focus:border-primary focus:bg-background focus:shadow-lg rounded-full transition-all duration-300"
+              className="pl-10 sm:pl-12 pr-3 sm:pr-4 py-2.5 sm:py-3 bg-muted/20 border-2 border-muted text-sm sm:text-base text-foreground placeholder:text-muted-foreground focus:border-primary focus:bg-background focus:shadow-lg rounded-full transition-all duration-300"
+              data-testid="input-mobile-search"
             />
           </form>
         </div>
@@ -203,15 +205,16 @@ const Header = () => {
 
       {/* Mobile Navigation */}
       {isMenuOpen && (
-        <div className="md:hidden bg-white border-t border-border shadow-lg animate-fade-in max-h-[calc(100vh-140px)] overflow-y-auto">
-          <div className="px-4 py-4 space-y-1">
+        <div className="md:hidden bg-white border-t border-border shadow-lg animate-fade-in max-h-[calc(100vh-110px)] sm:max-h-[calc(100vh-140px)] overflow-y-auto">
+          <div className="px-3 sm:px-4 py-3 sm:py-4 space-y-1">
             {navigation.map((item, index) => (
               <Link
                 key={item.name}
                 to={item.href}
                 onClick={() => setIsMenuOpen(false)}
-                className="block px-4 py-4 text-foreground hover:text-primary hover:bg-primary/5 rounded-xl transition-all duration-300 group font-semibold"
+                className="block px-3 sm:px-4 py-3 sm:py-4 text-foreground hover:text-primary hover:bg-primary/5 rounded-xl transition-all duration-300 group font-semibold min-h-[44px] flex items-center"
                 style={{ animationDelay: `${index * 100}ms` }}
+                data-testid={`link-nav-${item.name.toLowerCase()}`}
               >
                 <span className="relative">
                   {item.name}

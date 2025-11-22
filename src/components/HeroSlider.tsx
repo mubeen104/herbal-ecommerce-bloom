@@ -131,18 +131,18 @@ const HeroSlider = () => {
                 {slide.link_url && (
                   <div className="absolute inset-0 bg-gradient-to-r from-black/40 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-700 ease-out flex items-center justify-center p-4 sm:p-6 md:p-8">
                     <div className="text-center text-white transform translate-y-4 group-hover:translate-y-0 transition-all duration-700 ease-out max-w-full">
-                      <h2 className="text-xl sm:text-2xl md:text-4xl lg:text-5xl xl:text-6xl font-bold mb-2 sm:mb-3 md:mb-4 text-shadow-lg px-2 opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-200">
+                      <h2 className="text-lg sm:text-2xl md:text-4xl lg:text-5xl xl:text-6xl font-bold mb-1 sm:mb-3 md:mb-4 text-shadow-lg px-2 opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-200 line-clamp-2 sm:line-clamp-none">
                         {slide.title}
                       </h2>
                       {slide.subtitle && (
-                        <p className="text-sm sm:text-base md:text-lg lg:text-xl mb-4 sm:mb-5 md:mb-6 max-w-xs sm:max-w-lg md:max-w-2xl mx-auto text-shadow px-2 opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-300">
+                        <p className="text-xs sm:text-base md:text-lg lg:text-xl mb-3 sm:mb-5 md:mb-6 max-w-xs sm:max-w-lg md:max-w-2xl mx-auto text-shadow px-2 opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-300 line-clamp-2">
                           {slide.subtitle}
                         </p>
                       )}
                       <div className="opacity-0 group-hover:opacity-100 transition-all duration-500 delay-400 transform scale-95 group-hover:scale-100">
                         <a
                           href={slide.link_url}
-                          className="relative inline-flex items-center px-4 py-2 sm:px-6 sm:py-3 md:px-8 md:py-4 bg-gradient-to-r from-primary to-primary/90 text-primary-foreground rounded-full font-semibold transition-all duration-500 hover:scale-110 hover:shadow-2xl shadow-lg text-sm sm:text-base overflow-hidden group/button"
+                          className="relative inline-flex items-center px-3 py-2 sm:px-6 sm:py-3 md:px-8 md:py-4 bg-gradient-to-r from-primary to-primary/90 text-primary-foreground rounded-full font-semibold transition-all duration-500 hover:scale-110 hover:shadow-2xl shadow-lg text-xs sm:text-base overflow-hidden group/button min-h-[44px] sm:min-h-auto"
                         >
                           {/* Animated background shine effect */}
                           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover/button:translate-x-full transition-transform duration-1000 ease-out" />

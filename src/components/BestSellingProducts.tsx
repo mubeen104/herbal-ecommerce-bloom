@@ -52,11 +52,11 @@ const BestSellingProducts = () => {
 
   if (isLoading) {
     return (
-      <section className="py-20 bg-gradient-to-br from-background via-background to-muted/20 relative overflow-hidden">
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <Skeleton className="h-12 w-64 mx-auto mb-4 rounded-lg" />
-            <Skeleton className="h-6 w-96 mx-auto rounded-lg" />
+      <section className="py-12 sm:py-16 md:py-20 bg-gradient-to-br from-background via-background to-muted/20 relative overflow-hidden">
+        <div className="relative max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
+          <div className="text-center mb-12 sm:mb-16">
+            <Skeleton className="h-8 sm:h-12 w-48 sm:w-64 mx-auto mb-3 sm:mb-4 rounded-lg" />
+            <Skeleton className="h-5 sm:h-6 w-80 sm:w-96 mx-auto rounded-lg" />
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6 lg:gap-8">
             {Array.from({ length: 4 }).map((_, index) => (
@@ -73,26 +73,26 @@ const BestSellingProducts = () => {
   }
 
   return (
-    <section className="py-20 bg-gradient-to-br from-background via-background to-muted/20 relative overflow-hidden">
-      <div className="absolute top-20 left-10 w-32 h-32 bg-primary/5 rounded-full blur-3xl animate-float" />
-      <div className="absolute bottom-40 right-20 w-48 h-48 bg-accent/5 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }} />
+    <section className="py-12 sm:py-16 md:py-20 bg-gradient-to-br from-background via-background to-muted/20 relative overflow-hidden">
+      <div className="absolute top-12 sm:top-20 left-4 sm:left-10 w-24 sm:w-32 h-24 sm:h-32 bg-primary/5 rounded-full blur-3xl animate-float" />
+      <div className="absolute bottom-32 sm:bottom-40 right-4 sm:right-20 w-32 sm:w-48 h-32 sm:h-48 bg-accent/5 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }} />
       
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <header className="text-center mb-16 animate-fade-in">
-          <div className="inline-flex items-center justify-center p-2 bg-primary/10 rounded-full mb-6">
-            <span className="text-sm font-medium text-primary px-4 py-1 bg-primary/20 rounded-full">
+      <div className="relative max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
+        <header className="text-center mb-12 sm:mb-16 animate-fade-in">
+          <div className="inline-flex items-center justify-center p-2 bg-primary/10 rounded-full mb-4 sm:mb-6">
+            <span className="text-xs sm:text-sm font-medium text-primary px-3 sm:px-4 py-1 bg-primary/20 rounded-full">
               🔥 Customer Favorites
             </span>
           </div>
           
-          <h2 className="text-4xl md:text-6xl font-bold text-foreground mb-6 tracking-tight">
+          <h2 className="text-2xl sm:text-4xl md:text-6xl font-bold text-foreground mb-3 sm:mb-6 tracking-tight">
             Best Selling
             <span className="block text-transparent bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text">
               Top Rated Products
             </span>
           </h2>
-          <p className="text-2xl md:text-3xl text-muted-foreground mb-4 font-semibold">Customer Favorites & Most Popular Organic Supplements</p>
-          <p className="text-muted-foreground text-lg max-w-2xl mx-auto leading-relaxed">
+          <p className="text-sm sm:text-xl md:text-2xl lg:text-3xl text-muted-foreground mb-2 sm:mb-4 font-semibold">Customer Favorites & Most Popular Organic Supplements</p>
+          <p className="text-muted-foreground text-xs sm:text-sm md:text-base lg:text-lg max-w-2xl mx-auto leading-relaxed">
             Explore our best-selling herbal products trusted by thousands for natural wellness and holistic health
           </p>
         </header>

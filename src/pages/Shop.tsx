@@ -28,7 +28,7 @@ export default function Shop() {
   const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
   const [selectedCategory, setSelectedCategory] = useState<string>(searchParams.get('category') || 'all');
   const [sortBy, setSortBy] = useState<string>('newest');
-  const [productType, setProductType] = useState<string>('all'); // New state for product type
+  const [productType, setProductType] = useState<string>('all');
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [addToCartProduct, setAddToCartProduct] = useState<any>(null);
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
@@ -179,11 +179,11 @@ export default function Shop() {
       </section>
       
       <main className="flex-1">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 md:py-12">
+        <div className="container mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-6 sm:py-8 md:py-10 lg:py-12">
           {/* Modern Filters Section */}
-          <div className="mb-8 sm:mb-10 md:mb-12">
+          <div className="mb-6 sm:mb-8 md:mb-10 lg:mb-12">
             {/* Search Bar */}
-            <div className="mb-6">
+            <div className="mb-4 sm:mb-6">
               <div className="relative max-w-2xl mx-auto">
                 
                 
@@ -197,18 +197,18 @@ export default function Shop() {
                 <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-accent/15 to-secondary/20 opacity-50 rounded-2xl" />
                 <div className="absolute inset-[1px] bg-gradient-to-br from-card/95 via-card/90 to-muted/30 backdrop-blur-xl rounded-2xl" />
                 
-                <CardContent className="relative p-6 sm:p-8">
-                  <div className="space-y-6">
+                <CardContent className="relative p-4 sm:p-6 md:p-8">
+                  <div className="space-y-4 sm:space-y-6">
                     {/* Filter Header with Toggle */}
                     <CollapsibleTrigger asChild>
                       <Button variant="ghost" className="w-full flex items-center justify-between p-0 h-auto hover:bg-transparent group">
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-2 sm:gap-4">
                           <div className="p-2 bg-gradient-to-br from-primary/20 to-accent/20 rounded-xl transition-all duration-300 group-hover:from-primary/30 group-hover:to-accent/30 group-hover:scale-110">
-                            <Filter className="h-5 w-5 text-primary" />
+                            <Filter className="h-4 sm:h-5 w-4 sm:w-5 text-primary" />
                           </div>
                           <div className="text-left">
-                            <span className="block font-bold text-lg text-foreground">Filters</span>
-                            <span className="block text-sm text-muted-foreground">Refine your search</span>
+                            <span className="block font-bold text-base sm:text-lg text-foreground">Filters</span>
+                            <span className="block text-xs sm:text-sm text-muted-foreground">Refine your search</span>
                           </div>
                           {(productType !== 'all' || selectedCategory !== 'all' || searchTerm) && <Badge variant="secondary" className="ml-2 h-6 px-3 text-sm font-medium bg-primary/10 text-primary border-primary/20 hover:bg-primary/20 transition-all duration-300">
                               {[productType !== 'all' ? 1 : 0, selectedCategory !== 'all' ? 1 : 0, searchTerm ? 1 : 0].reduce((a, b) => a + b, 0)} active
@@ -225,7 +225,7 @@ export default function Shop() {
                       <div className="w-full h-px bg-gradient-to-r from-transparent via-border to-transparent" />
                       
                       {/* Filter Pills Layout */}
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
                         {/* Product Type Filter */}
                         <div className="space-y-3 group">
                           <label className="flex items-center gap-2 text-sm font-semibold text-foreground">
