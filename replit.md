@@ -71,3 +71,22 @@ Core data models include `products`, `categories`, `product_variants`, `orders`,
 - `VITE_SUPABASE_URL`
 - `VITE_SUPABASE_ANON_KEY`
 - `VITE_GTM_ID`
+
+## Recent Updates (November 22, 2025)
+
+### All Homepage Product Carousels Updated with Modern Design
+- **FeaturedProducts.tsx** ✅ - Modern card design with gradient badges, improved spacing, hover effects
+- **NewArrivals.tsx** ✅ - Modern card design with consistent styling across carousel
+- **KitsDeals.tsx** ✅ - Modern card design with prominent product information
+- **BestSellingProducts.tsx** ✅ - Modern card design with enhanced visual hierarchy
+
+**Modern Design Pattern Unified Across All Product Carousels:**
+- Clean card layout with `rounded-2xl` borders and `border-border/40` styling
+- Muted background images (`bg-muted/30`) for product containers
+- Gradient red sale badges (`from-red-500 to-red-600`) positioned at top-right
+- Responsive pricing and rating sections with clear typography
+- Full-width gradient action buttons (`from-primary to-accent`) for "Add to Cart"
+- Outline variant buttons for "View Details"
+- Quick View overlay with smooth transitions
+- Hover elevation effects for interactive feedback
+- Consistent spacing and typography across all sections

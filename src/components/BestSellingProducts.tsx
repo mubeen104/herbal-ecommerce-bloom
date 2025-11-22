@@ -118,62 +118,58 @@ const BestSellingProducts = () => {
                   <div
                     className="group relative animate-fade-in cursor-pointer"
                     style={{
-                      animationDelay: `${index * 0.1}s`,
-                      transition: `transform 400ms cubic-bezier(0.34, 1.56, 0.64, 1)`,
-                      willChange: 'transform'
+                      animationDelay: `${index * 0.1}s`
                     }}
                     onClick={() => navigate(`/product/${product.slug}`)}
                     onMouseEnter={() => setIsPaused(true)}
                     onMouseLeave={() => setIsPaused(false)}
                   >
-                    <div className="relative bg-card/40 backdrop-blur-xl border border-border/20 rounded-3xl p-1 shadow-lg group-hover:shadow-2xl group-hover:border-primary/30 group-hover:scale-105"
-                      style={{ transition: `all 400ms cubic-bezier(0.34, 1.56, 0.64, 1)`, willChange: 'transform, box-shadow, border-color' }}>
-                      <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-accent/20 to-secondary/20 rounded-3xl opacity-0 group-hover:opacity-100 blur-sm"
-                        style={{ transition: `opacity 400ms cubic-bezier(0.4, 0, 0.2, 1)` }} />
+                    {/* Modern Product Card */}
+                    <Card className="relative h-full flex flex-col bg-card border border-border/40 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl hover:border-primary/50 transition-all duration-300 hover-elevate">
+                      <CardContent className="p-0 flex flex-col h-full">
+                        {/* Product Image Container */}
+                        <div className="relative overflow-hidden bg-muted/30 aspect-square group-hover/product-image:scale-105 transition-transform duration-500">
+                          <img
+                            src={getMainImage(product)}
+                            alt={product.name}
+                            className="w-full h-full object-contain"
+                          />
+                         
+                          {/* Sale Badge */}
+                          {product.compare_price && product.compare_price > product.price && (
+                            <div className="absolute top-3 right-3">
+                              <Badge className="bg-gradient-to-r from-red-500 to-red-600 text-white shadow-lg border-0 rounded-lg px-3 py-1.5 text-xs font-semibold">
+                                Sale
+                              </Badge>
+                            </div>
+                          )}
 
-                      <Card className="relative bg-card/80 backdrop-blur-sm border-0 rounded-3xl overflow-hidden shadow-none">
-                        <CardContent className="p-0">
-                          <div className="relative overflow-hidden rounded-t-3xl aspect-square">
-                            <img
-                              src={getMainImage(product)}
-                              alt={product.name}
-                              className="w-full h-full object-contain group-hover:scale-110"
-                              style={{ transition: `transform 500ms cubic-bezier(0.34, 1.56, 0.64, 1)`, willChange: 'transform' }}
-                            />
-                            
-                            {product.compare_price && product.compare_price > product.price && (
-                              <div className="absolute top-3 left-3">
-                                <Badge className="bg-red-500/90 backdrop-blur-sm text-white shadow-lg border-0 rounded-full px-3 py-1 text-xs font-medium">
-                                  Sale
-                                </Badge>
-                              </div>
-                            )}
+                          {/* Out of Stock Overlay */}
+                          {product.inventory_quantity === 0 && (
+                            <div className="absolute inset-0 bg-background/90 backdrop-blur-sm flex items-center justify-center">
+                              <Badge variant="secondary" className="text-sm font-medium py-2 px-4 rounded-lg shadow-lg">
+                                Out of Stock
+                              </Badge>
+                            </div>
+                          )}
 
-                            {product.inventory_quantity === 0 && (
-                              <div className="absolute inset-0 bg-background/95 backdrop-blur-sm flex items-center justify-center rounded-t-3xl">
-                                <Badge variant="secondary" className="text-base font-medium py-2 px-4 rounded-full shadow-lg">
-                                  Out of Stock
-                                </Badge>
-                              </div>
-                            )}
-
-                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center rounded-t-3xl">
-                              <div className="flex gap-3">
-                                <Dialog>
-                                  <DialogTrigger asChild>
-                                    <Button 
-                                      size="sm" 
-                                      className="bg-white/95 text-foreground hover:bg-white rounded-full px-4 py-2 shadow-lg border-0" 
-                                      onClick={(e) => { e.stopPropagation(); setSelectedProduct(product); }}
-                                    >
-                                      <Eye className="h-4 w-4 mr-2" />
-                                      Quick View
-                                    </Button>
-                                  </DialogTrigger>
-                                  <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto rounded-2xl">
-                                    <DialogHeader>
-                                      <DialogTitle className="text-2xl">{product.name}</DialogTitle>
-                                    </DialogHeader>
+                          {/* Quick Actions Overlay */}
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-end justify-center p-4">
+                            <Dialog>
+                              <DialogTrigger asChild>
+                                <Button
+                                  size="sm"
+                                  className="bg-white/95 text-foreground hover:bg-white rounded-lg px-4 py-2 shadow-lg border-0 font-medium text-xs"
+                                  onClick={(e) => { e.stopPropagation(); setSelectedProduct(product); }}
+                                >
+                                  <Eye className="h-4 w-4 mr-2" />
+                                  Quick View
+                                </Button>
+                              </DialogTrigger>
+                              <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto rounded-2xl bg-card/95 backdrop-blur-xl border-border/50">
+                                <DialogHeader>
+                                  <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">{product.name}</DialogTitle>
+                                </DialogHeader>
                                     {selectedProduct && (
                                       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                         <div className="space-y-4">
@@ -219,69 +215,72 @@ const BestSellingProducts = () => {
                                     )}
                                   </DialogContent>
                                 </Dialog>
-                              </div>
                             </div>
+                        </div>
+
+                        {/* Product Info */}
+                        <div className="flex-1 p-3 sm:p-4 flex flex-col">
+                          {/* Product Name & Description */}
+                          <div className="mb-3 sm:mb-4">
+                            <h3 className="font-bold text-sm sm:text-base leading-snug line-clamp-2 text-foreground mb-1 group-hover:text-primary transition-colors duration-300">
+                              {product.name}
+                            </h3>
+                            {product.short_description && (
+                              <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2 leading-relaxed">
+                                {product.short_description}
+                              </p>
+                            )}
                           </div>
 
-                          <div className="p-2 sm:p-4 lg:p-6">
-                            <div className="mb-2 sm:mb-3 lg:mb-4">
-                              <h3 className="sr-only">{product.name}</h3>
-                              <p className="font-semibold text-sm sm:text-base lg:text-lg leading-tight line-clamp-2 group-hover:text-primary transition-colors duration-300 mb-1 sm:mb-2">
-                                {product.name}
-                              </p>
-                              {product.short_description && (
-                                <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2 leading-relaxed">
-                                  {product.short_description}
-                                </p>
+                          {/* Rating */}
+                          <div className="mb-2 sm:mb-3">
+                            <ProductRating
+                              averageRating={ratings.find(r => r.productId === product.id)?.averageRating || 0}
+                              reviewCount={ratings.find(r => r.productId === product.id)?.reviewCount || 0}
+                              showCount={true}
+                              size="sm"
+                            />
+                          </div>
+
+                          {/* Price Section */}
+                          <div className="mb-4 sm:mb-5">
+                            <div className="flex items-baseline gap-2">
+                              <span className="text-lg sm:text-xl font-bold text-foreground">
+                                {currency} {product.price.toFixed(2)}
+                              </span>
+                              {product.compare_price && product.compare_price > product.price && (
+                                <span className="text-xs sm:text-sm text-muted-foreground line-through">
+                                  {currency} {product.compare_price.toFixed(2)}
+                                </span>
                               )}
                             </div>
-
-                            <div className="flex items-center justify-between mb-2 sm:mb-4 lg:mb-6">
-                              <div className="flex flex-col gap-0.5">
-                                <span className="font-bold text-sm sm:text-lg lg:text-xl text-foreground">
-                                  {currency} {product.price.toFixed(2)}
-                                </span>
-                                {product.compare_price && product.compare_price > product.price && (
-                                  <span className="text-xs sm:text-sm text-muted-foreground line-through">
-                                    {currency} {product.compare_price.toFixed(2)}
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-
-                            {/* Rating */}
-                            <div className="mb-2 sm:mb-4 lg:mb-6">
-                              <ProductRating
-                                averageRating={ratings.find(r => r.productId === product.id)?.averageRating || 0}
-                                reviewCount={ratings.find(r => r.productId === product.id)?.reviewCount || 0}
-                                showCount={true}
-                                size="sm"
-                              />
-                            </div>
-
-                            <div className="flex flex-col sm:flex-row gap-1 sm:gap-2 lg:gap-3">
-                              <Button 
-                                onClick={(e) => { e.stopPropagation(); handleAddToCartRequest(product); }} 
-                                disabled={cartLoading || product.inventory_quantity === 0} 
-                                className="flex-1 rounded-full font-medium text-xs sm:text-sm py-1.5 sm:py-2 px-2 sm:px-3" 
-                                variant="outline"
-                              >
-                                <ShoppingCart className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                                <span className="hidden sm:inline">{product.inventory_quantity === 0 ? 'Out of Stock' : 'Add to Cart'}</span>
-                                <span className="sm:hidden">Add</span>
-                              </Button>
-
-                              <Button 
-                                onClick={(e) => { e.stopPropagation(); navigate(`/product/${product.slug}`); }} 
-                                className="flex-1 rounded-full font-medium text-xs sm:text-sm py-1.5 sm:py-2 px-2 sm:px-3"
-                              >
-                                View Details
-                              </Button>
-                            </div>
                           </div>
-                        </CardContent>
-                      </Card>
-                    </div>
+
+                          {/* Spacer */}
+                          <div className="flex-1"></div>
+
+                          {/* Action Buttons */}
+                          <div className="flex flex-col gap-2">
+                            <Button
+                              onClick={(e) => { e.stopPropagation(); handleAddToCartRequest(product); }}
+                              disabled={cartLoading || product.inventory_quantity === 0}
+                              className="w-full rounded-lg font-semibold text-xs sm:text-sm py-2 sm:py-2.5 bg-gradient-to-r from-primary to-accent hover:opacity-90 transition-opacity text-white border-0"
+                            >
+                              <ShoppingCart className="h-4 w-4 mr-2" />
+                              {product.inventory_quantity === 0 ? 'Out of Stock' : 'Add to Cart'}
+                            </Button>
+
+                            <Button
+                              onClick={(e) => { e.stopPropagation(); navigate(`/product/${product.slug}`); }}
+                              className="w-full rounded-lg font-semibold text-xs sm:text-sm py-2 sm:py-2.5"
+                              variant="outline"
+                            >
+                              View Details
+                            </Button>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
                   </div>
                 </CarouselItem>
               ))}
