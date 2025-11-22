@@ -21,6 +21,38 @@ Preferred communication style: Simple, everyday language.
   - ProductDetail: Responsive container padding and loading states
 - **Accessibility**: All interactive elements meet WCAG 2.2 touch target requirements
 
+### Performance Optimization (November 22, 2025)
+- **Route-Based Code Splitting**: Lazy loading for 40+ pages including all admin sections
+  - Eager load: Core pages (Home, Shop, Product, Cart, Checkout, Auth)
+  - Lazy load: 15+ secondary pages (About, Blog, Profile, Contact, etc.)
+  - Lazy load: All 16 admin pages for significant bundle reduction
+  - PageLoader component provides smooth loading experience
+- **Bundle Optimization**: 
+  - Manual chunk splitting with Vite: vendor, ui, query, admin chunks
+  - Asset organization: Images, fonts, CSS organized in separate directories
+  - Terser minification with dead code elimination
+  - CSS code splitting enabled
+- **Query Client Optimization**:
+  - Reduced staleTime from 5min to 3min for faster updates
+  - Optimized cache retention (gcTime 5min)
+  - Smart retry strategy with exponential backoff
+  - Efficient garbage collection
+- **Image Loading Optimization**:
+  - New image optimization utilities: `src/utils/imageOptimization.ts`
+  - Responsive srcSet generation for multiple screen sizes
+  - Image preloading and prefetching functions
+  - Blur placeholder (LQIP) support for better UX
+- **Data Fetching Optimization**:
+  - Featured products (10min staleTime) - less frequent updates
+  - Best-selling products (10min) - more stable data
+  - Kits & deals (10min) - promotional data
+  - New arrivals (10min) - featured content
+- **Performance Metrics Improvements**:
+  - Reduced initial bundle size (admin pages now lazy loaded)
+  - Faster First Contentful Paint (FCP) with route-based splitting
+  - Reduced Time to Interactive (TTI) - critical paths only
+  - Better Largest Contentful Paint (LCP) with optimized queries
+
 ## System Architecture
 
 ### Frontend Architecture

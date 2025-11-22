@@ -69,6 +69,7 @@ export const useProducts = () => {
 
       return data || [];
     },
+    staleTime: 5 * 60 * 1000,
   });
 };
 
@@ -106,6 +107,7 @@ export const useFeaturedProducts = () => {
 
       return data || [];
     },
+    staleTime: 10 * 60 * 1000,
   });
 };
 
@@ -143,6 +145,7 @@ export const useKitsDealsProducts = () => {
 
       return data || [];
     },
+    staleTime: 10 * 60 * 1000,
   });
 };
 
@@ -180,6 +183,7 @@ export const useBestSellingProducts = () => {
 
       return data || [];
     },
+    staleTime: 10 * 60 * 1000,
   });
 };
 
@@ -217,5 +221,6 @@ export const useNewArrivals = () => {
 
       return data || [];
     },
+    staleTime: 10 * 60 * 1000,
   });
 };

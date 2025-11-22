@@ -1,8 +1,9 @@
+import { lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { AdminLayout } from "@/components/admin/AdminLayout";
@@ -12,40 +13,56 @@ import { Analytics } from "@/components/Analytics";
 import { Breadcrumbs } from "@/components/navigation/Breadcrumbs";
 import { MobileBottomNav } from "@/components/navigation/MobileBottomNav";
 import { queryClient } from "@/lib/reactQueryClient";
+import { Skeleton } from "@/components/ui/skeleton";
+
+// Eager load: pages used on initial load
 import Index from "./pages/Index";
 import Shop from "./pages/Shop";
-import Contact from "./pages/Contact";
-import AboutUs from "./pages/AboutUs";
 import ProductDetail from "./pages/ProductDetail";
-import Profile from "./pages/Profile";
-import Orders from "./pages/Orders";
-import Auth from "./pages/Auth";
-import ResetPassword from "./pages/ResetPassword";
-import NotFound from "./pages/NotFound";
-import AdminDashboard from "./pages/admin/AdminDashboard";
-import AdminPOS from "./pages/admin/AdminPOS";
-import AdminProducts from "./pages/admin/AdminProducts";
-import AdminCategories from "./pages/admin/AdminCategories";
-import AdminOrders from "./pages/admin/AdminOrders";
-import AdminUsers from "./pages/admin/AdminUsers";
-import AdminAnalytics from "./pages/admin/AdminAnalytics";
-import AdminReviews from "./pages/admin/AdminReviews";
-import AdminTestimonials from "./pages/admin/AdminTestimonials";
-import AdminCoupons from "./pages/admin/AdminCoupons";
-import AdminHeroSlides from "./pages/admin/AdminHeroSlides";
-import AdminPixels from "./pages/admin/AdminPixels";
-import AdminCatalogFeeds from "./pages/admin/AdminCatalogFeeds";
-import AdminSettings from "./pages/admin/AdminSettings";
-import AdminBlogs from "./pages/admin/AdminBlogs";
 import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
-import OrderConfirmation from "./pages/OrderConfirmation";
-import PrivacyPolicy from "./pages/PrivacyPolicy";
-import TermsOfService from "./pages/TermsOfService";
-import CookiePolicy from "./pages/CookiePolicy";
-import Blog from "./pages/Blog";
-import BlogPost from "./pages/BlogPost";
-import Category from "./pages/Category";
+import Auth from "./pages/Auth";
+import NotFound from "./pages/NotFound";
+
+// Lazy load: less critical pages
+const Contact = lazy(() => import("./pages/Contact"));
+const AboutUs = lazy(() => import("./pages/AboutUs"));
+const Profile = lazy(() => import("./pages/Profile"));
+const Orders = lazy(() => import("./pages/Orders"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
+const OrderConfirmation = lazy(() => import("./pages/OrderConfirmation"));
+const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
+const TermsOfService = lazy(() => import("./pages/TermsOfService"));
+const CookiePolicy = lazy(() => import("./pages/CookiePolicy"));
+const Blog = lazy(() => import("./pages/Blog"));
+const BlogPost = lazy(() => import("./pages/BlogPost"));
+const Category = lazy(() => import("./pages/Category"));
+
+// Lazy load: admin pages (heavy)
+const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
+const AdminPOS = lazy(() => import("./pages/admin/AdminPOS"));
+const AdminProducts = lazy(() => import("./pages/admin/AdminProducts"));
+const AdminCategories = lazy(() => import("./pages/admin/AdminCategories"));
+const AdminOrders = lazy(() => import("./pages/admin/AdminOrders"));
+const AdminUsers = lazy(() => import("./pages/admin/AdminUsers"));
+const AdminAnalytics = lazy(() => import("./pages/admin/AdminAnalytics"));
+const AdminReviews = lazy(() => import("./pages/admin/AdminReviews"));
+const AdminTestimonials = lazy(() => import("./pages/admin/AdminTestimonials"));
+const AdminCoupons = lazy(() => import("./pages/admin/AdminCoupons"));
+const AdminHeroSlides = lazy(() => import("./pages/admin/AdminHeroSlides"));
+const AdminPixels = lazy(() => import("./pages/admin/AdminPixels"));
+const AdminCatalogFeeds = lazy(() => import("./pages/admin/AdminCatalogFeeds"));
+const AdminSettings = lazy(() => import("./pages/admin/AdminSettings"));
+const AdminBlogs = lazy(() => import("./pages/admin/AdminBlogs"));
+
+// Loading fallback component
+const PageLoader = () => (
+  <div className="min-h-screen bg-background p-4">
+    <Skeleton className="h-12 w-full mb-4" />
+    <Skeleton className="h-96 w-full mb-4" />
+    <Skeleton className="h-12 w-full" />
+  </div>
+);
 
 
 const App = () => (
@@ -63,38 +80,37 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/shop" element={<Shop />} />
-            <Route path="/category/:slug" element={<Category />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/about" element={<AboutUs />} />
+            <Route path="/category/:slug" element={<Suspense fallback={<PageLoader />}><Category /></Suspense>} />
+            <Route path="/contact" element={<Suspense fallback={<PageLoader />}><Contact /></Suspense>} />
+            <Route path="/about" element={<Suspense fallback={<PageLoader />}><AboutUs /></Suspense>} />
             <Route path="/product/:slug" element={<ProductDetail />} />
             <Route path="/cart" element={<Cart />} />
             <Route path="/checkout" element={<Checkout />} />
-            <Route path="/order-confirmation/:orderId" element={<OrderConfirmation />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/orders" element={<Orders />} />
+            <Route path="/order-confirmation/:orderId" element={<Suspense fallback={<PageLoader />}><OrderConfirmation /></Suspense>} />
+            <Route path="/profile" element={<Suspense fallback={<PageLoader />}><Profile /></Suspense>} />
+            <Route path="/orders" element={<Suspense fallback={<PageLoader />}><Orders /></Suspense>} />
             <Route path="/auth" element={<Auth />} />
-            <Route path="/reset-password" element={<ResetPassword />} />
-            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-            <Route path="/terms-of-service" element={<TermsOfService />} />
-            <Route path="/cookie-policy" element={<CookiePolicy />} />
-            <Route path="/blog" element={<Blog />} />
-            <Route path="/blog/:slug" element={<BlogPost />} />
-            <Route path="/admin" element={<AdminLayout><AdminDashboard /></AdminLayout>} />
-            <Route path="/admin/pos" element={<AdminLayout><AdminPOS /></AdminLayout>} />
-            <Route path="/admin/products" element={<AdminLayout><AdminProducts /></AdminLayout>} />
-            <Route path="/admin/categories" element={<AdminLayout><AdminCategories /></AdminLayout>} />
-            <Route path="/admin/orders" element={<AdminLayout><AdminOrders /></AdminLayout>} />
-            <Route path="/admin/users" element={<AdminLayout><AdminUsers /></AdminLayout>} />
-            <Route path="/admin/analytics" element={<AdminLayout><AdminAnalytics /></AdminLayout>} />
-            <Route path="/admin/reviews" element={<AdminLayout><AdminReviews /></AdminLayout>} />
-            <Route path="/admin/testimonials" element={<AdminLayout><AdminTestimonials /></AdminLayout>} />
-            <Route path="/admin/coupons" element={<AdminLayout><AdminCoupons /></AdminLayout>} />
-            <Route path="/admin/hero-slides" element={<AdminLayout><AdminHeroSlides /></AdminLayout>} />
-            <Route path="/admin/pixels" element={<AdminLayout><AdminPixels /></AdminLayout>} />
-            <Route path="/admin/catalog-feeds" element={<AdminLayout><AdminCatalogFeeds /></AdminLayout>} />
-            <Route path="/admin/blog" element={<AdminLayout><AdminBlogs /></AdminLayout>} />
-            <Route path="/admin/settings" element={<AdminLayout><AdminSettings /></AdminLayout>} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="/reset-password" element={<Suspense fallback={<PageLoader />}><ResetPassword /></Suspense>} />
+            <Route path="/privacy-policy" element={<Suspense fallback={<PageLoader />}><PrivacyPolicy /></Suspense>} />
+            <Route path="/terms-of-service" element={<Suspense fallback={<PageLoader />}><TermsOfService /></Suspense>} />
+            <Route path="/cookie-policy" element={<Suspense fallback={<PageLoader />}><CookiePolicy /></Suspense>} />
+            <Route path="/blog" element={<Suspense fallback={<PageLoader />}><Blog /></Suspense>} />
+            <Route path="/blog/:slug" element={<Suspense fallback={<PageLoader />}><BlogPost /></Suspense>} />
+            <Route path="/admin" element={<Suspense fallback={<PageLoader />}><AdminLayout><AdminDashboard /></AdminLayout></Suspense>} />
+            <Route path="/admin/pos" element={<Suspense fallback={<PageLoader />}><AdminLayout><AdminPOS /></AdminLayout></Suspense>} />
+            <Route path="/admin/products" element={<Suspense fallback={<PageLoader />}><AdminLayout><AdminProducts /></AdminLayout></Suspense>} />
+            <Route path="/admin/categories" element={<Suspense fallback={<PageLoader />}><AdminLayout><AdminCategories /></AdminLayout></Suspense>} />
+            <Route path="/admin/orders" element={<Suspense fallback={<PageLoader />}><AdminLayout><AdminOrders /></AdminLayout></Suspense>} />
+            <Route path="/admin/users" element={<Suspense fallback={<PageLoader />}><AdminLayout><AdminUsers /></AdminLayout></Suspense>} />
+            <Route path="/admin/analytics" element={<Suspense fallback={<PageLoader />}><AdminLayout><AdminAnalytics /></AdminLayout></Suspense>} />
+            <Route path="/admin/reviews" element={<Suspense fallback={<PageLoader />}><AdminLayout><AdminReviews /></AdminLayout></Suspense>} />
+            <Route path="/admin/testimonials" element={<Suspense fallback={<PageLoader />}><AdminLayout><AdminTestimonials /></AdminLayout></Suspense>} />
+            <Route path="/admin/coupons" element={<Suspense fallback={<PageLoader />}><AdminLayout><AdminCoupons /></AdminLayout></Suspense>} />
+            <Route path="/admin/hero-slides" element={<Suspense fallback={<PageLoader />}><AdminLayout><AdminHeroSlides /></AdminLayout></Suspense>} />
+            <Route path="/admin/pixels" element={<Suspense fallback={<PageLoader />}><AdminLayout><AdminPixels /></AdminLayout></Suspense>} />
+            <Route path="/admin/catalog-feeds" element={<Suspense fallback={<PageLoader />}><AdminLayout><AdminCatalogFeeds /></AdminLayout></Suspense>} />
+            <Route path="/admin/blog" element={<Suspense fallback={<PageLoader />}><AdminLayout><AdminBlogs /></AdminLayout></Suspense>} />
+            <Route path="/admin/settings" element={<Suspense fallback={<PageLoader />}><AdminLayout><AdminSettings /></AdminLayout></Suspense>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
