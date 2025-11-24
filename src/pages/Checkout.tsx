@@ -130,7 +130,12 @@ const Checkout = () => {
   const effectiveCartTotal = isDirectCheckout ? effectiveDirectPrice * directQuantity : cartTotal;
   const effectiveCartCount = isDirectCheckout ? directQuantity : cartCount;
 
-  // Track BeginCheckout when user lands on checkout page
+  // Initialize coupon state before useEffect (used in tracking effect)
+  const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
+
+  // Track BeginCheckout when user lands on checkout page or applies coupon
+  // CRITICAL: Must include appliedCoupon in dependencies to re-track when coupon is applied
+  // Previously only tracked on mount with full price - now re-tracks with discounted price
   useEffect(() => {
     if (effectiveCartItems.length > 0 && effectiveCartTotal > 0) {
       const discount = appliedCoupon ?
@@ -164,11 +169,11 @@ const Checkout = () => {
         });
 
       if (validItems.length > 0 && total > 0) {
+        console.log('📊 [Tracking] BeginCheckout - Total:', total, 'Items:', validItems.length, 'Coupon Applied:', appliedCoupon?.code);
         trackBeginCheckout(validItems, total, currency, tax, shipping);
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Only run once on mount
+  }, [appliedCoupon, effectiveCartItems, effectiveCartTotal, currency, freeShippingThreshold, shippingRate, taxRate, isDirectCheckout, effectiveDirectPrice, trackBeginCheckout]);
 
   const [guestInfo, setGuestInfo] = useState<GuestInfo>({
     email: "",
@@ -206,7 +211,6 @@ const Checkout = () => {
   const [sameAsShipping, setSameAsShipping] = useState(true);
   const [paymentMethod, setPaymentMethod] = useState("cod");
   const [notes, setNotes] = useState("");
-  const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
   const [useCustomShipping, setUseCustomShipping] = useState(false);
   const [useCustomBilling, setUseCustomBilling] = useState(false);
 

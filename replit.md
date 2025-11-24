@@ -62,3 +62,33 @@ Core data models include `products`, `categories`, `product_variants`, `orders`,
 - Newsletter subscription system.
 - Product recommendation tracking.
 - Catalog feed exports for advertising platforms.
+
+## Recent Changes & Critical Bug Fixes (Nov 24, 2025)
+
+### 🔴 CRITICAL: BeginCheckout Re-Tracking on Coupon Applied - FIXED ✅
+**Problem:** BeginCheckout event fired ONLY on checkout page load with FULL price. When user applied coupon, the UI updated to discounted price, but the pixel NEVER re-tracked with the new value.
+
+**Root Cause:** 
+- useEffect had empty dependency array `[]` → only ran once on mount
+- At mount time, `appliedCoupon` was `null` → discount calculated as 0
+- When coupon was applied later, effect never re-ran → pixel stuck with old full price
+
+**Impact (Before Fix):**
+- Google Ads optimized bids for WRONG conversion value (full price instead of discounted)
+- Meta Pixel learned from incorrect purchase data
+- ROAS calculations completely wrong
+- Lost visibility into actual discounted conversion values
+
+**Solution:**
+1. Moved `appliedCoupon` useState declaration before useEffect (was after)
+2. Added `appliedCoupon` to dependency array
+3. Effect now re-runs when coupon applied, re-tracking with correct discounted price
+
+**Result:**
+- BeginCheckout fires TWICE: once on load (full price) and again on coupon applied (discounted price)
+- Pixel sees BOTH events with correct values for accurate conversion optimization
+- Google Ads and Meta Pixel now learn from real, discounted prices
+- Console logging: `📊 [Tracking] BeginCheckout - Total: X, Items: Y, Coupon Applied: CODE`
+
+**Files Modified:** 
+- `src/pages/Checkout.tsx` (lines 136-182 useEffect, line 137 appliedCoupon state moved)
