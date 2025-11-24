@@ -18,7 +18,6 @@ import { useGuestCart } from '@/hooks/useGuestCart';
 import { useStoreSettings } from '@/hooks/useStoreSettings';
 import { useToast } from '@/hooks/use-toast';
 import { AddToCartModal } from '@/components/AddToCartModal';
-import { useShopTracking } from '@/hooks/useShopTracking';
 import { supabase } from '@/integrations/supabase/client';
 import { useProductRatings } from '@/hooks/useProductRatings';
 import { ProductRating } from '@/components/ProductRating';
@@ -115,7 +114,6 @@ export default function Shop() {
   }, [sortedProducts]);
 
   // Track shop page views and product list impressions
-  useShopTracking(sortedProducts, selectedCategory, searchTerm);
   const handleAddToCartRequest = (product: any) => {
     setAddToCartProduct(product);
   };

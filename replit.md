@@ -70,9 +70,59 @@ Core data models include `products`, `categories`, `product_variants`, `orders`,
 **Environment Variables:**
 - `VITE_SUPABASE_URL`
 - `VITE_SUPABASE_ANON_KEY`
-- `VITE_GTM_ID`
+- `VITE_GTM_ID` - Google Tag Manager ID for centralized event tracking
+- `VITE_META_PIXEL_ID` - Meta Pixel ID for direct pixel tracking (15-16 digit number)
 
-## Recent Updates (November 22, 2025)
+## Recent Updates (November 24, 2025)
+
+### Fixed Meta Pixel Event Tracking - Unified GTM + Direct Implementation ✅
+Resolved issues with Meta Pixel events triggering loosely by implementing a unified, reliable tracking system that fires events through BOTH GTM and direct Meta Pixel.
+
+**Root Causes Fixed:**
+- ❌ **Problem**: Meta Pixel script was never being loaded - only GTM was initialized
+- ❌ **Problem**: Broken `useShopTracking` hook attempted to use `fbq()` without initialization
+- ❌ **Problem**: Competing implementations (GTM vs direct fbq) with no fallback mechanism
+- ❌ **Problem**: No direct Meta Pixel initialization, events silently failed
+
+**Solution Implemented:**
+- ✅ **New**: Added proper Meta Pixel script initialization in Analytics.tsx
+- ✅ **New**: Dual-fire event system - all events fire to both GTM AND Meta Pixel directly
+- ✅ **New**: Meta Pixel event mapping using standard Meta event names (ViewContent, AddToCart, Purchase, etc.)
+- ✅ **New**: Proper error handling and console logging for debugging
+- ✅ **New**: Environment variable `VITE_META_PIXEL_ID` for pixel configuration
+- ✅ **Removed**: Broken `useShopTracking` hook that caused loose event triggering
+- ✅ **Updated**: Analytics utility functions to fire events reliably through both platforms
+
+**Technical Changes:**
+1. **Analytics.tsx** - Enhanced to load both GTM and Meta Pixel scripts on app mount
+2. **analytics.ts** - Added `initializeMetaPixel()` function with proper fbq queue initialization
+3. **analytics.ts** - Added `fireMetaPixelEvent()` helper function with error handling
+4. **analytics.ts** - Updated all tracking functions: `trackPageView`, `trackViewContent`, `trackAddToCart`, `trackBeginCheckout`, `trackPurchase`, `trackSearch`, `trackCustomEvent` to fire to both platforms
+5. **Shop.tsx** - Removed broken `useShopTracking` import and call
+6. **AdminPixels.tsx** - Added setup instructions for `VITE_META_PIXEL_ID` environment variable
+
+**Events Now Firing Reliably:**
+- ✅ **PageView** - Page navigation events
+- ✅ **ViewContent** - Product page views
+- ✅ **AddToCart** - Add to cart actions
+- ✅ **InitiateCheckout** - Checkout start
+- ✅ **Purchase** - Order completion (conversion event)
+- ✅ **Search** - Product searches
+
+**Setup Instructions:**
+Users now need to configure TWO environment variables for complete event tracking:
+```
+VITE_GTM_ID=GTM-XXXXXXX          # For GTM-managed pixels
+VITE_META_PIXEL_ID=123456789012  # For direct Meta Pixel (15-16 digits)
+```
+
+**Verification:**
+- Console logs now show: "Meta Pixel script loaded successfully" when properly configured
+- Events appear in Meta Business Suite Events Manager within 30 seconds of firing
+- GTM debugger shows all events in dataLayer
+- Comprehensive error handling prevents silent failures
+
+## Previous Updates (November 22, 2025)
 
 ### Premium Herbal & Health-Focused Brand Identity ✨
 Transformed the design from generic/template-like to a distinctive **herbal wellness premium aesthetic** with a sophisticated botanical color palette and enhanced brand presence.

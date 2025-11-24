@@ -92,7 +92,7 @@ export default function AdminPixels() {
                     2
                   </div>
                   <div>
-                    <h4 className="font-medium mb-1">Configure Environment Variable</h4>
+                    <h4 className="font-medium mb-1">Configure GTM Environment Variable</h4>
                     <p className="text-sm text-muted-foreground mb-2">
                       Copy your GTM ID (format: GTM-XXXXXXX) and add it to your environment variables
                     </p>
@@ -107,12 +107,15 @@ export default function AdminPixels() {
                     3
                   </div>
                   <div>
-                    <h4 className="font-medium mb-1">Add Advertising Pixels in GTM</h4>
+                    <h4 className="font-medium mb-1">Configure Meta Pixel (Direct + GTM)</h4>
                     <p className="text-sm text-muted-foreground mb-2">
-                      In GTM dashboard, add tags for your advertising platforms (Meta, Google Ads, TikTok, etc.)
+                      Add your Meta Pixel ID as an environment variable for reliable direct pixel tracking AND GTM integration
                     </p>
-                    <p className="text-sm text-muted-foreground">
-                      The application automatically sends standard e-commerce events that GTM will forward to your pixels.
+                    <pre className="bg-muted p-3 rounded-md text-sm overflow-x-auto">
+                      <code>VITE_META_PIXEL_ID=123456789012345</code>
+                    </pre>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      Find your pixel ID in Meta Business Suite &gt; Events Manager. This enables both direct Meta Pixel tracking and GTM integration.
                     </p>
                   </div>
                 </div>
@@ -122,9 +125,24 @@ export default function AdminPixels() {
                     4
                   </div>
                   <div>
+                    <h4 className="font-medium mb-1">Add Advertising Pixels in GTM</h4>
+                    <p className="text-sm text-muted-foreground mb-2">
+                      In GTM dashboard, add tags for your advertising platforms (Google Ads, TikTok, LinkedIn, etc.)
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      The application automatically sends standard e-commerce events that GTM will forward to your pixels.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex gap-3">
+                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-semibold">
+                    5
+                  </div>
+                  <div>
                     <h4 className="font-medium mb-1">Test with GTM Preview Mode</h4>
                     <p className="text-sm text-muted-foreground">
-                      Use GTM's Preview mode to verify all events are firing correctly before publishing
+                      Use GTM's Preview mode to verify all events are firing correctly. Check Meta Business Suite Events Manager to verify Meta Pixel events.
                     </p>
                   </div>
                 </div>
