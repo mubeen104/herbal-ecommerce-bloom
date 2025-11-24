@@ -92,3 +92,58 @@ Core data models include `products`, `categories`, `product_variants`, `orders`,
 
 **Files Modified:** 
 - `src/pages/Checkout.tsx` (lines 136-182 useEffect, line 137 appliedCoupon state moved)
+
+### 🔴 CRITICAL: ViewContent Event Spam / Pixel Pollution - FIXED ✅
+**Problem:** When user visits a product page, 7-11 ViewContent events fire in 2 seconds:
+- 1 for main product (ProductDetail component)
+- 1-4 for cart suggestions (CartSuggestions component)
+- 1-6 for related products (RelatedProducts component)
+
+**Impact (Before Fix):**
+- Meta Pixel algorithm expects 1 ViewContent per product per session
+- Multiple events confuse conversion optimization algorithms
+- Inflates "content views" metric incorrectly
+- Makes product interest data unreliable
+- Pixel polluted with duplicate, redundant tracking data
+
+**Root Cause:**
+- Multiple components independently firing ViewContent events
+- No deduplication check - each component unaware of others tracking
+- Events fire within 2 seconds of each other
+
+**Solution:**
+1. Added ViewContent deduplication system in `src/utils/analytics.ts`
+2. Tracks viewed products in sessionStorage (`new_era_herbals_viewed_products` key)
+3. `hasViewedProduct()` checks if product already tracked
+4. `markProductAsViewed()` prevents future duplicate tracking
+5. Modified `trackViewContent()` to check before firing
+
+**Flow (BEFORE):**
+```
+User lands on product page → ProductDetail fires ViewContent for product_id=123
+→ Related Products load → Fire ViewContent for product_id=456, 457, 458... (6 products)
+→ Cart Suggestions load → Fire ViewContent for product_id=500, 501... (4 products)
+TOTAL: 11 ViewContent events in 2 seconds ❌
+```
+
+**Flow (AFTER):**
+```
+User lands on product page → ProductDetail fires ViewContent for product_id=123 ✅ (first)
+→ Related Products load → Try to fire ViewContent for product_id=456... ⏭️ SKIPPED (already marked)
+→ Cart Suggestions load → Try to fire ViewContent for product_id=500... ⏭️ SKIPPED (already marked)
+TOTAL: 1 ViewContent event per unique product viewed ✅
+```
+
+**Console Logging:**
+- TRACKED: `✅ [ViewContent Dedup] TRACKING - "Product Name" (first view this session)`
+- SKIPPED: `⏭️ [ViewContent Dedup] SKIPPING - Product "Name" already tracked this session`
+
+**Benefits:**
+- Meta Pixel receives clean, accurate ViewContent data (1 per product per session)
+- Conversion optimization algorithms work properly
+- "Content Views" metric reflects actual product interest
+- Pixel data reliable for ROAS calculations
+- Session persists across tab navigation (sessionStorage)
+
+**Files Modified:**
+- `src/utils/analytics.ts` (added deduplication infrastructure at lines 59-120, modified trackViewContent at lines 665-713)

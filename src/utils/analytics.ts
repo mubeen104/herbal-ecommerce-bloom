@@ -54,6 +54,69 @@ let retryInProgress = false;
 let isOnline = typeof navigator !== 'undefined' ? navigator.onLine : true;
 
 /**
+ * CRITICAL: ViewContent Event Deduplication
+ * Prevents pixel pollution from multiple components tracking same product
+ * Tracks viewed products per session to ensure 1 ViewContent per product
+ * 
+ * Issue: Related products + cart suggestions + main product = 7-11 events per page
+ * Solution: Only fire ViewContent once per product per session
+ * Storage: sessionStorage key persists across tab navigation within same session
+ */
+const VIEWED_PRODUCTS_KEY = 'new_era_herbals_viewed_products';
+let viewedProductsSet: Set<string> = new Set();
+
+/**
+ * Load previously viewed products from sessionStorage
+ */
+function loadViewedProducts() {
+  if (typeof sessionStorage === 'undefined') return;
+  
+  try {
+    const stored = sessionStorage.getItem(VIEWED_PRODUCTS_KEY);
+    if (stored) {
+      viewedProductsSet = new Set(JSON.parse(stored));
+    }
+  } catch (error) {
+    console.warn('⚠️ [ViewContent Dedup] Failed to load from sessionStorage:', error);
+    viewedProductsSet = new Set();
+  }
+}
+
+/**
+ * Save viewed products to sessionStorage for persistence
+ */
+function saveViewedProducts() {
+  if (typeof sessionStorage === 'undefined') return;
+  
+  try {
+    sessionStorage.setItem(VIEWED_PRODUCTS_KEY, JSON.stringify(Array.from(viewedProductsSet)));
+  } catch (error) {
+    console.warn('⚠️ [ViewContent Dedup] Failed to save to sessionStorage:', error);
+  }
+}
+
+/**
+ * Check if product ViewContent has already been tracked this session
+ */
+function hasViewedProduct(productId: string): boolean {
+  // Load on first check
+  if (viewedProductsSet.size === 0) {
+    loadViewedProducts();
+  }
+  return viewedProductsSet.has(productId);
+}
+
+/**
+ * Mark product as viewed to prevent duplicate ViewContent tracking
+ */
+function markProductAsViewed(productId: string) {
+  if (!viewedProductsSet.has(productId)) {
+    viewedProductsSet.add(productId);
+    saveViewedProducts();
+  }
+}
+
+/**
  * Load retry queue from localStorage on initialization
  */
 function loadRetryQueue() {
@@ -597,7 +660,9 @@ export function trackPageView(path: string) {
 }
 
 /**
- * Track product view
+ * Track product view - WITH DEDUPLICATION
+ * CRITICAL: Prevents pixel pollution from related products + suggestions
+ * Only fires once per product per session
  */
 export function trackViewContent(product: {
   id: string;
@@ -607,6 +672,15 @@ export function trackViewContent(product: {
   brand?: string;
   currency?: string;
 }) {
+  // DEDUPLICATION: Check if we've already tracked this product this session
+  if (hasViewedProduct(product.id)) {
+    console.log(`⏭️  [ViewContent Dedup] SKIPPING - Product "${product.name}" already tracked this session`);
+    return; // Skip tracking - already done
+  }
+  
+  // Mark product as viewed to prevent future duplicate tracking
+  markProductAsViewed(product.id);
+  
   const currencyCode = product.currency ? getCurrencyCode(product.currency) : 'PKR';
   
   const gtmData = {
@@ -621,6 +695,7 @@ export function trackViewContent(product: {
     }],
   };
   
+  console.log(`✅ [ViewContent Dedup] TRACKING - "${product.name}" (first view this session)`);
   gtmPush('view_item', gtmData);
   
   // Meta Pixel ViewContent event
