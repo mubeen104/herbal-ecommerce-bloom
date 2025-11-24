@@ -9,6 +9,7 @@ import { AuthModal } from "@/components/auth/AuthModal";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { useNavigate, Link } from "react-router-dom";
 import { SearchSuggestions } from "@/components/SearchSuggestions";
+import { useAnalytics } from "@/hooks/useAnalytics";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -18,6 +19,7 @@ const Header = () => {
   const { cartCount } = useGuestCart();
   const { storeName } = useStoreSettings();
   const navigate = useNavigate();
+  const { trackSearch } = useAnalytics();
 
   const navigation = [
     { name: "Home", href: "/", hasMegaMenu: false },
@@ -29,6 +31,7 @@ const Header = () => {
 
   const handleSearch = (query: string) => {
     if (query.trim()) {
+      trackSearch(query.trim());
       navigate(`/shop?search=${encodeURIComponent(query.trim())}`);
     } else {
       navigate('/shop');

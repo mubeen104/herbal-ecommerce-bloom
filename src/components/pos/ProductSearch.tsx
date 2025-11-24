@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/card';
 import { useProducts } from '@/hooks/useProducts';
 import { POSCartItem } from '@/hooks/usePOS';
 import { formatCurrency } from '@/lib/currency';
+import { useAnalytics } from '@/hooks/useAnalytics';
 
 interface ProductSearchProps {
   onAddToCart: (item: Omit<POSCartItem, 'quantity'>) => void;
@@ -15,6 +16,7 @@ export function ProductSearch({ onAddToCart }: ProductSearchProps) {
   const [search, setSearch] = useState('');
   const [barcodeMode, setBarcodeMode] = useState(false);
   const { data: products = [] } = useProducts();
+  const { trackSearch } = useAnalytics();
 
   const filteredProducts = products.filter(product => 
     product.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -23,6 +25,7 @@ export function ProductSearch({ onAddToCart }: ProductSearchProps) {
   );
 
   const handleBarcodeSearch = (barcode: string) => {
+    trackSearch(`barcode:${barcode}`);
     const product = products.find(p => p.sku === barcode);
     if (product) {
       const image = product.product_images?.[0];
