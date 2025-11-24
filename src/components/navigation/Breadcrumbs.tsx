@@ -16,12 +16,47 @@ export const Breadcrumbs = () => {
     queryKey: ['breadcrumb-product', pathnames[1]],
     queryFn: async () => {
       if (pathnames[0] === 'product' && pathnames[1]) {
-        const { data } = await supabase
+        const selectStatement = 'name, product_categories(category_id, categories(name, slug))';
+        
+        // Try by slug first (most common)
+        const { data: data1 } = await supabase
           .from('products')
-          .select('name, product_categories(category_id, categories(name, slug))')
+          .select(selectStatement)
+          .eq('slug', pathnames[1])
+          .maybeSingle();
+        if (data1) return data1;
+
+        // Try without trailing dash if it has one
+        if (pathnames[1].endsWith('-')) {
+          const cleanSlug = pathnames[1].slice(0, -1);
+          const { data: data2 } = await supabase
+            .from('products')
+            .select(selectStatement)
+            .eq('slug', cleanSlug)
+            .maybeSingle();
+          if (data2) return data2;
+        }
+
+        // Try with trailing dash if it doesn't have one
+        if (!pathnames[1].endsWith('-')) {
+          const dashSlug = pathnames[1] + '-';
+          const { data: data3 } = await supabase
+            .from('products')
+            .select(selectStatement)
+            .eq('slug', dashSlug)
+            .maybeSingle();
+          if (data3) return data3;
+        }
+
+        // Try as ID as fallback (for UUID IDs)
+        const { data: data4 } = await supabase
+          .from('products')
+          .select(selectStatement)
           .eq('id', pathnames[1])
-          .single();
-        return data;
+          .maybeSingle();
+        if (data4) return data4;
+        
+        return null;
       }
       return null;
     },
