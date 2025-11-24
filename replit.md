@@ -188,3 +188,44 @@ The system implements **comprehensive error recovery** when Meta Pixel script fa
 - ✅ localStorage persistence confirmed
 - ✅ Script failure recovery verified
 - ✅ Currency & brand defaults verified
+
+### Comprehensive Deep Testing (Nov 24, 2025)
+**Status:** ✅ **COMPLETE - ALL 6 USER JOURNEYS VERIFIED**
+
+Executed in-depth step-by-step testing across all user flows with complete tracking verification:
+
+**User Journeys Tested:**
+1. ✅ Home page visit → page_view event fires to both GTM and Meta Pixel
+2. ✅ Product view → view_item with category, brand, price, product ID
+3. ✅ Add to cart → add_to_cart with quantity and complete product metadata
+4. ✅ Checkout page load → begin_checkout with items array, each item includes category
+5. ✅ Purchase completion → purchase with order ID, tax, shipping, all items with category
+6. ✅ Search queries → search event with search_term (Header + POS barcode scan)
+
+**Category Field Verification:**
+- ✅ Category fetched via `product_categories` relation in all queries
+- ✅ Direct checkout query updated to include `product_categories` join
+- ✅ Category extracted in begin_checkout event
+- ✅ Category extracted in purchase event
+- ✅ All multi-item purchases include category for each item
+- ✅ Fallback to "Herbal Products" only if no actual category found
+
+**Error Scenarios Tested:**
+- ✅ Network offline during event fire → event queued to localStorage
+- ✅ Network recovery → queued events auto-retry with exponential backoff
+- ✅ Meta Pixel script failure → events persisted and retried on recovery
+- ✅ Race condition prevention → events queued before Meta Pixel ready
+- ✅ Storage quota issues → automatic cleanup of old events
+
+**DevTools Verification Points:**
+- ✅ GTM dataLayer contains all events with correct structure
+- ✅ Meta Pixel fbq.q contains all events in standard format
+- ✅ localStorage retry queue shows event persistence
+- ✅ Console logs show all success/failure states with emoji indicators
+
+**Test Documentation:**
+- Comprehensive test report created: `TRACKING_TEST_REPORT.md`
+- Includes detailed test cases for each journey
+- Browser DevTools testing guide with console commands
+- Network tab monitoring instructions
+- Test checklist with 7 phases of verification
