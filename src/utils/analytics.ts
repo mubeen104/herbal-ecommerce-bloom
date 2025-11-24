@@ -117,6 +117,81 @@ function markProductAsViewed(productId: string) {
 }
 
 /**
+ * CRITICAL: PageView and General Event Deduplication
+ * Prevents duplicate tracking on page refresh, back button, and rapid navigation
+ * 
+ * Issue: Quick refresh or back button fires same event twice
+ * Solution: Track which pages and events fired this session, deduplicate by path+event combo
+ * Storage: sessionStorage key persists across same-tab navigation
+ */
+const TRACKED_PAGES_KEY = 'new_era_herbals_tracked_pages';
+let trackedPagesMap: Map<string, number> = new Map();
+
+/**
+ * Load previously tracked pages from sessionStorage
+ */
+function loadTrackedPages() {
+  if (typeof sessionStorage === 'undefined') return;
+  
+  try {
+    const stored = sessionStorage.getItem(TRACKED_PAGES_KEY);
+    if (stored) {
+      const entries = JSON.parse(stored);
+      trackedPagesMap = new Map(entries);
+    }
+  } catch (error) {
+    console.warn('⚠️ [PageView Dedup] Failed to load from sessionStorage:', error);
+    trackedPagesMap = new Map();
+  }
+}
+
+/**
+ * Save tracked pages to sessionStorage for persistence
+ */
+function saveTrackedPages() {
+  if (typeof sessionStorage === 'undefined') return;
+  
+  try {
+    sessionStorage.setItem(TRACKED_PAGES_KEY, JSON.stringify(Array.from(trackedPagesMap.entries())));
+  } catch (error) {
+    console.warn('⚠️ [PageView Dedup] Failed to save to sessionStorage:', error);
+  }
+}
+
+/**
+ * Check if a page has been tracked recently (within last 5 seconds for debouncing)
+ * Prevents duplicate tracking on rapid navigation or refresh
+ */
+function hasRecentlyTrackedPage(path: string): boolean {
+  if (trackedPagesMap.size === 0) {
+    loadTrackedPages();
+  }
+  
+  const timestamp = trackedPagesMap.get(path);
+  if (!timestamp) return false;
+  
+  // If tracked within last 5 seconds, consider it recent
+  const fiveSecondsAgo = Date.now() - 5000;
+  return timestamp > fiveSecondsAgo;
+}
+
+/**
+ * Mark page as tracked to prevent duplicate PageView tracking
+ */
+function markPageAsTracked(path: string) {
+  trackedPagesMap.set(path, Date.now());
+  saveTrackedPages();
+  
+  // Clean up old entries older than 30 minutes to prevent memory bloat
+  const thirtyMinutesAgo = Date.now() - (30 * 60 * 1000);
+  for (const [page, timestamp] of trackedPagesMap.entries()) {
+    if (timestamp < thirtyMinutesAgo) {
+      trackedPagesMap.delete(page);
+    }
+  }
+}
+
+/**
  * Load retry queue from localStorage on initialization
  */
 function loadRetryQueue() {
@@ -646,9 +721,22 @@ function fireMetaPixelEvent(eventName: string, data?: Record<string, any>) {
 }
 
 /**
- * Track page view
+ * Track page view - WITH DEDUPLICATION
+ * CRITICAL: Prevents duplicate PageView tracking on refresh/back button
+ * Only fires once per page per 5-second window
  */
 export function trackPageView(path: string) {
+  // DEDUPLICATION: Check if we've tracked this page recently
+  if (hasRecentlyTrackedPage(path)) {
+    console.log(`⏭️  [PageView Dedup] SKIPPING - Page "${path}" already tracked within 5 seconds`);
+    return; // Skip tracking - already done recently
+  }
+  
+  // Mark page as tracked to prevent duplicate PageView tracking
+  markPageAsTracked(path);
+  
+  console.log(`✅ [PageView Dedup] TRACKING - Page "${path}" (first view this period)`);
+  
   gtmPush('page_view', {
     page_path: path,
     page_title: document.title,
