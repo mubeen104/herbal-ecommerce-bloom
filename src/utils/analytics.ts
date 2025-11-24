@@ -31,6 +31,191 @@ let metaPixelQueue: QueuedEvent[] = [];
 let metaPixelId = '';
 
 /**
+ * Retry queue for failed events (due to network failures)
+ * Persists to localStorage for reliability across page reloads
+ */
+interface FailedEvent {
+  eventName: string;
+  data?: Record<string, any>;
+  timestamp: number;
+  retryCount: number;
+  isGTM?: boolean; // true for GTM, false for Meta Pixel
+}
+
+const RETRY_QUEUE_KEY = 'new_era_herbals_retry_queue';
+const MAX_RETRIES = 5;
+const RETRY_DELAY_MS = 5000; // 5 seconds base delay
+let retryQueue: FailedEvent[] = [];
+let retryInProgress = false;
+let isOnline = typeof navigator !== 'undefined' ? navigator.onLine : true;
+
+/**
+ * Load retry queue from localStorage on initialization
+ */
+function loadRetryQueue() {
+  if (typeof localStorage === 'undefined') return;
+  
+  try {
+    const stored = localStorage.getItem(RETRY_QUEUE_KEY);
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      // Only restore events less than 24 hours old
+      const oneDayAgo = Date.now() - (24 * 60 * 60 * 1000);
+      retryQueue = parsed.filter((e: FailedEvent) => e.timestamp > oneDayAgo);
+      
+      if (retryQueue.length > 0) {
+        console.log(`📋 [Retry Queue] Loaded ${retryQueue.length} failed events from localStorage`);
+      }
+      saveRetryQueue();
+    }
+  } catch (error) {
+    console.warn('⚠️ [Retry Queue] Failed to load from localStorage:', error);
+  }
+}
+
+/**
+ * Save retry queue to localStorage for persistence
+ */
+function saveRetryQueue() {
+  if (typeof localStorage === 'undefined') return;
+  
+  try {
+    // Keep only most recent 100 events to avoid exceeding storage limits
+    const queue = retryQueue.slice(-100);
+    localStorage.setItem(RETRY_QUEUE_KEY, JSON.stringify(queue));
+  } catch (error) {
+    console.warn('⚠️ [Retry Queue] Failed to save to localStorage:', error);
+    // If quota exceeded, clear old events and try again
+    if (error instanceof DOMException && error.code === 22) {
+      retryQueue = retryQueue.slice(-50);
+      try {
+        localStorage.setItem(RETRY_QUEUE_KEY, JSON.stringify(retryQueue));
+      } catch (e) {
+        console.error('❌ [Retry Queue] Failed to save even after cleanup:', e);
+      }
+    }
+  }
+}
+
+/**
+ * Add event to retry queue
+ */
+function addToRetryQueue(eventName: string, data?: Record<string, any>, isGTM = false) {
+  const failedEvent: FailedEvent = {
+    eventName,
+    data,
+    timestamp: Date.now(),
+    retryCount: 0,
+    isGTM,
+  };
+  
+  retryQueue.push(failedEvent);
+  saveRetryQueue();
+  
+  const queueType = isGTM ? 'GTM' : 'Meta Pixel';
+  console.log(`📋 [Retry Queue] Added ${queueType} event to retry queue (total: ${retryQueue.length})`);
+  
+  // Try to process if online
+  if (isOnline) {
+    processRetryQueue();
+  }
+}
+
+/**
+ * Process retry queue with exponential backoff
+ */
+async function processRetryQueue() {
+  if (retryInProgress || !isOnline || retryQueue.length === 0) {
+    return;
+  }
+  
+  retryInProgress = true;
+  
+  try {
+    // Process queue in batches
+    while (retryQueue.length > 0 && isOnline) {
+      const event = retryQueue[0];
+      
+      // Calculate exponential backoff delay
+      const backoffDelay = Math.min(
+        RETRY_DELAY_MS * Math.pow(2, event.retryCount),
+        300000 // Max 5 minutes
+      );
+      const timeSinceLastAttempt = Date.now() - event.timestamp;
+      
+      if (timeSinceLastAttempt < backoffDelay) {
+        // Not ready to retry yet
+        break;
+      }
+      
+      try {
+        if (event.isGTM) {
+          // Retry GTM event
+          if (typeof window !== 'undefined') {
+            window.dataLayer = window.dataLayer || [];
+            window.dataLayer.push({
+              event: event.eventName,
+              ...event.data,
+            });
+            console.log(`✅ [Retry Queue] GTM event retried: ${event.eventName}`);
+          }
+        } else {
+          // Retry Meta Pixel event
+          if (metaPixelReady && window.fbq) {
+            window.fbq('track', event.eventName, event.data || {});
+            console.log(`✅ [Retry Queue] Meta Pixel event retried: ${event.eventName}`);
+          } else if (!window.fbq) {
+            throw new Error('Meta Pixel not ready');
+          }
+        }
+        
+        // Success - remove from queue
+        retryQueue.shift();
+        saveRetryQueue();
+      } catch (error) {
+        event.retryCount++;
+        
+        if (event.retryCount >= MAX_RETRIES) {
+          console.warn(
+            `❌ [Retry Queue] Gave up on event after ${MAX_RETRIES} retries: ${event.eventName}`,
+            error
+          );
+          retryQueue.shift();
+          saveRetryQueue();
+        } else {
+          console.log(
+            `🔄 [Retry Queue] Retry attempt ${event.retryCount}/${MAX_RETRIES} for ${event.eventName}. Next attempt in ${backoffDelay}ms`
+          );
+          // Wait before processing next event
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          break; // Exit loop to let backoff timer work
+        }
+      }
+    }
+  } finally {
+    retryInProgress = false;
+  }
+}
+
+/**
+ * Setup network event listeners for online/offline detection
+ */
+function setupNetworkMonitoring() {
+  if (typeof window === 'undefined') return;
+  
+  window.addEventListener('online', () => {
+    isOnline = true;
+    console.log('🌐 [Network] Online - Processing retry queue');
+    processRetryQueue();
+  });
+  
+  window.addEventListener('offline', () => {
+    isOnline = false;
+    console.log('🌐 [Network] Offline - Events queued for retry');
+  });
+}
+
+/**
  * Check if Meta Pixel is ready to track events
  */
 export function isMetaPixelReady(): boolean {
@@ -42,6 +227,13 @@ export function isMetaPixelReady(): boolean {
  */
 export function getMetaPixelQueueSize(): number {
   return metaPixelQueue.length;
+}
+
+/**
+ * Get retry queue size (for debugging)
+ */
+export function getRetryQueueSize(): number {
+  return retryQueue.length;
 }
 
 /**
@@ -103,12 +295,14 @@ function flushMetaPixelQueue() {
  * Initialize Meta Pixel if ID is provided
  * Implements proper queue management to prevent event loss during initialization
  * 
- * Dual-Queue Architecture:
+ * Triple-Queue Architecture:
  * 1. fbq.q - Standard Meta Pixel queue (processed by fbevents.js when it loads)
  * 2. metaPixelQueue - Our own queue (explicitly managed, flushed when ready)
+ * 3. retryQueue - Persistent queue for failed events (survives page reloads via localStorage)
  * 
  * This ensures compatibility with standard Meta Pixel SDK while maintaining
- * explicit control over event delivery and preventing race conditions.
+ * explicit control over event delivery, preventing race conditions, and handling
+ * network failures gracefully.
  */
 export function initializeMetaPixel(pixelId: string) {
   if (typeof window === 'undefined' || !pixelId) return;
@@ -120,6 +314,12 @@ export function initializeMetaPixel(pixelId: string) {
     console.log('✅ Meta Pixel already initialized and ready');
     return;
   }
+
+  // Initialize retry queue from localStorage
+  loadRetryQueue();
+  
+  // Setup network event listeners for online/offline detection
+  setupNetworkMonitoring();
 
   // Create Meta Pixel queue shim BEFORE script loads
   // This shim follows the standard Meta Pixel format so fbevents.js can process queued commands
@@ -161,6 +361,12 @@ export function initializeMetaPixel(pixelId: string) {
         
         // Flush any queued events that arrived before ready
         flushMetaPixelQueue();
+        
+        // Also try to process retry queue in case network is now available
+        if (isOnline && retryQueue.length > 0) {
+          console.log(`🔄 [Retry Queue] Meta Pixel ready - attempting to process ${retryQueue.length} failed events`);
+          processRetryQueue();
+        }
       } catch (error) {
         console.error('❌ [Meta Pixel] Initialization failed:', error);
       }
@@ -169,6 +375,10 @@ export function initializeMetaPixel(pixelId: string) {
   
   script.onerror = () => {
     console.error('❌ [Meta Pixel] Failed to load script from CDN');
+    // Still setup retry queue handling even if script fails to load
+    if (retryQueue.length > 0) {
+      console.log(`⚠️ [Retry Queue] Meta Pixel script failed to load - ${retryQueue.length} events persisted for retry`);
+    }
   };
 
   document.head.appendChild(script);
@@ -188,21 +398,28 @@ export function initializeMetaPixel(pixelId: string) {
 }
 
 /**
- * Push event to GTM dataLayer
+ * Push event to GTM dataLayer with fallback retry queue
  */
 function gtmPush(event: string, data?: Record<string, any>) {
   if (typeof window === 'undefined') return;
   
-  window.dataLayer = window.dataLayer || [];
-  window.dataLayer.push({
-    event,
-    ...data,
-  });
+  try {
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({
+      event,
+      ...data,
+    });
+  } catch (error) {
+    console.warn(`⚠️ [GTM] Failed to push event "${event}" to dataLayer:`, error);
+    // Add to retry queue for later
+    addToRetryQueue(event, data, true);
+  }
 }
 
 /**
- * Fire event to Meta Pixel
+ * Fire event to Meta Pixel with fallback retry queue
  * Queues events if Meta Pixel isn't ready yet, preventing event loss during initialization
+ * Uses retry queue for network failures, persisting to localStorage for reliability
  */
 function fireMetaPixelEvent(eventName: string, data?: Record<string, any>) {
   if (typeof window === 'undefined') {
@@ -221,9 +438,26 @@ function fireMetaPixelEvent(eventName: string, data?: Record<string, any>) {
     window.fbq('track', eventName, data || {});
     console.log(`✅ [Meta Pixel] Event fired: ${eventName}`);
   } catch (error) {
-    console.warn(`❌ [Meta Pixel] Event failed (${eventName}):`, error);
-    // Try to queue for retry if error occurs
-    metaPixelQueue.push({ eventName, data });
+    console.warn(`⚠️ [Meta Pixel] Event failed (${eventName}):`, error);
+    
+    // Check if error is likely due to network issues
+    const isNetworkError = !isOnline || 
+      (error instanceof TypeError && error.message.includes('fetch')) ||
+      (error instanceof Error && (
+        error.message.includes('Network') ||
+        error.message.includes('timeout') ||
+        error.message.includes('CORS')
+      ));
+    
+    if (isNetworkError) {
+      // Network failure - add to persistent retry queue
+      console.log(`📋 [Meta Pixel] Network issue detected - adding to retry queue`);
+      addToRetryQueue(eventName, data, false);
+    } else {
+      // Other error - still queue but in the temporary queue for now
+      metaPixelQueue.push({ eventName, data });
+      console.log(`⏳ [Meta Pixel] Event queued after error (${metaPixelQueue.length}): ${eventName}`);
+    }
   }
 }
 
