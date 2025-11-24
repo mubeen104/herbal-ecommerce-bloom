@@ -218,10 +218,7 @@ export const useRelatedProducts = (
       }
       return failureCount < 3;
     },
-    retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
-    onError: (error) => {
-      console.error('Related products query failed:', error);
-    }
+    retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000)
   });
 
   return {
@@ -234,25 +231,25 @@ export const useRelatedProducts = (
   };
 };
 
+// Note: Product recommendation tracking tables (product_recommendation_views, 
+// product_recommendation_conversions) do not exist in the current database schema.
+// These functions are stubbed but not functional. They can be implemented when
+// the corresponding tables are created in the database.
+
 export const trackRelatedProductView = async (
   productId: string,
   recommendedProductId: string,
   sessionId: string,
   userId?: string
 ) => {
-  try {
-    await supabase
-      .from('product_recommendation_views')
-      .insert({
-        product_id: productId,
-        recommended_product_id: recommendedProductId,
-        session_id: sessionId,
-        user_id: userId || null,
-        source: 'product_page'
-      });
-  } catch (error) {
-    console.error('Error tracking related product view:', error);
-  }
+  // Stubbed: product_recommendation_views table does not exist
+  console.debug('Related product view tracking (not implemented - table does not exist)', {
+    productId,
+    recommendedProductId,
+    sessionId,
+    userId,
+    source: 'product_page'
+  });
 };
 
 export const trackRelatedProductConversion = async (
@@ -261,17 +258,12 @@ export const trackRelatedProductConversion = async (
   sessionId: string,
   userId?: string
 ) => {
-  try {
-    await supabase
-      .from('product_recommendation_conversions')
-      .insert({
-        product_id: productId,
-        recommended_product_id: recommendedProductId,
-        session_id: sessionId,
-        user_id: userId || null,
-        source: 'product_page'
-      });
-  } catch (error) {
-    console.error('Error tracking related product conversion:', error);
-  }
+  // Stubbed: product_recommendation_conversions table does not exist
+  console.debug('Related product conversion tracking (not implemented - table does not exist)', {
+    productId,
+    recommendedProductId,
+    sessionId,
+    userId,
+    source: 'product_page'
+  });
 };

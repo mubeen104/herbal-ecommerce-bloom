@@ -136,7 +136,9 @@ export const useSuggestedCartProducts = (
         // Enhance cart products with category IDs
         const enhancedCartProducts = cartProducts.map(p => ({
           ...p,
-          category_ids: (p.product_categories || []).map((pc: any) => pc.category_id)
+          category_ids: (p.product_categories || []).map((pc: any) => pc.category_id),
+          image_url: '/placeholder.svg',
+          image_alt: 'Product image'
         }));
 
         // Get all other active products (not in cart) from products table
@@ -189,7 +191,14 @@ export const useSuggestedCartProducts = (
             suggestion_score: calculateCartSuggestionScore(
               enhancedCartProducts as ProductWithRecommendations[],
               {
-                ...candidate,
+                id: candidate.id,
+                name: candidate.name,
+                slug: candidate.slug,
+                price: candidate.price,
+                compare_price: candidate.compare_price,
+                inventory_quantity: candidate.inventory_quantity,
+                is_best_seller: candidate.is_best_seller,
+                is_featured: candidate.is_featured,
                 category_ids: candidateCategoryIds,
                 image_url: primaryImage?.image_url || '/placeholder.svg',
                 image_alt: primaryImage?.alt_text || candidate.name
@@ -220,10 +229,7 @@ export const useSuggestedCartProducts = (
       }
       return failureCount < 3;
     },
-    retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
-    onError: (error) => {
-      console.error('Cart suggestions query failed:', error);
-    }
+    retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000)
   });
 
   return {
@@ -236,27 +242,25 @@ export const useSuggestedCartProducts = (
   };
 };
 
+// Note: Product recommendation tracking tables (product_recommendation_views, 
+// product_recommendation_conversions) do not exist in the current database schema.
+// These functions are stubbed but not functional. They can be implemented when
+// the corresponding tables are created in the database.
+
 export const trackCartSuggestionView = async (
   cartProductIds: string[],
   suggestedProductId: string,
   sessionId: string,
   userId?: string
 ) => {
-  try {
-    if (cartProductIds.length > 0) {
-      await supabase
-        .from('product_recommendation_views')
-        .insert({
-          product_id: cartProductIds[0],
-          recommended_product_id: suggestedProductId,
-          session_id: sessionId,
-          user_id: userId || null,
-          source: 'cart_page'
-        });
-    }
-  } catch (error) {
-    console.error('Error tracking cart suggestion view:', error);
-  }
+  // Stubbed: product_recommendation_views table does not exist
+  console.debug('Cart suggestion view tracking (not implemented - table does not exist)', {
+    cartProductId: cartProductIds[0],
+    recommendedProductId: suggestedProductId,
+    sessionId,
+    userId,
+    source: 'cart_page'
+  });
 };
 
 export const trackCartSuggestionConversion = async (
@@ -265,19 +269,12 @@ export const trackCartSuggestionConversion = async (
   sessionId: string,
   userId?: string
 ) => {
-  try {
-    if (cartProductIds.length > 0) {
-      await supabase
-        .from('product_recommendation_conversions')
-        .insert({
-          product_id: cartProductIds[0],
-          recommended_product_id: suggestedProductId,
-          session_id: sessionId,
-          user_id: userId || null,
-          source: 'cart_page'
-        });
-    }
-  } catch (error) {
-    console.error('Error tracking cart suggestion conversion:', error);
-  }
+  // Stubbed: product_recommendation_conversions table does not exist
+  console.debug('Cart suggestion conversion tracking (not implemented - table does not exist)', {
+    cartProductId: cartProductIds[0],
+    recommendedProductId: suggestedProductId,
+    sessionId,
+    userId,
+    source: 'cart_page'
+  });
 };

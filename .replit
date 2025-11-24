@@ -47,12 +47,12 @@ localPort = 32951
 externalPort = 3001
 
 [[ports]]
-localPort = 36491
-externalPort = 3000
+localPort = 34335
+externalPort = 3002
 
 [[ports]]
-localPort = 41851
-externalPort = 3002
+localPort = 36491
+externalPort = 3000
 
 [userenv]
 
