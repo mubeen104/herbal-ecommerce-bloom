@@ -204,6 +204,14 @@ The system implements **comprehensive error recovery** when Meta Pixel script fa
 - Files Modified: `src/pages/ProductDetail.tsx` (line 104)
 - Result: No more product_id=undefined errors; reviews query only runs with valid product ID
 
+**5. Add-to-Cart Modal Failing - FIXED**
+- Problem: "Failed to add item to cart" error when clicking Add to Cart in Related Products and Cart Suggestions modals
+- Root Cause: `useGuestCart` was attempting to fetch nested `product_images` and `product_variant_images` relationships, causing RLS permission issues
+- Solution: Simplified product and variant fetches to only request essential fields (id, name, price, sku, inventory_quantity) without nested image relationships
+- Made `product_images` and `product_variant_images` optional fields in `GuestCartItem` interface since they're not required for cart operations
+- Files Modified: `src/hooks/useGuestCart.ts` (lines 9-44, 149-177)
+- Result: Add-to-cart now works correctly for guest users in modals and product pages
+
 ### Test Results
 - ✅ 9/9 tracking tests passed (100% success rate)
 - ✅ 12/12 fallback queue tests passed (100% success rate)

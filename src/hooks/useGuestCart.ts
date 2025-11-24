@@ -13,7 +13,7 @@ export interface GuestCartItem {
     name: string;
     sku?: string; // Added SKU for pixel tracking
     price: number;
-    product_images: Array<{
+    product_images?: Array<{
       id: string;
       image_url: string;
       alt_text: string;
@@ -32,7 +32,7 @@ export interface GuestCartItem {
     price: number;
     sku?: string; // Added SKU for pixel tracking
     inventory_quantity: number;
-    product_variant_images: Array<{
+    product_variant_images?: Array<{
       id: string;
       image_url: string;
       alt_text: string;
@@ -143,20 +143,10 @@ export const useGuestCart = () => {
     try {
       console.log('Adding to guest cart:', { productId, quantity, variantId, user });
       
-      // Fetch product details
+      // Fetch product details (without images to avoid RLS permission issues)
       const { data: product, error: productError } = await supabase
         .from('products')
-        .select(`
-          id,
-          name,
-          price,
-          product_images (
-            id,
-            image_url,
-            alt_text,
-            sort_order
-          )
-        `)
+        .select('id, name, price, sku')
         .eq('id', productId)
         .single();
 
@@ -167,23 +157,12 @@ export const useGuestCart = () => {
       
       console.log('Product fetched successfully:', product);
 
-      // Fetch variant details if variantId is provided
+      // Fetch variant details if variantId is provided (without images to avoid RLS issues)
       let variant = undefined;
       if (variantId) {
         const { data: variantData, error: variantError } = await supabase
           .from('product_variants')
-          .select(`
-            id,
-            name,
-            price,
-            inventory_quantity,
-            product_variant_images (
-              id,
-              image_url,
-              alt_text,
-              sort_order
-            )
-          `)
+          .select('id, name, price, inventory_quantity, sku')
           .eq('id', variantId)
           .single();
 
