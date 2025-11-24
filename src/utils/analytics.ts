@@ -2,7 +2,7 @@
  * Analytics Tracking using Google Tag Manager AND Meta Pixel
  * 
  * Fires events to both GTM (for tag-based tracking) and directly to Meta Pixel.
- * Ensures reliable event tracking across both platforms.
+ * Ensures reliable event tracking across both platforms with proper queue management.
  */
 
 declare global {
@@ -15,6 +15,33 @@ declare global {
 // Initialize dataLayer
 if (typeof window !== 'undefined') {
   window.dataLayer = window.dataLayer || [];
+}
+
+/**
+ * Event queue for Meta Pixel
+ * Queues events until Meta Pixel script is fully loaded and initialized
+ */
+interface QueuedEvent {
+  eventName: string;
+  data?: Record<string, any>;
+}
+
+let metaPixelReady = false;
+let metaPixelQueue: QueuedEvent[] = [];
+let metaPixelId = '';
+
+/**
+ * Check if Meta Pixel is ready to track events
+ */
+export function isMetaPixelReady(): boolean {
+  return metaPixelReady;
+}
+
+/**
+ * Get current Meta Pixel queue size (for debugging)
+ */
+export function getMetaPixelQueueSize(): number {
+  return metaPixelQueue.length;
 }
 
 /**
@@ -50,28 +77,59 @@ export function getCurrencyCode(currency: string): string {
 }
 
 /**
+ * Flush queued events to Meta Pixel
+ * Called when Meta Pixel is fully ready
+ */
+function flushMetaPixelQueue() {
+  if (typeof window === 'undefined' || !window.fbq || metaPixelQueue.length === 0) {
+    return;
+  }
+
+  console.log(`🔄 [Meta Pixel] Flushing ${metaPixelQueue.length} queued events...`);
+  const queue = [...metaPixelQueue];
+  metaPixelQueue = [];
+
+  for (const event of queue) {
+    try {
+      window.fbq('track', event.eventName, event.data || {});
+      console.log(`✅ [Meta Pixel] Flushed event: ${event.eventName}`);
+    } catch (error) {
+      console.warn(`❌ [Meta Pixel] Failed to flush event ${event.eventName}:`, error);
+    }
+  }
+}
+
+/**
  * Initialize Meta Pixel if ID is provided
+ * Implements proper queue management to prevent event loss during initialization
  */
 export function initializeMetaPixel(pixelId: string) {
   if (typeof window === 'undefined' || !pixelId) return;
   
+  metaPixelId = pixelId;
+
   // Check if Meta Pixel is already loaded
-  if (window.fbq) {
-    console.log('Meta Pixel already initialized');
+  if (window.fbq && metaPixelReady) {
+    console.log('✅ Meta Pixel already initialized and ready');
     return;
   }
 
-  // Initialize fbq function
-  (window as any).fbq = function() {
-    (window as any).fbq.callMethod
-      ? (window as any).fbq.callMethod.apply((window as any).fbq, arguments)
-      : (window as any).fbq.queue.push(arguments);
-  };
-  
-  (window as any).fbq.push = (window as any).fbq;
-  (window as any).fbq.loaded = true;
-  (window as any).fbq.version = '2.0';
-  (window as any).fbq.queue = [];
+  // Create Meta Pixel queue shim before script loads
+  // This ensures events can be queued immediately
+  if (!window.fbq) {
+    (window as any).fbq = function() {
+      (window as any).fbq.callMethod
+        ? (window as any).fbq.callMethod.apply((window as any).fbq, arguments)
+        : (window as any).fbq.queue.push(arguments);
+    };
+    
+    (window as any).fbq.push = (window as any).fbq;
+    (window as any).fbq.loaded = true;
+    (window as any).fbq.version = '2.0';
+    (window as any).fbq.queue = [];
+    
+    console.log('📦 [Meta Pixel] Queue shim created');
+  }
 
   // Load Meta Pixel script
   const script = document.createElement('script');
@@ -79,16 +137,28 @@ export function initializeMetaPixel(pixelId: string) {
   script.src = `https://connect.facebook.net/en_US/fbevents.js`;
   
   script.onload = () => {
-    console.log('Meta Pixel script loaded successfully');
+    console.log('📥 [Meta Pixel] Script loaded from CDN');
+    
     // Initialize the pixel
     if (window.fbq) {
-      window.fbq('init', pixelId);
-      window.fbq('track', 'PageView');
+      try {
+        window.fbq('init', pixelId);
+        console.log(`✅ [Meta Pixel] Pixel initialized with ID: ${pixelId}`);
+        
+        // Mark as ready AFTER initialization completes
+        metaPixelReady = true;
+        console.log('✅ [Meta Pixel] Ready to track events');
+        
+        // Flush any queued events that arrived before ready
+        flushMetaPixelQueue();
+      } catch (error) {
+        console.error('❌ [Meta Pixel] Initialization failed:', error);
+      }
     }
   };
   
   script.onerror = () => {
-    console.error('Failed to load Meta Pixel script');
+    console.error('❌ [Meta Pixel] Failed to load script from CDN');
   };
 
   document.head.appendChild(script);
@@ -121,17 +191,29 @@ function gtmPush(event: string, data?: Record<string, any>) {
 }
 
 /**
- * Fire event to Meta Pixel directly
+ * Fire event to Meta Pixel
+ * Queues events if Meta Pixel isn't ready yet, preventing event loss during initialization
  */
 function fireMetaPixelEvent(eventName: string, data?: Record<string, any>) {
-  if (typeof window === 'undefined' || !window.fbq) {
+  if (typeof window === 'undefined') {
     return;
   }
 
+  // If Meta Pixel is not ready, queue the event
+  if (!metaPixelReady || !window.fbq) {
+    metaPixelQueue.push({ eventName, data });
+    console.log(`⏳ [Meta Pixel] Event queued (${metaPixelQueue.length}): ${eventName}`);
+    return;
+  }
+
+  // If ready, fire the event immediately
   try {
     window.fbq('track', eventName, data || {});
+    console.log(`✅ [Meta Pixel] Event fired: ${eventName}`);
   } catch (error) {
-    console.warn('Meta Pixel event failed:', eventName, error);
+    console.warn(`❌ [Meta Pixel] Event failed (${eventName}):`, error);
+    // Try to queue for retry if error occurs
+    metaPixelQueue.push({ eventName, data });
   }
 }
 
