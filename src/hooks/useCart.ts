@@ -81,12 +81,36 @@ export const useCart = () => {
 
   const addToCart = useMutation({
     mutationFn: async ({ productId, variantId, quantity = 1 }: { productId: string; variantId?: string | null; quantity?: number }) => {
+      // Validate variant exists if variantId is provided
+      if (variantId) {
+        const { data: variant, error: variantError } = await supabase
+          .from('product_variants')
+          .select('id, inventory_quantity, is_active')
+          .eq('id', variantId)
+          .single();
+
+        if (variantError || !variant) {
+          throw new Error('Variant not found or unavailable. Please select a different variant.');
+        }
+
+        if (!variant.is_active) {
+          throw new Error('This variant is no longer available.');
+        }
+
+        // Check inventory if variant has inventory tracking
+        if (variant.inventory_quantity !== null && variant.inventory_quantity < quantity) {
+          throw new Error(`Only ${variant.inventory_quantity} items available in stock.`);
+        }
+      }
+
       // Check if item already exists in cart (same product and variant combination)
+      // Normalize variant_id for comparison
+      const normalizedVariantId = variantId || null;
       const { data: existingItem } = await supabase
         .from('cart_items')
         .select('*')
         .eq('product_id', productId)
-        .eq('variant_id', variantId || null)
+        .eq('variant_id', normalizedVariantId)
         .maybeSingle();
 
       if (existingItem) {

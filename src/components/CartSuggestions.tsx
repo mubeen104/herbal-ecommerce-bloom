@@ -43,22 +43,19 @@ const CartSuggestions = ({ cartItems, limit = 4 }: CartSuggestionsProps) => {
     item.product_id || item.products?.id || item.product?.id
   ).filter(Boolean) as string[];
 
+  // REMOVED: Automatic ViewContent tracking for all suggested products
+  // This was causing multiple ViewContent events per page
+  // ViewContent should only be tracked when user actually views/clicks a product
+  // Suggested products are tracked via trackCartSuggestionView for internal analytics only
   useEffect(() => {
     if (suggestedProducts.length > 0 && isOpen) {
       suggestedProducts.forEach(product => {
-        // Track in database for analytics
+        // Track in database for analytics only (not pixel tracking)
         trackCartSuggestionView(cartProductIds, product.id, sessionId, user?.id);
-
-        // Track to advertising pixels
-        trackViewContent({
-          id: product.id,
-          name: product.name,
-          price: product.price,
-          currency: currency
-        });
+        // ViewContent pixel tracking removed - will track when user clicks product
       });
     }
-  }, [suggestedProducts, isOpen, cartProductIds, sessionId, user?.id, currency, trackViewContent]);
+  }, [suggestedProducts, isOpen, cartProductIds, sessionId, user?.id]);
 
   const handleAddToCartRequest = (product: any) => {
     setAddToCartProduct(product);
@@ -93,6 +90,18 @@ const CartSuggestions = ({ cartItems, limit = 4 }: CartSuggestionsProps) => {
 
   const handleProductClick = (product: any) => {
     trackCartSuggestionConversion(cartProductIds, product.id, sessionId, user?.id);
+    
+    // Track ViewContent when user actually clicks on suggested product
+    const categoryName = (product as any).product_categories?.[0]?.categories?.name || 'Herbal Products';
+    trackViewContent({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      category: categoryName,
+      brand: 'New Era Herbals',
+      currency: currency
+    });
+    
     navigate(`/product/${product.slug}`);
   };
 

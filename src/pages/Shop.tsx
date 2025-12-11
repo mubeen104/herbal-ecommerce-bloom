@@ -22,6 +22,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useProductRatings } from '@/hooks/useProductRatings';
 import { ProductRating } from '@/components/ProductRating';
 import { Breadcrumbs } from '@/components/navigation/Breadcrumbs';
+import { useAnalytics } from '@/hooks/useAnalytics';
+
 export default function Shop() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
@@ -68,6 +70,7 @@ export default function Shop() {
     toast
   } = useToast();
   const navigate = useNavigate();
+  const { trackViewContent } = useAnalytics();
 
   // Filter and sort products
   const filteredProducts = products?.filter(product => {
@@ -350,7 +353,19 @@ export default function Shop() {
             </Card> : <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6 lg:gap-8">
               {sortedProducts?.map((product, index) => <div key={product.id} className="group relative animate-fade-in hover-scale cursor-pointer" style={{
               animationDelay: `${index * 0.1}s`
-            }} onClick={() => navigate(`/product/${product.slug}`)}>
+            }} onClick={() => {
+              // Track ViewContent when user clicks product card
+              const categoryName = product.product_categories?.[0]?.categories?.name || 'Herbal Products';
+              trackViewContent({
+                id: product.id,
+                name: product.name,
+                price: product.price,
+                category: categoryName,
+                brand: 'New Era Herbals',
+                currency: currency
+              });
+              navigate(`/product/${product.slug}`);
+            }}>
                   {/* Schema.org microdata for Meta Pixel catalog detection */}
                   {/* If product has variants, include microdata for each variant */}
                   {productVariants[product.id]?.length > 0 ? productVariants[product.id].map((variant: any) => <div key={variant.id} itemScope itemType="https://schema.org/Product" style={{

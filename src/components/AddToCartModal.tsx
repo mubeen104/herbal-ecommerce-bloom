@@ -77,6 +77,16 @@ export const AddToCartModal: React.FC<AddToCartModalProps> = ({
 
   const handleAddToCart = async () => {
     try {
+      // Validate variant selection if product has variants
+      if (variants && variants.length > 0 && !selectedVariant) {
+        toast({
+          title: "Variant Required",
+          description: "Please select a variant before adding to cart.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       const currentPrice = getCurrentPrice();
       const currentId = selectedVariant?.sku || product.sku || product.id;
 
@@ -90,15 +100,29 @@ export const AddToCartModal: React.FC<AddToCartModalProps> = ({
         return;
       }
 
+      // Validate inventory
+      const availableInventory = getCurrentInventory();
+      if (availableInventory !== null && availableInventory < quantity) {
+        toast({
+          title: "Insufficient Stock",
+          description: `Only ${availableInventory} items available in stock.`,
+          variant: "destructive",
+        });
+        return;
+      }
+
       await onAddToCart(product.id, quantity, selectedVariant?.id);
 
       // Track add to cart event with validated data
+      // Get category from product if available (product might have product_categories relation)
+      const categoryName = (product as any).product_categories?.[0]?.categories?.name || 'Herbal Products';
       trackAddToCart({
         id: currentId,
         name: product.name,
         price: currentPrice,
         quantity: quantity,
-        category: 'Herbal Products',
+        category: categoryName,
+        brand: 'New Era Herbals',
         currency: currency
       });
 
@@ -110,10 +134,11 @@ export const AddToCartModal: React.FC<AddToCartModalProps> = ({
         description: `${quantity} x ${displayName} added to your cart.`,
       });
       onClose();
-    } catch (error) {
+    } catch (error: any) {
+      const errorMessage = error?.message || error?.error?.message || "Failed to add item to cart. Please try again.";
       toast({
         title: "Error",
-        description: "Failed to add item to cart. Please try again.",
+        description: errorMessage,
         variant: "destructive",
       });
     }

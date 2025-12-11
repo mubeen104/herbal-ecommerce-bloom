@@ -19,6 +19,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/co
 import { AddToCartModal } from '@/components/AddToCartModal';
 import { useProductRatings } from '@/hooks/useProductRatings';
 import { ProductRating } from '@/components/ProductRating';
+import { useAnalytics } from '@/hooks/useAnalytics';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Breadcrumbs } from '@/components/navigation/Breadcrumbs';
@@ -32,6 +33,7 @@ const Category = () => {
   const { addToCart } = useGuestCart();
   const { currency } = useStoreSettings();
   const { toast } = useToast();
+  const { trackViewContent } = useAnalytics();
 
   const [sortBy, setSortBy] = useState('newest');
   const [priceRange, setPriceRange] = useState([0, 10000]);
@@ -456,7 +458,19 @@ const Category = () => {
                         transition: 'transform 400ms cubic-bezier(0.34, 1.56, 0.64, 1)',
                         willChange: 'transform'
                       }}
-                      onClick={() => navigate(`/product/${product.slug}`)}
+                      onClick={() => {
+                        // Track ViewContent when user clicks product card
+                        const categoryName = product.product_categories?.[0]?.categories?.name || 'Herbal Products';
+                        trackViewContent({
+                          id: product.id,
+                          name: product.name,
+                          price: product.price,
+                          category: categoryName,
+                          brand: 'New Era Herbals',
+                          currency: currency
+                        });
+                        navigate(`/product/${product.slug}`);
+                      }}
                     >
                       {/* Floating Card Container */}
                       <div className="relative bg-card/40 backdrop-blur-xl border border-border/20 rounded-3xl p-1 shadow-lg group-hover:shadow-2xl group-hover:border-primary/30 group-hover:scale-105"

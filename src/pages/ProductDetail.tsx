@@ -81,22 +81,58 @@ const useProductReviews = (productId: string) => {
   return useQuery({
     queryKey: ['product-reviews', productId],
     queryFn: async () => {
-      const {
-        data,
-        error
-      } = await supabase.from('reviews').select(`
-        *,
-        profiles (
-          first_name,
-          last_name
-        )
-      `).eq('product_id', productId).eq('is_approved', true).order('created_at', {
-        ascending: false
-      });
+      // Use database function to bypass RLS and get profile data
+      const { data, error } = await supabase
+        .rpc('get_reviews_with_profiles', { _product_id: productId });
+      
       if (error) {
-        throw error;
+        // Fallback to direct query if function doesn't exist
+        console.warn('Function get_reviews_with_profiles not available, using direct query:', error);
+        const { data: fallbackData, error: fallbackError } = await supabase
+          .from('reviews')
+          .select(`
+            *,
+            profiles (
+              first_name,
+              last_name,
+              email
+            )
+          `)
+          .eq('product_id', productId)
+          .eq('is_approved', true)
+          .order('created_at', { ascending: false });
+        
+        if (fallbackError) {
+          throw fallbackError;
+        }
+        
+        // Transform fallback data to match function format
+        return (fallbackData || []).map((review: any) => ({
+          ...review,
+          profile_first_name: review.profiles?.first_name || null,
+          profile_last_name: review.profiles?.last_name || null,
+          profile_email: review.profiles?.email || null,
+        }));
       }
-      return data;
+      
+      // Transform function result to match expected format
+      return (data || []).map((review: any) => ({
+        id: review.id,
+        product_id: review.product_id,
+        user_id: review.user_id,
+        rating: review.rating,
+        title: review.title,
+        content: review.content,
+        is_verified: review.is_verified,
+        is_approved: review.is_approved,
+        created_at: review.created_at,
+        updated_at: review.updated_at,
+        profiles: {
+          first_name: review.profile_first_name,
+          last_name: review.profile_last_name,
+          email: review.profile_email,
+        },
+      }));
     },
     enabled: !!productId
   });
@@ -221,10 +257,11 @@ const ProductDetail = () => {
         title: "Added to cart",
         description: `${quantity} x ${displayName} added to your cart.`
       });
-    } catch (error) {
+    } catch (error: any) {
+      const errorMessage = error?.message || error?.error?.message || "Failed to add item to cart. Please try again.";
       toast({
         title: "Error",
-        description: "Failed to add item to cart. Please try again.",
+        description: errorMessage,
         variant: "destructive",
       });
     }
@@ -559,9 +596,26 @@ const ProductDetail = () => {
                   {reviews.map(review => <div key={review.id} className="border-b border-border pb-6 last:border-0">
                       <div className="flex items-center space-x-2 mb-2">
                         <span className="font-medium text-foreground">
-                          {review.profiles?.first_name && review.profiles?.last_name
-                            ? `${review.profiles.first_name} ${review.profiles.last_name}`
-                            : 'Anonymous User'}
+                          {(() => {
+                            // Handle both function result format and direct query format
+                            const firstName = (review.profiles?.first_name || (review as any).profile_first_name || '').trim();
+                            const lastName = (review.profiles?.last_name || (review as any).profile_last_name || '').trim();
+                            const email = (review.profiles?.email || (review as any).profile_email || '').trim();
+                            
+                            // If we have first or last name, use them
+                            if (firstName || lastName) {
+                              return `${firstName} ${lastName}`.trim();
+                            }
+                            
+                            // Fallback to email (show first part before @)
+                            if (email) {
+                              const emailName = email.split('@')[0];
+                              // Capitalize first letter and make it readable
+                              return emailName.charAt(0).toUpperCase() + emailName.slice(1).replace(/[._-]/g, ' ');
+                            }
+                            
+                            return 'Anonymous User';
+                          })()}
                         </span>
                         <div className="flex items-center">
                           {[...Array(5)].map((_, i) => <Star key={i} className={`w-4 h-4 ${i < review.rating ? 'text-yellow-400 fill-yellow-400' : 'text-muted-foreground'}`} />)}

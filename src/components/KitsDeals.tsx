@@ -14,6 +14,7 @@ import { AddToCartModal } from "@/components/AddToCartModal";
 import { useCarouselAutoScroll } from "@/hooks/useCarouselAutoScroll";
 import { useProductRatings } from "@/hooks/useProductRatings";
 import { ProductRating } from "@/components/ProductRating";
+import { useAnalytics } from "@/hooks/useAnalytics";
 import {
   Carousel,
   CarouselContent,
@@ -35,6 +36,7 @@ const KitsDeals = () => {
   const { addToCart, isLoading: cartLoading } = useGuestCart();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { trackViewContent } = useAnalytics();
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [addToCartProduct, setAddToCartProduct] = useState<any>(null);
   const [carouselApi, setCarouselApi] = useState<any>(null);
@@ -179,7 +181,19 @@ const KitsDeals = () => {
                     transition: `transform 400ms cubic-bezier(0.34, 1.56, 0.64, 1)`,
                     willChange: 'transform'
                   }}
-                  onClick={() => navigate(`/product/${product.slug}`)}
+                  onClick={() => {
+                    // Track ViewContent when user clicks product card
+                    const categoryName = product.product_categories?.[0]?.categories?.name || 'Herbal Products';
+                    trackViewContent({
+                      id: product.id,
+                      name: product.name,
+                      price: product.price,
+                      category: categoryName,
+                      brand: 'New Era Herbals',
+                      currency: currency
+                    });
+                    navigate(`/product/${product.slug}`);
+                  }}
                   onMouseEnter={() => setIsPaused(true)}
                   onMouseLeave={() => setIsPaused(false)}
                 >
@@ -359,7 +373,20 @@ const KitsDeals = () => {
                             </Button>
                             
                             <Button
-                              onClick={(e) => { e.stopPropagation(); navigate(`/product/${product.slug}`); }}
+                              onClick={(e) => { 
+                                e.stopPropagation();
+                                // Track ViewContent when user clicks View Details
+                                const categoryName = product.product_categories?.[0]?.categories?.name || 'Herbal Products';
+                                trackViewContent({
+                                  id: product.id,
+                                  name: product.name,
+                                  price: product.price,
+                                  category: categoryName,
+                                  brand: 'New Era Herbals',
+                                  currency: currency
+                                });
+                                navigate(`/product/${product.slug}`);
+                              }}
                               className="w-full rounded-lg font-semibold text-xs sm:text-sm py-2 sm:py-2.5"
                               variant="outline"
                             >

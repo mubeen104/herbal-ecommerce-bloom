@@ -29,12 +29,18 @@ export const useCanReview = (productId: string) => {
       }
 
       // Check if user has already reviewed this product
-      const { data: existingReview } = await supabase
+      const { data: existingReview, error: reviewError } = await supabase
         .from('reviews')
         .select('id')
         .eq('product_id', productId)
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
+
+      if (reviewError && reviewError.code !== 'PGRST116') {
+        // PGRST116 = "Results contain 0 rows" (handled by maybeSingle)
+        console.error('Error fetching existing review:', reviewError);
+        return false;
+      }
 
       // User can review if they have completed orders and haven't reviewed yet
       return orderItems && orderItems.length > 0 && !existingReview;

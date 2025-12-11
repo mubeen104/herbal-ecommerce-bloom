@@ -29,6 +29,7 @@ const ShopSection = () => {
   const { currency } = useStoreSettings();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { trackViewContent } = useAnalytics();
 
   // Listen for search events from header
   useEffect(() => {
@@ -243,7 +244,19 @@ const ShopSection = () => {
                 key={product.id}
                 className="group relative animate-fade-in hover-scale cursor-pointer"
                 style={{ animationDelay: `${index * 0.1}s` }}
-                onClick={() => navigate(`/product/${product.slug}`)}
+                onClick={() => {
+                  // Track ViewContent when user clicks product card
+                  const categoryName = product.product_categories?.[0]?.categories?.name || 'Herbal Products';
+                  trackViewContent({
+                    id: product.id,
+                    name: product.name,
+                    price: product.price,
+                    category: categoryName,
+                    brand: 'New Era Herbals',
+                    currency: currency
+                  });
+                  navigate(`/product/${product.slug}`);
+                }}
               >
                 {/* Floating Card Container */}
                 <div className="relative bg-card/40 backdrop-blur-xl border border-border/20 rounded-3xl p-1 shadow-lg group-hover:shadow-2xl transition-all duration-700 group-hover:border-primary/30">

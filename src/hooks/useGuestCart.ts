@@ -164,20 +164,33 @@ export const useGuestCart = () => {
           .from('product_variants')
           .select('id, name, price, inventory_quantity, sku')
           .eq('id', variantId)
+          .eq('is_active', true) // Only fetch active variants
           .single();
 
         if (variantError) {
           console.error('Error fetching variant:', variantError);
+          // Throw error if variant is required but fetch failed
+          throw new Error(`Variant not found or unavailable. Please select a different variant.`);
+        } else if (!variantData) {
+          throw new Error(`Variant not found. Please select a different variant.`);
         } else {
           variant = variantData;
           console.log('Variant fetched successfully:', variant);
+          
+          // Check inventory if variant has inventory tracking
+          if (variant.inventory_quantity !== null && variant.inventory_quantity < quantity) {
+            throw new Error(`Only ${variant.inventory_quantity} items available in stock.`);
+          }
         }
       }
 
       setGuestCartItems(prevItems => {
-        const existingItemIndex = prevItems.findIndex(item => 
-          item.product_id === productId && item.variant_id === variantId
-        );
+        // Normalize variant_id for comparison (handle undefined vs null)
+        const normalizedVariantId = variantId || null;
+        const existingItemIndex = prevItems.findIndex(item => {
+          const itemVariantId = item.variant_id || null;
+          return item.product_id === productId && itemVariantId === normalizedVariantId;
+        });
         let newItems;
 
         if (existingItemIndex >= 0) {
@@ -189,6 +202,11 @@ export const useGuestCart = () => {
           };
         } else {
           // Add new item
+          // Validate that variant exists if variantId was provided
+          if (variantId && !variant) {
+            throw new Error('Variant data is missing. Please try again.');
+          }
+          
           const newItem: GuestCartItem = {
             id: `guest_${Date.now()}_${productId}_${variantId || 'default'}`,
             product_id: productId,

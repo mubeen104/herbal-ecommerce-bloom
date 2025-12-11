@@ -261,9 +261,10 @@ const Footer = () => {
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 sm:gap-3">
               {certifications.map((cert, index) => {
               const IconComponent = cert.icon;
-              return <div key={cert.label} className={`group ${cert.bgColor} border ${cert.borderColor} rounded-lg sm:rounded-xl p-2 sm:p-3 hover:shadow-lg hover:scale-105 transition-all duration-300 animate-fade-in cursor-pointer`} style={{
-                animationDelay: `${0.1 + index * 0.05}s`
-              }}>
+              return (
+                <div key={cert.label} className={`group ${cert.bgColor} border ${cert.borderColor} rounded-lg sm:rounded-xl p-2 sm:p-3 hover:shadow-lg hover:scale-105 transition-all duration-300 animate-fade-in cursor-pointer`} style={{
+                  animationDelay: `${0.1 + index * 0.05}s`
+                }}>
                   <div className="flex flex-col items-center text-center space-y-1 sm:space-y-2">
                     <div className={`${cert.color} group-hover:scale-110 transition-transform duration-300`}>
                       <IconComponent className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" />
@@ -272,7 +273,8 @@ const Footer = () => {
                       {cert.label}
                     </span>
                   </div>
-                </div>;
+                </div>
+              );
             })}
             </div>
           </div>

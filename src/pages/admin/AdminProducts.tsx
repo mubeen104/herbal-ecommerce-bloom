@@ -100,6 +100,7 @@ export default function AdminProducts() {
   // Track if mutation is in progress to prevent duplicate submissions
   const isMutatingRef = useRef(false);
   const lastSaveTimestampRef = useRef<number>(0);
+  const mutationTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Fetch products
   const { data: products, isLoading } = useQuery({
@@ -135,37 +136,62 @@ export default function AdminProducts() {
       isMutatingRef.current = true;
       lastSaveTimestampRef.current = now;
 
-      let product;
-
-      if (editingProduct) {
-        const { data, error } = await supabase
-          .from('products')
-          .update(productData)
-          .eq('id', editingProduct.id)
-          .select()
-          .single();
-        if (error) throw error;
-        product = data;
-      } else {
-        const { data, error } = await supabase
-          .from('products')
-          .insert([{
-            ...productData,
-            slug: productData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')
-          }])
-          .select()
-          .single();
-        if (error) throw error;
-        product = data;
+      // Safety timeout: Reset ref after 30 seconds if mutation doesn't complete
+      // This prevents the ref from getting permanently stuck
+      if (mutationTimeoutRef.current) {
+        clearTimeout(mutationTimeoutRef.current);
       }
+      mutationTimeoutRef.current = setTimeout(() => {
+        if (isMutatingRef.current) {
+          console.warn('Mutation timeout - resetting isMutatingRef');
+          isMutatingRef.current = false;
+        }
+      }, 30000); // 30 seconds timeout
 
-      await handleCategoryRelations(product.id);
-      await handleProductImages(product.id);
-      await handleProductVariants(product.id);
+      try {
+        let product;
 
-      return product;
+        if (editingProduct) {
+          const { data, error } = await supabase
+            .from('products')
+            .update(productData)
+            .eq('id', editingProduct.id)
+            .select()
+            .single();
+          if (error) throw error;
+          product = data;
+        } else {
+          const { data, error } = await supabase
+            .from('products')
+            .insert([{
+              ...productData,
+              slug: productData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+            }])
+            .select()
+            .single();
+          if (error) throw error;
+          product = data;
+        }
+
+        await handleCategoryRelations(product.id);
+        await handleProductImages(product.id);
+        await handleProductVariants(product.id);
+
+        return product;
+      } finally {
+        // Always reset the ref, even if an error occurs
+        // This prevents the ref from getting stuck in true state
+        isMutatingRef.current = false;
+        
+        // Clear the safety timeout since mutation completed
+        if (mutationTimeoutRef.current) {
+          clearTimeout(mutationTimeoutRef.current);
+          mutationTimeoutRef.current = null;
+        }
+      }
     },
     onSuccess: (product) => {
+      // Ref is already reset in finally block, but keep this for safety
       isMutatingRef.current = false;
 
       // Use optimistic update instead of invalidating all queries
@@ -191,6 +217,7 @@ export default function AdminProducts() {
       });
     },
     onError: (error: any) => {
+      // Ref is already reset in finally block, but keep this for safety
       isMutatingRef.current = false;
       toast({
         title: "Error",
@@ -236,9 +263,17 @@ export default function AdminProducts() {
   const handleProductVariants = async (productId: string) => {
     // Skip variants for Kit & Deals products
     if (formData.is_kits_deals) {
-      // If editing and switching to kit/deals, clean up existing variants
+      // If editing and switching to kit/deals, only soft-delete variants (set is_active = false)
+      // Don't hard delete because they might be referenced by orders
       if (editingProduct) {
-        await supabase.from('product_variants').delete().eq('product_id', editingProduct.id);
+        const { error } = await supabase
+          .from('product_variants')
+          .update({ is_active: false })
+          .eq('product_id', editingProduct.id);
+        if (error) {
+          console.warn('Failed to deactivate variants:', error);
+          // Don't throw - this is not critical
+        }
       }
       return;
     }
@@ -248,6 +283,26 @@ export default function AdminProducts() {
       .from('product_variants')
       .select('id, name, price')
       .eq('product_id', productId);
+
+    // Check which variants are referenced by order_items (can't be deleted)
+    const variantIdsToCheck = (existingVariants || []).map(v => v.id);
+    const referencedVariantIds = new Set<string>();
+    
+    if (variantIdsToCheck.length > 0 && editingProduct) {
+      const { data: orderItems } = await supabase
+        .from('order_items')
+        .select('variant_id')
+        .in('variant_id', variantIdsToCheck)
+        .not('variant_id', 'is', null);
+      
+      if (orderItems) {
+        orderItems.forEach(item => {
+          if (item.variant_id) {
+            referencedVariantIds.add(item.variant_id);
+          }
+        });
+      }
+    }
 
     if (productVariants.length > 0) {
       // Clean up local duplicates with strict validation
@@ -273,79 +328,147 @@ export default function AdminProducts() {
       });
 
       if (cleanedVariants.length === 0) {
-        // No valid variants to save, delete existing ones if editing
+        // No valid variants to save, soft-delete existing ones if editing
+        // (set is_active = false instead of deleting)
         if (editingProduct && existingVariants && existingVariants.length > 0) {
-          await supabase.from('product_variants').delete().eq('product_id', editingProduct.id);
+          const { error } = await supabase
+            .from('product_variants')
+            .update({ is_active: false })
+            .eq('product_id', editingProduct.id);
+          if (error) {
+            console.warn('Failed to deactivate variants:', error);
+          }
         }
         return;
       }
 
       // Check which variants are new vs existing
-      const existingNames = new Set(
-        (existingVariants || []).map(v => v.name.toLowerCase().trim())
+      const existingVariantsMap = new Map(
+        (existingVariants || []).map(v => [v.name.toLowerCase().trim(), v])
       );
 
-      const newVariants = cleanedVariants.filter(
-        v => !existingNames.has(v.name.toLowerCase().trim())
-      );
+      // Separate variants into: update existing, insert new, delete unused
+      const variantsToUpdate: Array<{ id: string; data: any }> = [];
+      const variantsToInsert: Array<any> = [];
+      const variantsToDeactivate: string[] = [];
 
-      // Delete existing variants before inserting (atomic operation)
-      if (editingProduct) {
-        const { error: deleteError } = await supabase
-          .from('product_variants')
-          .delete()
-          .eq('product_id', editingProduct.id);
-
-        if (deleteError) {
-          console.error('Failed to delete existing variants:', deleteError);
-          throw deleteError;
+      for (const variant of cleanedVariants) {
+        const variantName = variant.name.trim().toLowerCase();
+        const existing = existingVariantsMap.get(variantName);
+        
+        if (existing) {
+          // Update existing variant
+          variantsToUpdate.push({
+            id: existing.id,
+            data: {
+              name: variant.name.trim(),
+              price: parseFloat(variant.price || '0'),
+              inventory_quantity: parseInt(variant.inventory_quantity || '0') || 0,
+              is_active: true
+            }
+          });
+        } else {
+          // Insert new variant
+          variantsToInsert.push({
+            product_id: productId,
+            name: variant.name.trim(),
+            price: parseFloat(variant.price || '0'),
+            inventory_quantity: parseInt(variant.inventory_quantity || '0') || 0,
+            is_active: true
+          });
         }
       }
 
-      // Prepare variant data
-      const variantData = cleanedVariants.map((variant, index) => ({
-        product_id: productId,
-        name: variant.name.trim(),
-        price: parseFloat(variant.price),
-        inventory_quantity: parseInt(variant.inventory_quantity) || 0,
-        variant_options: {},
-        is_active: true,
-        sort_order: index
-      }));
-
-      // Insert variants with error handling
-      const { data: insertedVariants, error: insertError } = await supabase
-        .from('product_variants')
-        .insert(variantData)
-        .select();
-
-      if (insertError) {
-        // Check if it's a duplicate error
-        if (insertError.code === '23505') {
-          console.error('Duplicate variant detected by database:', insertError.message);
-          throw new Error('A variant with this name already exists. Please use unique names.');
-        }
-        throw insertError;
-      }
-
-      // Handle variant images only if insert was successful
-      if (insertedVariants && insertedVariants.length > 0) {
-        for (let i = 0; i < cleanedVariants.length; i++) {
-          const variant = cleanedVariants[i];
-          if (variant.image_url && insertedVariants[i]) {
-            await supabase.from('product_variant_images').insert({
-              variant_id: insertedVariants[i].id,
-              image_url: variant.image_url,
-              alt_text: variant.name,
-              sort_order: 0
-            });
+      // Find variants to deactivate (existing but not in new list)
+      if (editingProduct && existingVariants) {
+        const newVariantNames = new Set(
+          cleanedVariants.map(v => v.name.trim().toLowerCase())
+        );
+        
+        for (const existing of existingVariants) {
+          if (!newVariantNames.has(existing.name.toLowerCase().trim())) {
+            // Only deactivate if not referenced by orders
+            if (!referencedVariantIds.has(existing.id)) {
+              variantsToDeactivate.push(existing.id);
+            } else {
+              // Keep it active but mark as inactive in UI
+              console.log(`Keeping variant "${existing.name}" active (referenced by orders)`);
+            }
           }
         }
       }
+
+      // Update existing variants
+      for (const { id, data } of variantsToUpdate) {
+        const { error } = await supabase
+          .from('product_variants')
+          .update(data)
+          .eq('id', id);
+        if (error) {
+          console.error(`Failed to update variant ${id}:`, error);
+          throw error;
+        }
+      }
+
+      // Insert new variants
+      let insertedVariants: any[] = [];
+      if (variantsToInsert.length > 0) {
+        const { data, error } = await supabase
+          .from('product_variants')
+          .insert(variantsToInsert)
+          .select();
+        if (error) {
+          console.error('Failed to insert new variants:', error);
+          throw error;
+        }
+        insertedVariants = data || [];
+      }
+
+      // Soft-delete (deactivate) unused variants that aren't referenced by orders
+      if (variantsToDeactivate.length > 0) {
+        const { error } = await supabase
+          .from('product_variants')
+          .update({ is_active: false })
+          .in('id', variantsToDeactivate);
+        if (error) {
+          console.warn('Failed to deactivate unused variants:', error);
+          // Don't throw - this is not critical
+        }
+      }
     } else {
-      // No variants provided, clean up existing ones if editing
+      // No variants provided - deactivate all existing variants (don't delete if referenced)
       if (editingProduct && existingVariants && existingVariants.length > 0) {
-        await supabase.from('product_variants').delete().eq('product_id', editingProduct.id);
+        // Check which variants are referenced by orders
+        const variantIds = existingVariants.map(v => v.id);
+        const { data: orderItems } = await supabase
+          .from('order_items')
+          .select('variant_id')
+          .in('variant_id', variantIds)
+          .not('variant_id', 'is', null);
+        
+        const referencedVariantIds = new Set<string>();
+        if (orderItems) {
+          orderItems.forEach(item => {
+            if (item.variant_id) {
+              referencedVariantIds.add(item.variant_id);
+            }
+          });
+        }
+        
+        // Only deactivate variants that aren't referenced by orders
+        const variantsToDeactivate = existingVariants
+          .filter(v => !referencedVariantIds.has(v.id))
+          .map(v => v.id);
+        
+        if (variantsToDeactivate.length > 0) {
+          const { error } = await supabase
+            .from('product_variants')
+            .update({ is_active: false })
+            .in('id', variantsToDeactivate);
+          if (error) {
+            console.warn('Failed to deactivate variants:', error);
+          }
+        }
       }
     }
   };

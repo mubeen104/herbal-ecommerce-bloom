@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowLeft, CreditCard, Truck, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -34,6 +34,7 @@ interface Address {
   postalCode: string;
   country: string;
   phone: string;
+  email?: string;
 }
 
 interface GuestInfo {
@@ -132,11 +133,38 @@ const Checkout = () => {
 
   // Initialize coupon state before useEffect (used in tracking effect)
   const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
+  
+  // Flag to prevent BeginCheckout from firing after purchase is completed
+  const purchaseCompletedRef = useRef(false);
+  
+  // Track if we've already tracked BeginCheckout for this checkout session
+  // Prevents duplicate fires when dependencies change
+  const checkoutTrackedRef = useRef(false);
 
   // Track BeginCheckout when user lands on checkout page or applies coupon
   // CRITICAL: Must include appliedCoupon in dependencies to re-track when coupon is applied
   // Previously only tracked on mount with full price - now re-tracks with discounted price
+  // CRITICAL: Do NOT fire BeginCheckout after purchase is completed
   useEffect(() => {
+    // Skip tracking if purchase has already been completed
+    if (purchaseCompletedRef.current) {
+      console.log('⏭️ [BeginCheckout] SKIPPING - Purchase already completed');
+      return;
+    }
+    
+    // Skip if we've already tracked BeginCheckout for this checkout session
+    // Only allow re-tracking when coupon is applied (to update value)
+    if (checkoutTrackedRef.current && !appliedCoupon) {
+      console.log('⏭️ [BeginCheckout] SKIPPING - Already tracked (no coupon change)');
+      return;
+    }
+    
+    // Additional check: if coupon was just removed, don't track again
+    // (we only want to track when coupon is applied, not when removed)
+    if (!appliedCoupon && checkoutTrackedRef.current) {
+      return;
+    }
+    
     if (effectiveCartItems.length > 0 && effectiveCartTotal > 0) {
       const discount = appliedCoupon ?
         (appliedCoupon.type === 'percentage' ?
@@ -164,16 +192,47 @@ const Checkout = () => {
             name: product?.name || 'Unknown Product',
             quantity: item.quantity,
             price: isDirectCheckout ? effectiveDirectPrice : (item.product_variants?.price || product?.price || 0),
-            category: categoryName
+            category: categoryName,
+            brand: 'New Era Herbals'
           };
         });
 
       if (validItems.length > 0 && total > 0) {
+        // Create a unique key for this checkout to check deduplication
+        const itemsKey = validItems.map(i => `${i.id}:${i.quantity}`).sort().join(',');
+        const checkoutKey = `${itemsKey}:${total.toFixed(2)}`;
+        
+        // Check if this exact checkout was already tracked (via sessionStorage deduplication)
+        // This prevents duplicates from React Strict Mode or dependency changes
+        const hasTracked = sessionStorage.getItem(`checkout_${checkoutKey}`);
+        if (hasTracked && !appliedCoupon) {
+          console.log('⏭️ [BeginCheckout] SKIPPING - Exact checkout already tracked in session');
+          checkoutTrackedRef.current = true;
+          return;
+        }
+        
         console.log('📊 [Tracking] BeginCheckout - Total:', total, 'Items:', validItems.length, 'Coupon Applied:', appliedCoupon?.code);
         trackBeginCheckout(validItems, total, currency, tax, shipping);
+        
+        // Mark as tracked in both ref and sessionStorage
+        checkoutTrackedRef.current = true;
+        if (typeof sessionStorage !== 'undefined') {
+          sessionStorage.setItem(`checkout_${checkoutKey}`, Date.now().toString());
+        }
       }
     }
   }, [appliedCoupon, effectiveCartItems, effectiveCartTotal, currency, freeShippingThreshold, shippingRate, taxRate, isDirectCheckout, effectiveDirectPrice, trackBeginCheckout]);
+  
+  // Reset checkout tracking ref when coupon is removed (allows re-tracking with new total)
+  useEffect(() => {
+    if (!appliedCoupon && checkoutTrackedRef.current) {
+      // Reset when coupon is removed so we can track again with updated total
+      // But only if purchase hasn't been completed
+      if (!purchaseCompletedRef.current) {
+        checkoutTrackedRef.current = false;
+      }
+    }
+  }, [appliedCoupon]);
 
   const [guestInfo, setGuestInfo] = useState<GuestInfo>({
     email: "",
@@ -243,7 +302,17 @@ const Checkout = () => {
   const handleSameAsShippingChange = (checked: boolean) => {
     setSameAsShipping(checked);
     if (checked) {
-      setBillingAddress({ ...shippingAddress });
+      // For guest checkout, also copy guest info to billing address
+      if (isGuestCheckout) {
+        setBillingAddress({
+          ...shippingAddress,
+          firstName: guestInfo.firstName,
+          lastName: guestInfo.lastName,
+          phone: guestInfo.phone,
+        });
+      } else {
+        setBillingAddress({ ...shippingAddress });
+      }
     }
   };
 
@@ -347,9 +416,15 @@ const Checkout = () => {
 
       const order = await createOrder.mutateAsync(orderData);
       
+      // Mark purchase as completed IMMEDIATELY to prevent any further events
+      // This prevents BeginCheckout and other events from firing during navigation
+      purchaseCompletedRef.current = true;
+      checkoutTrackedRef.current = true; // Also mark checkout as tracked
+      
       // Track conversion event for advertising pixels with SKU for catalog matching
+      // Use order.id (UUID) for deduplication and order.order_number for transaction_id
       trackPurchase(
-        order.order_number,
+        order.id, // Use UUID for deduplication (ensures uniqueness)
         effectiveCartItems.map(item => {
           const product = item.products as any;
           const categoryName = product?.product_categories?.[0]?.categories?.name || 'Herbal Products';
@@ -358,13 +433,15 @@ const Checkout = () => {
             name: product?.name || 'Unknown Product',
             quantity: item.quantity,
             price: isDirectCheckout ? effectiveDirectPrice : (item.product_variants?.price || product?.price || 0),
-            category: categoryName
+            category: categoryName,
+            brand: 'New Era Herbals'
           };
         }),
         totalAmount,
         currency,
         tax,
-        shippingCost
+        shippingCost,
+        order.order_number // Use order_number as transaction_id for GTM/Meta Pixel (human-readable)
       );
       
       // Clear cart after successful order (only if not direct checkout)
@@ -449,16 +526,17 @@ const Checkout = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Left Column - Forms */}
             <div className="space-y-6">
-              {/* Guest Information - Only shown for guest checkout */}
-              {isGuestCheckout && (
+              {/* Guest Checkout - Combined Contact & Shipping */}
+              {isGuestCheckout ? (
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center space-x-2">
-                      <User className="h-5 w-5" />
-                      <span>Contact Information</span>
+                      <Truck className="h-5 w-5" />
+                      <span>Shipping Information</span>
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
+                    {/* Email */}
                     <div>
                       <Label htmlFor="guest-email">Email Address *</Label>
                       <Input
@@ -473,13 +551,19 @@ const Checkout = () => {
                         You'll receive order confirmation and updates at this email.
                       </p>
                     </div>
+
+                    {/* Name - Single row */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <Label htmlFor="guest-firstName">First Name *</Label>
                         <Input
                           id="guest-firstName"
                           value={guestInfo.firstName}
-                          onChange={(e) => setGuestInfo(prev => ({ ...prev, firstName: e.target.value }))}
+                          onChange={(e) => {
+                            setGuestInfo(prev => ({ ...prev, firstName: e.target.value }));
+                            // Auto-update shipping address
+                            handleShippingAddressChange("firstName", e.target.value);
+                          }}
                           required
                         />
                       </div>
@@ -488,68 +572,40 @@ const Checkout = () => {
                         <Input
                           id="guest-lastName"
                           value={guestInfo.lastName}
-                          onChange={(e) => setGuestInfo(prev => ({ ...prev, lastName: e.target.value }))}
+                          onChange={(e) => {
+                            setGuestInfo(prev => ({ ...prev, lastName: e.target.value }));
+                            // Auto-update shipping address
+                            handleShippingAddressChange("lastName", e.target.value);
+                          }}
                           required
                         />
                       </div>
                     </div>
+
+                    {/* Phone */}
                     <div>
                       <Label htmlFor="guest-phone">Phone Number *</Label>
                       <Input
                         id="guest-phone"
                         type="tel"
                         value={guestInfo.phone}
-                        onChange={(e) => setGuestInfo(prev => ({ ...prev, phone: e.target.value }))}
+                        onChange={(e) => {
+                          setGuestInfo(prev => ({ ...prev, phone: e.target.value }));
+                          // Auto-update shipping address
+                          handleShippingAddressChange("phone", e.target.value);
+                        }}
                         required
                       />
                     </div>
-                  </CardContent>
-                </Card>
-              )}
-              {/* Shipping Address */}
-              {!isGuestCheckout ? (
-                <AddressSelector
-                  selectedAddress={shippingAddress}
-                  onAddressChange={setShippingAddress}
-                  title="Shipping Address"
-                  useCustomAddress={useCustomShipping}
-                  onUseCustomAddressChange={setUseCustomShipping}
-                />
-              ) : (
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center space-x-2">
-                      <Truck className="h-5 w-5" />
-                      <span>Shipping Address</span>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="shipping-firstName">First Name *</Label>
-                        <Input
-                          id="shipping-firstName"
-                          value={shippingAddress.firstName}
-                          onChange={(e) => handleShippingAddressChange("firstName", e.target.value)}
-                          required
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="shipping-lastName">Last Name *</Label>
-                        <Input
-                          id="shipping-lastName"
-                          value={shippingAddress.lastName}
-                          onChange={(e) => handleShippingAddressChange("lastName", e.target.value)}
-                          required
-                        />
-                      </div>
-                    </div>
-                    
+
+                    <Separator className="my-4" />
+
+                    {/* Address Fields */}
                     <div>
                       <Label htmlFor="shipping-company">Company (Optional)</Label>
                       <Input
                         id="shipping-company"
-                        value={shippingAddress.company}
+                        value={shippingAddress.company || ''}
                         onChange={(e) => handleShippingAddressChange("company", e.target.value)}
                       />
                     </div>
@@ -568,7 +624,7 @@ const Checkout = () => {
                       <Label htmlFor="shipping-address2">Address Line 2 (Optional)</Label>
                       <Input
                         id="shipping-address2"
-                        value={shippingAddress.addressLine2}
+                        value={shippingAddress.addressLine2 || ''}
                         onChange={(e) => handleShippingAddressChange("addressLine2", e.target.value)}
                       />
                     </div>
@@ -596,24 +652,22 @@ const Checkout = () => {
                         <Label htmlFor="shipping-postal">Postal Code (Optional)</Label>
                         <Input
                           id="shipping-postal"
-                          value={shippingAddress.postalCode}
+                          value={shippingAddress.postalCode || ''}
                           onChange={(e) => handleShippingAddressChange("postalCode", e.target.value)}
                         />
                       </div>
                     </div>
-
-                    <div>
-                      <Label htmlFor="shipping-phone">Phone Number *</Label>
-                      <Input
-                        id="shipping-phone"
-                        type="tel"
-                        value={shippingAddress.phone}
-                        onChange={(e) => handleShippingAddressChange("phone", e.target.value)}
-                        required
-                      />
-                    </div>
                   </CardContent>
                 </Card>
+              ) : (
+                /* Regular Checkout - Address Selector */
+                <AddressSelector
+                  selectedAddress={shippingAddress}
+                  onAddressChange={setShippingAddress}
+                  title="Shipping Address"
+                  useCustomAddress={useCustomShipping}
+                  onUseCustomAddressChange={setUseCustomShipping}
+                />
               )}
 
               {/* Billing Address */}
@@ -645,32 +699,11 @@ const Checkout = () => {
                         />
                       ) : (
                         <div className="space-y-4">
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                              <Label htmlFor="billing-firstName">First Name *</Label>
-                              <Input
-                                id="billing-firstName"
-                                value={billingAddress.firstName}
-                                onChange={(e) => handleBillingAddressChange("firstName", e.target.value)}
-                                required
-                              />
-                            </div>
-                            <div>
-                              <Label htmlFor="billing-lastName">Last Name *</Label>
-                              <Input
-                                id="billing-lastName"
-                                value={billingAddress.lastName}
-                                onChange={(e) => handleBillingAddressChange("lastName", e.target.value)}
-                                required
-                              />
-                            </div>
-                          </div>
-                          
                           <div>
                             <Label htmlFor="billing-company">Company (Optional)</Label>
                             <Input
                               id="billing-company"
-                              value={billingAddress.company}
+                              value={billingAddress.company || ''}
                               onChange={(e) => handleBillingAddressChange("company", e.target.value)}
                             />
                           </div>
@@ -689,7 +722,7 @@ const Checkout = () => {
                             <Label htmlFor="billing-address2">Address Line 2 (Optional)</Label>
                             <Input
                               id="billing-address2"
-                              value={billingAddress.addressLine2}
+                              value={billingAddress.addressLine2 || ''}
                               onChange={(e) => handleBillingAddressChange("addressLine2", e.target.value)}
                             />
                           </div>
@@ -717,21 +750,10 @@ const Checkout = () => {
                               <Label htmlFor="billing-postal">Postal Code (Optional)</Label>
                               <Input
                                 id="billing-postal"
-                                value={billingAddress.postalCode}
+                                value={billingAddress.postalCode || ''}
                                 onChange={(e) => handleBillingAddressChange("postalCode", e.target.value)}
                               />
                             </div>
-                          </div>
-
-                          <div>
-                            <Label htmlFor="billing-phone">Phone Number *</Label>
-                            <Input
-                              id="billing-phone"
-                              type="tel"
-                              value={billingAddress.phone}
-                              onChange={(e) => handleBillingAddressChange("phone", e.target.value)}
-                              required
-                            />
                           </div>
                         </div>
                       )}

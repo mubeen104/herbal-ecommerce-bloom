@@ -44,6 +44,8 @@ const useReviews = (status: 'pending' | 'approved' | 'all' = 'all') => {
   return useQuery({
     queryKey: ['admin-reviews', status],
     queryFn: async () => {
+      // Admin can access all reviews, but use direct query with profiles join
+      // Admin has access via RLS policies, but we ensure profiles are included
       let query = supabase
         .from('reviews')
         .select(`
@@ -54,7 +56,8 @@ const useReviews = (status: 'pending' | 'approved' | 'all' = 'all') => {
           ),
           profiles (
             first_name,
-            last_name
+            last_name,
+            email
           )
         `)
         .order('created_at', { ascending: false });
@@ -67,8 +70,21 @@ const useReviews = (status: 'pending' | 'approved' | 'all' = 'all') => {
 
       const { data, error } = await query;
 
-      if (error) throw error;
-      return data || [];
+      if (error) {
+        console.error('Error fetching reviews:', error);
+        throw error;
+      }
+      
+      // Ensure profiles data is available even if RLS blocks it
+      // Transform data to ensure consistent format
+      return (data || []).map((review: any) => ({
+        ...review,
+        profiles: review.profiles || {
+          first_name: null,
+          last_name: null,
+          email: null,
+        },
+      }));
     },
   });
 };
@@ -162,9 +178,22 @@ const AdminReviews = () => {
   );
 
   const getUserName = (review: Review) => {
-    if (review.profiles?.first_name && review.profiles?.last_name) {
-      return `${review.profiles.first_name} ${review.profiles.last_name}`;
+    const firstName = review.profiles?.first_name?.trim() || '';
+    const lastName = review.profiles?.last_name?.trim() || '';
+    const email = review.profiles?.email || '';
+    
+    // If we have first or last name, use them
+    if (firstName || lastName) {
+      return `${firstName} ${lastName}`.trim();
     }
+    
+    // Fallback to email (show first part before @)
+    if (email) {
+      const emailName = email.split('@')[0];
+      // Capitalize first letter
+      return emailName.charAt(0).toUpperCase() + emailName.slice(1);
+    }
+    
     return 'Anonymous User';
   };
 

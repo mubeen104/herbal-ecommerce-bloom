@@ -43,22 +43,19 @@ const RelatedProducts = ({ productId, limit = 6, excludeIds = [] }: RelatedProdu
   const productIds = relatedProducts.map(p => p.id);
   const { data: ratings = [] } = useProductRatings(productIds);
 
+  // REMOVED: Automatic ViewContent tracking for all related products
+  // This was causing 6+ ViewContent events per product page
+  // ViewContent should only be tracked when user actually views/clicks a product
+  // Related products are tracked via trackRelatedProductView for internal analytics only
   useEffect(() => {
     if (relatedProducts.length > 0) {
       relatedProducts.forEach(product => {
-        // Track in database for analytics
+        // Track in database for analytics only (not pixel tracking)
         trackRelatedProductView(productId, product.id, sessionId, user?.id);
-
-        // Track to advertising pixels
-        trackViewContent({
-          id: product.id,
-          name: product.name,
-          price: product.price,
-          currency: currency
-        });
+        // ViewContent pixel tracking removed - will track when user clicks product
       });
     }
-  }, [relatedProducts, productId, sessionId, user?.id, currency, trackViewContent]);
+  }, [relatedProducts, productId, sessionId, user?.id]);
 
   const handleAddToCartRequest = (product: any) => {
     setAddToCartProduct(product);
@@ -88,6 +85,18 @@ const RelatedProducts = ({ productId, limit = 6, excludeIds = [] }: RelatedProdu
 
   const handleProductClick = (product: any) => {
     trackRelatedProductConversion(productId, product.id, sessionId, user?.id);
+    
+    // Track ViewContent when user actually clicks on related product
+    const categoryName = (product as any).product_categories?.[0]?.categories?.name || 'Herbal Products';
+    trackViewContent({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      category: categoryName,
+      brand: 'New Era Herbals',
+      currency: currency
+    });
+    
     navigate(`/product/${product.slug}`);
   };
 
